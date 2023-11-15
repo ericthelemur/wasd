@@ -1,4 +1,5 @@
 import React from 'react';
+import { createRoot } from 'react-dom/client';
 import { useReplicant } from 'use-nodecg';
 
 export function Panel() {
@@ -9,3 +10,6 @@ export function Panel() {
 		</>
 	)
 }
+
+const root = createRoot(document.getElementById('root')!);
+root.render(<Panel />);

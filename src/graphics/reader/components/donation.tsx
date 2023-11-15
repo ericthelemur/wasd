@@ -1,7 +1,7 @@
 import React from 'react';
 import Card from 'react-bootstrap/Card';
 import { getAmount, timeFormat, dateFormat } from './utils';
-import { Donation } from "../../../../nodecg-tiltify/src/types/schemas/donations";
+import { Donation } from "../../../../../nodecg-tiltify/src/types/schemas/donations";
 
 
 interface DonoProp {
