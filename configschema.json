@@ -1,0 +1,21 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "displayCurrency": {
+            "description": "Currency you want amounts displayed in",
+            "type": "string",
+            "default": "GBP"
+        },
+        "conversionRateKey": {
+            "description": "API key for freecurrencyapi.com, used for uncommon currencies (avoids rate limiting)",
+            "type": "string",
+            "default": ""
+        },
+        "autoApproveTimeSec": {
+            "description": "Delay between dono being recieved and auto approval, only if enabled",
+            "type": "number",
+            "default": 15
+        }
+    }
+}

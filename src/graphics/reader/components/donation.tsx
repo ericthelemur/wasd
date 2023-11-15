@@ -10,7 +10,7 @@ interface DonoProp {
 
 
 function DonationTitle({ dono }: DonoProp) {
-    const amounts = getAmount(dono.amount.currency, dono.amount.value, dono["amountDisplay"] as string);
+    const amounts = getAmount(dono.amount.currency, dono.amount.value, dono.amountDisplay);
     return (
         <h2 className="h5 card-title">
             <span className="name">{dono.donor_name}</span>{" "}
@@ -35,7 +35,7 @@ function DonationSubtitle({ dono }: DonoProp) {
 
 export function Donation({ dono }: DonoProp) {
     return (
-        <Card>
+        <Card key={dono.id}>
             <Card.Body>
                 <DonationTitle dono={dono} />
                 <DonationSubtitle dono={dono} />
