@@ -15,7 +15,7 @@ export function Reader() {
 		<Container fluid="xxl">
 			<h1 className="mt-3">Tiltify Donation Reader</h1>
 			<div id="donations" className="donations">
-				{donos?.map(d => <Donation dono={d} />)}
+				{donos?.map(d => <Donation key={d.id} dono={d} />)}
 			</div>
 		</Container>
 	);

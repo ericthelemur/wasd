@@ -1,12 +1,7 @@
 import React from 'react';
 import Card from 'react-bootstrap/Card';
-import { getAmount, timeFormat, dateFormat } from './utils';
-import { Donation } from "../../../../../nodecg-tiltify/src/types/schemas/donations";
-
-
-interface DonoProp {
-    dono: Donation
-}
+import { getAmount, timeFormat, dateFormat, DonoProp } from '../utils';
+import { Donation } from "~nodecg-tiltify/src/types/schemas/donations";
 
 
 function DonationTitle({ dono }: DonoProp) {
@@ -16,7 +11,7 @@ function DonationTitle({ dono }: DonoProp) {
             <span className="name">{dono.donor_name}</span>{" "}
             <span className="donated">donated</span>{" "}
             <span className="amount">{amounts[0]}</span>{" "}
-            <span className="amount amount-gdp">{amounts[1] ? `(${amounts[1]})` : ""}</span>
+            {amounts[1] ? <span className="amount amount-gdp">({amounts[1]})</span> : ""}
         </h2>
     )
 }
@@ -35,7 +30,7 @@ function DonationSubtitle({ dono }: DonoProp) {
 
 export function Donation({ dono }: DonoProp) {
     return (
-        <Card key={dono.id}>
+        <Card>
             <Card.Body>
                 <DonationTitle dono={dono} />
                 <DonationSubtitle dono={dono} />
