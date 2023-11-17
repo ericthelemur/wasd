@@ -14,7 +14,7 @@ h2 {
     gap: 0.5rem;
 }
 
-.donations[data-unread="false"] .unread {
+/* .donations[data-unread="false"] .unread {
     display: none;
 }
 
@@ -32,7 +32,7 @@ h2 {
 
 .donations[data-censored="false"] .censored {
     display: none;
-}
+} */
 
 .card {
     --bs-card-spacer-y: 0.5rem;
@@ -117,9 +117,10 @@ h2 {
 
 #settings #dropdown {
     backdrop-filter: blur(2px) saturate(50%);
-    /* display: flex;
-    flex-direction: column;
-    gap: 0.25em; */
+    --bs-bg-opacity: 0.75;
+    border-radius: var(--bs-border-radius);
+    padding: 1rem;
+    max-width: 100%;
 }
 
 #settings #dropdown .btn-group {
