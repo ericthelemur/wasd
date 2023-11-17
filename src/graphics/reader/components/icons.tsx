@@ -11,7 +11,7 @@ export interface ModAction {
 
 
 export const read: ModAction = {
-    icon: <i className="bi bi-envelope-fill-open"></i>,
+    icon: <i className="bi bi-envelope-open-fill"></i>,
     iconAction: <i className="bi bi-envelope-open"></i>,
     action: "Read",
     value: true

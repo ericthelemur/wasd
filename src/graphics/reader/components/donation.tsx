@@ -1,8 +1,10 @@
+import { tripleState } from 'nodecg-tiltify/src/extension/utils/mod';
 import { Donation } from 'nodecg-tiltify/src/types/schemas/donations';
 import Card from 'react-bootstrap/Card';
 
 import { DonoProp, dateFormat, getAmount, timeFormat } from '../utils';
 import { Buttons } from './buttons';
+import { approved, censored, read, shown, undecided, unread, unshown } from './icons';
 
 function DonationTitle({ dono }: DonoProp) {
     const amounts = getAmount(dono.amount.currency, dono.amount.value, dono.amountDisplay);
@@ -23,6 +25,11 @@ function DonationSubtitle({ dono }: DonoProp) {
         <small className='datetime card-subtitle text-body-tertiary'>
             <span className="time">{timeFormat.format(date)}</span>{" "}
             <span className="date">{dateFormat.format(date)}</span>{" "}
+            <span className="statuses">
+                {dono.read ? read.icon : unread.icon}{" "}
+                {dono.shown ? shown.icon : unshown.icon}{" "}
+                {tripleState(dono.modStatus, approved.icon, undecided.icon, censored.icon)}{" "}
+            </span>
         </small>
     )
 }
@@ -30,7 +37,7 @@ function DonationSubtitle({ dono }: DonoProp) {
 
 export function Donation({ dono }: DonoProp) {
     return (
-        <Card>
+        <Card className={(dono.read ? 'read' : 'unread') + ' ' + (dono.shown ? 'shown' : 'unshown') + ' ' + tripleState(dono.modStatus, 'approved', 'undecided', 'censored')}>
             <Card.Body>
                 <DonationTitle dono={dono} />
                 <DonationSubtitle dono={dono} />

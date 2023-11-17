@@ -12,13 +12,13 @@ function changeModStatus(dono: Donation, to: ModStatus, property = "modstatus") 
     return () => {
         console.log(`Attempting to set ${property} to ${to} for ${dono.id}`);
         dono.timeToApprove = 8.64e15;
+        // Confirm uncensoring
         if (property === "modstatus" && dono.modStatus === CENSORED) {
             var confirmUncensor = confirm("Are you sure you want to uncensor this donation?" + `\nName: ${dono.donor_name}\nMessage: ${dono.donor_comment}`);
             if (confirmUncensor != true) return;
         }
         console.log("set-donation-" + property, [{ id: dono.id }, to]);
         nodecg.sendMessageToBundle("set-donation-" + property, "nodecg-tiltify", [dono, to]);
-        dono.modStatus = to;
     }
 }
 
