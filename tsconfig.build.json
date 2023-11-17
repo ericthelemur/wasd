@@ -2,7 +2,7 @@
 	"compilerOptions": {
 		// Required for parcel
 		"isolatedModules": true,
-		"jsx": "react",
+		"jsx": "react-jsx",
 		// Output related
 		"target": "es2021",
 		"outDir": "./build",
@@ -18,9 +18,10 @@
 		"declarationMap": true,
 		"sourceMap": true,
 		"inlineSourceMap": false,
+		"baseUrl": "src",
 		"paths": {
-			"~nodecg-tiltify/*": [
-				"../nodecg-tiltify/*"
+			"nodecg-tiltify/*": [
+				"../../nodecg-tiltify/*"
 			]
 		}
 	},
