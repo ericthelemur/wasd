@@ -1,5 +1,5 @@
 
-import { Donation } from "~nodecg-tiltify/src/types/schemas/donations";
+import { Donation } from "nodecg-tiltify/src/types/schemas/donations";
 
 export const baseCurrFormat = (curr: string) => new Intl.NumberFormat(undefined, { style: 'currency', currency: curr });
 export const displayCurrFormat = baseCurrFormat(nodecg.bundleConfig.displayCurrency as string);

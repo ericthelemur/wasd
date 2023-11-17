@@ -1,8 +1,8 @@
-import React from 'react';
+import { Donation } from 'nodecg-tiltify/src/types/schemas/donations';
 import Card from 'react-bootstrap/Card';
-import { getAmount, timeFormat, dateFormat, DonoProp } from '../utils';
-import { Donation } from "~nodecg-tiltify/src/types/schemas/donations";
 
+import { DonoProp, dateFormat, getAmount, timeFormat } from '../utils';
+import { Buttons } from './buttons';
 
 function DonationTitle({ dono }: DonoProp) {
     const amounts = getAmount(dono.amount.currency, dono.amount.value, dono.amountDisplay);
@@ -35,6 +35,7 @@ export function Donation({ dono }: DonoProp) {
                 <DonationTitle dono={dono} />
                 <DonationSubtitle dono={dono} />
                 <p className="message card-text">{dono.donor_comment || "No Message"}</p>
+                <Buttons dono={dono} />
             </Card.Body>
         </Card>
     );
