@@ -40,7 +40,7 @@ export function ModButton(props: ModButtonProps) {
         onClick={changeModStatus(props.dono, action.value, props.property.toLowerCase())}
         className={props.extraClasses.join(" ")}
     >
-        {action.icon}{props.small ? "" : " " + action.action}
+        {action.iconAction}{props.small ? "" : " " + action.action}
     </Button>
 }
 
