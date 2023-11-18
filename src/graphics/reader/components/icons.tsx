@@ -94,9 +94,33 @@ export const time: ModAction = {
 }
 
 export const money: ModAction = {
-    icon: <i className="bi bi-clock"></i>,
+    icon: <i className="bi bi-currency-pound"></i>,
     iconAction: <i className="bi bi-currency-pound"></i>,
     action: "Sort by money",
     category: "money",
+    value: null
+}
+
+export const live: ModAction = {
+    icon: <i className="bi bi-bell-fill"></i>,
+    iconAction: <i className="bi bi-bell-fill"></i>,
+    action: "Live",
+    category: "live",
+    value: null
+}
+
+export const all: ModAction = {
+    icon: <i className="bi bi-archive-fill"></i>,
+    iconAction: <i className="bi bi-archive-fill"></i>,
+    action: "All",
+    category: "all",
+    value: null
+}
+
+export const donors: ModAction = {
+    icon: <i className="bi bi-people-fill"></i>,
+    iconAction: <i className="bi bi-people-fill"></i>,
+    action: "Donors",
+    category: "donors",
     value: null
 }

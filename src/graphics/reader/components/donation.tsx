@@ -21,23 +21,31 @@ function DonationTitle({ dono }: DonoProp) {
 
 function DonationSubtitle({ dono }: DonoProp) {
     const date = new Date(dono.completed_at);
+    var statuses = <></>;
+    if (dono.read !== undefined) {
+        statuses = <span className="statuses">
+            {dono.read ? read.icon : unread.icon}{" "}
+            {dono.shown ? shown.icon : unshown.icon}{" "}
+            {tripleState(dono.modStatus, approved.icon, undecided.icon, censored.icon)}{" "}
+        </span>
+    }
+
     return (
         <small className='datetime card-subtitle text-body-tertiary'>
             <span className="time">{timeFormat.format(date)}</span>{" "}
             <span className="date">{dateFormat.format(date)}</span>{" "}
-            <span className="statuses">
-                {dono.read ? read.icon : unread.icon}{" "}
-                {dono.shown ? shown.icon : unshown.icon}{" "}
-                {tripleState(dono.modStatus, approved.icon, undecided.icon, censored.icon)}{" "}
-            </span>
+            {statuses}
         </small>
     )
 }
 
 
 export function Donation({ dono }: DonoProp) {
+    var classes: string[] = [];
+    if (dono.read !== undefined)
+        classes = [dono.read ? 'read' : 'unread', dono.shown ? 'shown' : 'unshown', tripleState(dono.modStatus, 'approved', 'undecided', 'censored')];
     return (
-        <Card className={(dono.read ? 'read' : 'unread') + ' ' + (dono.shown ? 'shown' : 'unshown') + ' ' + tripleState(dono.modStatus, 'approved', 'undecided', 'censored')}>
+        <Card className={classes.join(" ")}>
             <Card.Body>
                 <DonationTitle dono={dono} />
                 <DonationSubtitle dono={dono} />

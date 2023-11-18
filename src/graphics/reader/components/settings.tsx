@@ -5,6 +5,7 @@ import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 import * as icons from './icons';
 
 export interface SortSettings {
+    list: string;
     sort: string;
     dir: string,
     show: string[];
@@ -22,6 +23,11 @@ export function Settings(props: SettingsProps) {
         </summary>
         <div id="dropdown" className='bg-body-secondary'>
             <h5>Local Settings</h5>
+            <RadioSetting name="list" title="Donation list" labels={true} current={props.settings.list}
+                options={[icons.live, icons.all]}
+                default={"live"}
+                onclick={(v) => props.setSettings({ ...props.settings, list: v })}
+            />
             <CheckSetting name="show" title="Filters" current={props.settings.show}
                 options={[icons.read, icons.unread, icons.approved, icons.undecided, icons.censored]}
                 default={["unread", "approved", "undecided"]}
@@ -44,6 +50,7 @@ export function Settings(props: SettingsProps) {
 interface SettingProps<T> {
     name: string;
     title?: string;
+    labels?: boolean;
     options: icons.ModAction[];
     current: T;
     default: T;
@@ -56,7 +63,7 @@ export function CheckSetting(props: SettingProps<string[]>) {
         <ToggleButtonGroup type="checkbox" name={props.name} value={props.current} onChange={props.onclick}>
             {props.options.map(o => (
                 <ToggleButton id={`btn-${o.category}`} key={o.category} value={o.category} variant="outline-primary">
-                    {o.icon}
+                    {o.icon}{" "}{props.labels && o.action}
                 </ToggleButton>
             ))}
         </ToggleButtonGroup>
@@ -69,7 +76,7 @@ export function RadioSetting(props: SettingProps<string>) {
         <ToggleButtonGroup type="radio" name={props.name} value={props.current} onChange={props.onclick}>
             {props.options.map(o => (
                 <ToggleButton id={`btn-${o.category}`} key={o.category} value={o.category} variant="outline-primary">
-                    {o.icon}
+                    {o.icon}{" "}{props.labels && o.action}
                 </ToggleButton>
             ))}
         </ToggleButtonGroup>
