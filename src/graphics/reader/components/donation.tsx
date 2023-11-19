@@ -1,9 +1,8 @@
 import { tripleState } from 'nodecg-tiltify/src/extension/utils/mod';
 import { Donation } from 'nodecg-tiltify/src/types/schemas/donations';
-import { Donor } from 'nodecg-tiltify/src/types/schemas/donors';
 import Card from 'react-bootstrap/Card';
 
-import { DonoProp, dateFormat, getAmount, timeFormat } from '../utils';
+import { DonoProp, dateFormat, formatAmounts, timeFormat } from '../utils';
 import { Buttons } from './buttons';
 import { approved, censored, read, shown, undecided, unread, unshown } from './icons';
 
@@ -12,10 +11,7 @@ function DonationTitle({ dono }: DonoProp) {
         <h2 className="h5 card-title">
             <span className="name">{dono.donor_name}</span>{" "}
             <span className="donated">donated</span>{" "}
-            <span className="amount">{getAmount(dono.amount)}</span>{" "}
-            {dono.displayAmount && dono.displayAmount.currency != dono.amount.currency ? 
-                <span className="amount amount-display">({getAmount(dono.displayAmount)})</span>
-                 : ""}
+            <span className="amount">{formatAmounts(dono.amount, dono.displayAmount)}</span>
         </h2>
     )
 }
@@ -56,9 +52,4 @@ export function Donation({ dono }: DonoProp) {
             </Card.Body>
         </Card>
     );
-}
-
-export interface DonorProps {
-    donor: Donor,
-    donos: Donation[]
 }
