@@ -29,8 +29,13 @@ export function Settings(props: SettingsProps) {
                 onclick={(v) => props.setSettings({ ...props.settings, list: v })}
             />
             <CheckSetting name="show" title="Filters" current={props.settings.show}
-                options={[icons.read, icons.unread, icons.approved, icons.undecided, icons.censored]}
-                default={["unread", "approved", "undecided"]}
+                options={[icons.read, icons.unread]}
+                default={["unread"]}
+                onclick={(v) => props.setSettings({ ...props.settings, show: v })}
+            />{" "}
+            <CheckSetting name="show" current={props.settings.show}
+                options={[icons.approved, icons.undecided, icons.censored]}
+                default={["approved", "undecided"]}
                 onclick={(v) => props.setSettings({ ...props.settings, show: v })}
             />
             <RadioSetting name="dir" title="Sort by" current={props.settings.dir}
