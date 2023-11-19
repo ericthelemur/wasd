@@ -9,13 +9,36 @@ import { Settings, SortSettings } from './components/settings';
 import { AllDonations, Donors, LiveDonations } from './components/donolists';
 
 
+const defaultSettings: SortSettings = { list: "live", sort: "money", dir: "asc", show: ["unread", "approved", "undecided"] };
+
+function fetchFromParams() {
+	const url = new URL(window.location.href);
+	var params = url.searchParams;
+	var settings = { ...defaultSettings };
+
+	for (var [k, v] of params) {
+		if (k === "list" || k === "sort" || k === "dir") settings[k] = v;
+		else if (k === "show") settings[k] = v.split(",");
+	}
+	return settings;
+}
+
+function copyToParams(settings: SortSettings) {
+	const url = new URL(window.location.href);
+	var params = url.searchParams;
+	Object.entries(settings).forEach(([k, v]) => params.set(k, v.toString()));
+    history.replaceState(null, "", url.href);
+}
+
+
 export function Reader() {
-	const defaultSettings: SortSettings = { list: "live", sort: "money", dir: "asc", show: ["unread", "approved", "undecided"] };
-	const [sortSettings, setSortSettings] = useState(defaultSettings);
+	const [sortSettings, setSortSettings] = useState(fetchFromParams());
+	copyToParams(sortSettings);
 	console.log(sortSettings);
 
 	var donos = <></>;
 	const args = { sortSettings: sortSettings, setSortSettings: setSortSettings };
+	// Pick page to render
 	if (sortSettings.list === "all") donos = <AllDonations {...args} />;
 	else if (sortSettings.list === "donors") donos = <Donors {...args} />;
 	else donos = <LiveDonations {...args} />;
