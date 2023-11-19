@@ -76,7 +76,7 @@ export function Donors(props: DonoListProps) {
 		return {
 			name: n,
 			donations: ds,
-			total: ds.reduce<number>((t, d) => t += Number(d.amount.value), 0),
+			total: ds.reduce<number>((t, d) => t += (d.displayAmount ? Number(d.displayAmount.value) : 0), 0),
 			latest: ds.reduce<string>((t, d) => d.completed_at > t ? d.completed_at : t, "")
 		}
 	});
@@ -96,7 +96,7 @@ export function Donors(props: DonoListProps) {
 						<h2 className="h5 card-title d-inline">
 							<span className="name">{name}</span>{" "}
 							<span className="donated">donated</span>{" "}
-							<span className="amount">{getAmount(donations[0].amount.currency, total, undefined)[0]}</span>
+							<span className="amount">{getAmount({currency: donations[0].displayAmount?.currency || "GBP", value: total})}</span>
 						</h2>
 					</summary>
 					<div className="mt-2 mb-1">
