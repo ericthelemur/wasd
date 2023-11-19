@@ -11,6 +11,7 @@ import { useReplicant } from 'use-nodecg';
 
 import { Donation } from './components/donation';
 import { Settings, SortSettings } from './components/settings';
+import { APPROVED, CENSORED, UNDECIDED } from 'nodecg-tiltify/src/extension/utils/mod';
 
 export function Reader() {
 	const defaultSettings: SortSettings = { list: "live", sort: "money", dir: "asc", show: ["unread", "approved", "undecided"] };
@@ -38,6 +39,10 @@ interface DonoListProps {
 	setSortSettings: React.Dispatch<React.SetStateAction<SortSettings>>;
 }
 
+interface SortedDonosProps extends DonoListProps {
+	donos: Basedono[] | DonationT[];
+}
+
 export function LiveDonations(props: DonoListProps) {
 	const [d, setDonos] = useReplicant<Donations>("donations", [], { namespace: "nodecg-tiltify" });
 	const donos = d === undefined ? [] : d;
@@ -56,18 +61,25 @@ export function Donors(props: DonoListProps) {
 	return <SortedDonations donos={donos} {...props} />
 }
 
-
-interface SortedDonosProps extends DonoListProps {
-	donos: Basedono[];
-}
-
 export function SortedDonations({ donos, sortSettings, setSortSettings }: SortedDonosProps) {
-	const sortedDonos = [...donos].sort((a: Basedono, b: Basedono) => {
-		const va = sortSettings.sort === "money" ? a.amount.value : b.completed_at;
-		const vb = sortSettings.sort === "money" ? b.amount.value : a.completed_at;
-		var result = (va < vb) ? -1 : (va > vb) ? 1 : 0;
-		return result * (sortSettings.dir === "asc" ? 1 : -1);
-	})
+	if (!donos || !donos[0]) return <></>;
+	if ("read" in donos[0]) {
+		donos = (donos as DonationT[]).filter((d) => {
+			return ((sortSettings.show.includes("read") && d.read) || (sortSettings.show.includes("unread") && !d.read)) &&
+				((sortSettings.show.includes("approved") && d.modStatus === APPROVED) || 
+				  (sortSettings.show.includes("undecided") && d.modStatus === UNDECIDED) || 
+				  (sortSettings.show.includes("censored") && d.modStatus === CENSORED))
+		})
+	} else {
+		donos = [...donos]
+	}
+	const sortedDonos = donos
+		.sort((a: Basedono, b: Basedono) => {
+			const va = sortSettings.sort === "money" ? a.amount.value : b.completed_at;
+			const vb = sortSettings.sort === "money" ? b.amount.value : a.completed_at;
+			var result = (va < vb) ? -1 : (va > vb) ? 1 : 0;
+			return result * (sortSettings.dir === "asc" ? 1 : -1);
+		})
 
 	return (
 		<div className="donations">

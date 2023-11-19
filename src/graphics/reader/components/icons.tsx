@@ -13,7 +13,7 @@ export interface ModAction {
 
 export const read: ModAction = {
     icon: <i className="bi bi-envelope-open-fill"></i>,
-    iconAction: <i className="bi bi-envelope-open"></i>,
+    iconAction: <i className="bi bi-envelope-open-fill"></i>,
     action: "Read",
     category: "read",
     value: true
@@ -21,7 +21,7 @@ export const read: ModAction = {
 
 export const unread: ModAction = {
     icon: <i className="bi bi-envelope-fill"></i>,
-    iconAction: <i className="bi bi-envelope"></i>,
+    iconAction: <i className="bi bi-envelope-fill"></i>,
     action: "Unread",
     category: "unread",
     value: false
@@ -30,7 +30,7 @@ export const unread: ModAction = {
 
 export const shown: ModAction = {
     icon: <i className="bi bi-eye-fill"></i>,
-    iconAction: <i className="bi bi-eye"></i>,
+    iconAction: <i className="bi bi-eye-fill"></i>,
     action: "Show",
     category: "shown",
     value: true
@@ -38,7 +38,7 @@ export const shown: ModAction = {
 
 export const unshown: ModAction = {
     icon: <i className="bi bi-eye-slash-fill"></i>,
-    iconAction: <i className="bi bi-eye-slash"></i>,
+    iconAction: <i className="bi bi-eye-slash-fill"></i>,
     action: "Unshow",
     category: "unshown",
     value: false
@@ -46,7 +46,7 @@ export const unshown: ModAction = {
 
 
 export const approved: ModAction = {
-    icon: <i className="bi bi-check2-square"></i>,
+    icon: <i className="bi bi-check-lg"></i>,
     iconAction: <i className="bi bi-check-lg"></i>,
     action: "Approve",
     category: "approved",
@@ -54,7 +54,7 @@ export const approved: ModAction = {
 }
 
 export const undecided: ModAction = {
-    icon: <i className="bi bi-question-square"></i>,
+    icon: <i className="bi bi-question-lg"></i>,
     iconAction: <i className="bi bi-arrow-counterclockwise"></i>,
     action: "Reset",
     category: "undecided",
@@ -62,7 +62,7 @@ export const undecided: ModAction = {
 }
 
 export const censored: ModAction = {
-    icon: <i className="bi bi-x-square"></i>,
+    icon: <i className="bi bi-ban"></i>,
     iconAction: <i className="bi bi-ban"></i>,
     action: "Censor",
     category: "censored",
