@@ -24,7 +24,7 @@ export function Settings(props: SettingsProps) {
         <div id="dropdown" className='bg-body-secondary'>
             <h5>Local Settings</h5>
             <RadioSetting name="list" title="Donation list" labels={true} current={props.settings.list}
-                options={[icons.live, icons.all]}
+                options={[icons.live, icons.all, icons.donors]}
                 default={"live"}
                 onclick={(v) => props.setSettings({ ...props.settings, list: v })}
             />

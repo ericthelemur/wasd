@@ -136,7 +136,7 @@ try {
 }
 
 function doBuildSchemas() {
-  execSync('npm run generate-schema-types');
+  execSync('npm run build:schema');
   process.stdout.write(`🔧 Built Replicant schema types!\n`);
 }
 

@@ -1,5 +1,6 @@
 import { tripleState } from 'nodecg-tiltify/src/extension/utils/mod';
 import { Donation } from 'nodecg-tiltify/src/types/schemas/donations';
+import { Donor } from 'nodecg-tiltify/src/types/schemas/donors';
 import Card from 'react-bootstrap/Card';
 
 import { DonoProp, dateFormat, getAmount, timeFormat } from '../utils';
@@ -54,4 +55,9 @@ export function Donation({ dono }: DonoProp) {
             </Card.Body>
         </Card>
     );
+}
+
+export interface DonorProps {
+    donor: Donor,
+    donos: Donation[]
 }

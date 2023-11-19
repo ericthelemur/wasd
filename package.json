@@ -55,11 +55,11 @@
     "build:extension": "node scripts/build.mjs --extension",
     "build:graphics": "node scripts/build.mjs --graphics",
     "build:dashboard": "node scripts/build.mjs --dashboard",
+    "build:schema": "trash src/types/schemas && nodecg schema-types",
     "watch": "node scripts/build.mjs --all --watch",
     "watch:browser": "node scripts/build.mjs --dashboard --graphics --watch",
     "watch:schemas": "node scripts/build.mjs --schemas --watch",
-    "dev": "concurrently --kill-others \"npm run watch:schemas\" \"npm run watch:browser\" \"nodemon\"",
-    "generate-schema-types": "trash src/types/schemas && nodecg schema-types"
+    "dev": "concurrently --kill-others \"npm run watch:schemas\" \"npm run watch:browser\" \"nodemon\""
   },
   "dependencies": {
     "@types/react": "^18.0.0",
