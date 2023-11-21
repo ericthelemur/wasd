@@ -22,5 +22,9 @@ nodecg.listenFor("show-dono", "nodecg-tiltify", (dono) => {
     nodecg.sendMessageToBundle("set-donation-shown", "nodecg-tiltify", [dono, true]);
 })
 
+nodecg.listenFor("revoke-dono", "nodecg-tiltify", (dono) => {
+    toast.dismiss(dono.id);
+})
+
 const root = createRoot(document.getElementById('root')!);
 root.render(<ToastContainer limit={5} closeButton={false} newestOnTop={true} />);
