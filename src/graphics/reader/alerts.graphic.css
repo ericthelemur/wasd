@@ -1,0 +1,24 @@
+:root {
+    --toastify-color-progress-light: #8884;
+    --toastify-color-progress-dark: #8884;
+    --toastify-font-family: ""
+}
+
+.Toastify__toast-container {
+    width: auto;
+    max-width: var(--toastify-toast-width);
+}
+
+.Toastify__toast-body .h6 {
+    font-family: "Montserrat", sans-serif;
+    margin-bottom: 0;
+}
+
+.Toastify__toast-body .msg {
+    font-family: var(--bs-font-sans-serif);
+    font-size: 0.9rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}

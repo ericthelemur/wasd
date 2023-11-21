@@ -35,6 +35,12 @@
         "width": 1920,
         "height": 1080,
         "singleInstance": false
+      },
+      {
+        "file": "alerts.graphic.html",
+        "width": 1920,
+        "height": 1080,
+        "singleInstance": false
       }
     ]
   },
@@ -69,6 +75,7 @@
     "react": "^18.0.0",
     "react-bootstrap": "^2.9.1",
     "react-dom": "^18.0.0",
+    "react-toastify": "^9.1.3",
     "ts-node": "^10.9.1",
     "use-nodecg": "github:vmichalak/use-nodecg"
   },
