@@ -29,7 +29,7 @@ export function Settings(props: SettingsProps) {
                 onclick={(v) => props.setSettings({ ...props.settings, list: v })}
             />
             <CheckSetting name="show" title="Filters" current={props.settings.show}
-                options={[icons.read, icons.unread]}
+                options={[icons.unread, icons.read]}
                 default={["unread"]}
                 onclick={(v) => props.setSettings({ ...props.settings, show: v })}
             />{" "}

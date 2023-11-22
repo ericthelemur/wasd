@@ -1,7 +1,7 @@
 :root {
-    --toastify-color-progress-light: #8884;
-    --toastify-color-progress-dark: #8884;
-    --toastify-font-family: ""
+    --toastify-color-progress-light: #8884 !important;
+    --toastify-color-progress-dark: #8884 !important;
+    --toastify-font-family: "" !important;
 }
 
 .Toastify__toast-container {
