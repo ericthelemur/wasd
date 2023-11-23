@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import Button from 'react-bootstrap/Button';
 import ToggleButton from 'react-bootstrap/ToggleButton';
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 
 import * as icons from './icons';
+import { defaultSettings } from '../reader.graphic';
 
 export interface SortSettings {
     list: string;
@@ -16,36 +17,44 @@ interface SettingsProps {
     setSettings: React.Dispatch<React.SetStateAction<SortSettings>>;
 }
 
+declare function dark(): void;
+
 export function Settings(props: SettingsProps) {
     return <details id="settings" className='m2'>
         <summary className='btn btn-primary'>
             <i className='bi bi-gear-fill'></i>
         </summary>
         <div id="dropdown" className='bg-body-secondary'>
+            <small className='float-end'>
+                <Button variant="outline-primary" className="px-2 py-1 small" onClick={(e) => {
+                    const curr_light = localStorage.getItem("dark_mode") == "light";
+                    localStorage.setItem("dark_mode", !curr_light ? "light" : "dark");
+                    dark();
+                }}><i className="bi bi-moon-fill"></i></Button>{" "}
+                <Button variant="outline-primary" className="px-2 py-1 small" onClick={(e) => {
+                    props.setSettings(defaultSettings);
+                }}><i className="bi bi-arrow-counterclockwise"></i></Button>
+            </small>
+
             <h5>Local Settings</h5>
             <RadioSetting name="list" title="Donation list" labels={true} current={props.settings.list}
                 options={[icons.live, icons.all, icons.donors]}
-                default={"live"}
                 onclick={(v) => props.setSettings({ ...props.settings, list: v })}
             />
             <CheckSetting name="show" title="Filters" current={props.settings.show}
                 options={[icons.unread, icons.read]}
-                default={["unread"]}
                 onclick={(v) => props.setSettings({ ...props.settings, show: v })}
             />{" "}
             <CheckSetting name="show" current={props.settings.show}
                 options={[icons.approved, icons.undecided, icons.censored]}
-                default={["approved", "undecided"]}
                 onclick={(v) => props.setSettings({ ...props.settings, show: v })}
             />
             <RadioSetting name="dir" title="Sort by" current={props.settings.dir}
                 options={[icons.dsc, icons.asc]}
-                default={"dsc"}
                 onclick={(v) => props.setSettings({ ...props.settings, dir: v })}
             />{" "}
             <RadioSetting name="sort" current={props.settings.sort}
                 options={[icons.time, icons.money]}
-                default={"time"}
                 onclick={(v) => props.setSettings({ ...props.settings, sort: v })}
             />
         </div>
@@ -58,7 +67,6 @@ interface SettingProps<T> {
     labels?: boolean;
     options: icons.ModAction[];
     current: T;
-    default: T;
     onclick: (v: T) => void;
 }
 

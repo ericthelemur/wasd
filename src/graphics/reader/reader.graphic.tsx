@@ -9,7 +9,7 @@ import { Settings, SortSettings } from './components/settings';
 import { AllDonations, Donors, LiveDonations } from './components/donolists';
 
 
-const defaultSettings: SortSettings = { list: "live", sort: "money", dir: "asc", show: ["unread", "approved", "undecided"] };
+export const defaultSettings: SortSettings = { list: "live", sort: "money", dir: "asc", show: ["unread", "approved", "undecided"] };
 
 function fetchFromParams() {
 	const url = new URL(window.location.href);
