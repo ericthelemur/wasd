@@ -15,9 +15,16 @@ export function formatAmounts(base: Amount | undefined, display: Amount | undefi
         else return getAmount(display);
     } else {
         if (display === undefined) return getAmount(base);
+        else if (display.currency === base.currency) return getAmount(base);
         else return `${getAmount(base)} (${getAmount(display)})`;
 
     }
+}
+
+
+export function truncate(str: string, length: number) {
+    if (str.length < length) return str;
+    else return str.slice(0, length);
 }
 
 

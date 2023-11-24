@@ -14,25 +14,20 @@ h2 {
     gap: 0.5rem;
 }
 
-/* .donations[data-unread="false"] .unread {
-    display: none;
+.incentives {
+    display: flex;
+    gap: 0.25em 0.5em;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
 }
 
-.donations[data-read="false"] .read {
-    display: none;
+.card-body>p {
+    margin: 0;
 }
 
-.donations[data-approved="false"] .approved {
-    display: none;
+.card-body .btn-toolbar {
+    margin-top: 0.5rem;
 }
-
-.donations[data-undecided="false"] .undecided {
-    display: none;
-}
-
-.donations[data-censored="false"] .censored {
-    display: none;
-} */
 
 .card {
     --bs-card-spacer-y: 0.5rem;

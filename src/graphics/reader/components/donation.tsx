@@ -5,6 +5,7 @@ import Card from 'react-bootstrap/Card';
 import { DonoProp, dateFormat, formatAmounts, timeFormat } from '../utils';
 import { Buttons } from './buttons';
 import { approved, censored, read, shown, undecided, unread, unshown } from './icons';
+import { Incentives } from './incentives';
 
 function DonationTitle({ dono }: DonoProp) {
     return (
@@ -48,6 +49,7 @@ export function Donation({ dono }: DonoProp) {
                 <DonationTitle dono={dono} />
                 <DonationSubtitle dono={dono} />
                 <p className="message card-text">{dono.donor_comment || "No Message"}</p>
+                <Incentives {...dono} />
                 <Buttons dono={dono} />
             </Card.Body>
         </Card>
