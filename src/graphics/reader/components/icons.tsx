@@ -124,3 +124,11 @@ export const donors: ModAction = {
     category: "donors",
     value: null
 }
+
+export const incentives: ModAction = {
+    icon: <i className="bi bi-piggy-bank-fill"></i>,
+    iconAction: <i className="bi bi-piggy-bank-fill"></i>,
+    action: "Incentives",
+    category: "incentives",
+    value: null
+}

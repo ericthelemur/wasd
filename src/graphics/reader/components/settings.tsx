@@ -38,7 +38,7 @@ export function Settings(props: SettingsProps) {
 
             <h5>Local Settings</h5>
             <RadioSetting name="list" title="Donation list" labels={true} current={props.settings.list}
-                options={[icons.live, icons.all, icons.donors]}
+                options={[icons.live, icons.all, icons.donors, icons.incentives]}
                 onclick={(v) => props.setSettings({ ...props.settings, list: v })}
             />
             <CheckSetting name="show" title="Filters" current={props.settings.show}

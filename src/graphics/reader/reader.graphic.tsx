@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client';
 
 import { Settings, SortSettings } from './components/settings';
 import { AllDonations, Donors, LiveDonations } from './components/donolists';
+import { Incentives } from './components/incentives';
 
 
 export const defaultSettings: SortSettings = { list: "live", sort: "money", dir: "asc", show: ["unread", "approved", "undecided"] };
@@ -41,6 +42,7 @@ export function Reader() {
 	// Pick page to render
 	if (sortSettings.list === "all") donos = <AllDonations {...args} />;
 	else if (sortSettings.list === "donors") donos = <Donors {...args} />;
+	else if (sortSettings.list === "incentives") donos = <Incentives />;
 	else donos = <LiveDonations {...args} />;
 
 	return (
