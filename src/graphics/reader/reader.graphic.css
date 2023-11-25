@@ -140,7 +140,8 @@ h2 {
     --bs-btn-hover-color: var(--bs-primary);
 }
 
-.censor-btn {
+.censor-btn,
+.progress-custom {
     --col1: var(--bs-primary);
     --col2: var(--bs-success);
     position: relative;
