@@ -1,4 +1,4 @@
-import { Milestone, Milestones, Polls, Reward, Rewards, Target, Targets, Total } from "nodecg-tiltify/src/types/schemas";
+import { Milestone, Milestones, Poll, Polls, Reward, Rewards, Target, Targets, Total } from "nodecg-tiltify/src/types/schemas";
 import { useReplicant } from "use-nodecg";
 import { dateFormat, formatAmount, timeFormat } from "../utils";
 import Card from 'react-bootstrap/Card';
@@ -32,7 +32,7 @@ function dates(start: string | null, end: string | null) {
 function RewardCard({ reward }: { reward: Reward }) {
     var date_txt = dates(reward.starts_at || null, reward.ends_at || null);
     return (
-        <Card key={reward.id}>
+        <Card>
             <Card.Body>
                 <details className="reward text-body-tertiary">
                     <summary>
@@ -57,8 +57,8 @@ function TargetCard({ target }: { target: Target }) {
             <Card.Body>
                 <div className="target">
                     <i className="bi bi-bullseye"></i>{" "}
-                    {target.name} {label}<br />
-                    <ProgressBar label={label} value={Number(target.amount_raised)} maxVal={Number(target.amount)} />
+                    {target.name} {label} <span className="text-body-tertiary">{date_txt}</span><br />
+                    <ProgressBar label={label} value={Number(target.amount_raised.value)} maxVal={Number(target.amount.value)} />
                 </div>
             </Card.Body>
         </Card>
@@ -80,6 +80,20 @@ function MilestoneCard({ milestone, total }: { milestone: Milestone, total: Tota
     )
 }
 
+function PollCard({ poll }: { poll: Poll }) {
+    return (
+        <Card key={poll.id}>
+            <Card.Body>
+                <div className="poll">
+                    <i className="bi bi-bar-chart-fill"></i>{" "}
+                    {poll.name} total: {formatAmount(poll.amount_raised)}<br />
+                    {poll.options.map(o => <ProgressBar key={o.name} className="mt-1" label={`${o.name} ${formatAmount(o.amount_raised)}`} value={Number(o.amount_raised.value)} maxVal={Number(poll.amount_raised.value)} />)}
+                </div>
+            </Card.Body>
+        </Card>
+    )
+}
+
 export function Incentives() {
     const [rewards, _] = useReplicant<Rewards>("rewards", [], { namespace: "nodecg-tiltify" });
     const [targets, _2] = useReplicant<Targets>("targets", [], { namespace: "nodecg-tiltify" });
@@ -91,15 +105,19 @@ export function Incentives() {
         <>
             <h2>Rewards</h2>
             <div className="donations">
-                {rewards?.map(r => <RewardCard reward={r} />)}
+                {rewards?.map(r => <RewardCard key={r.id} reward={r} />)}
             </div>
             <h2 className="mt-3">Targets</h2>
             <div className="donations">
-                {targets?.map(t => <TargetCard target={t} />)}
+                {targets?.map(t => <TargetCard key={t.id} target={t} />)}
             </div>
             <h2 className="mt-3">Milestones</h2>
             <div className="donations">
-                {milestones?.map(m => <MilestoneCard milestone={m} total={total!} />)}
+                {milestones?.map(m => <MilestoneCard key={m.id} milestone={m} total={total!} />)}
+            </div>
+            <h2 className="mt-3">Polls</h2>
+            <div className="donations">
+                {polls?.map(p => <PollCard key={p.id} poll={p} />)}
             </div>
         </>
     )

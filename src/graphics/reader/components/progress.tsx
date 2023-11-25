@@ -5,6 +5,7 @@ export interface ProgressProps {
     maxVal: number;
     colour1?: string;
     colour2?: string;
+    className?: string;
 }
 
 export function ProgressBar(props: ProgressProps) {
@@ -15,7 +16,7 @@ export function ProgressBar(props: ProgressProps) {
     } as React.CSSProperties;
 
     return (
-        <div className="progress-custom rounded text-center border"
+        <div key={props.label} className={"progress-custom rounded text-center border " + (props.className || "")}
             style={style}>
             {props.label}
         </div>
