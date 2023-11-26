@@ -140,6 +140,13 @@ h2 {
     --bs-btn-hover-color: var(--bs-primary);
 }
 
+.btn.disabled {
+    color: var(--bs-btn-disabled-color) !important;
+    pointer-events: none !important;
+    background-color: var(--bs-btn-disabled-bg) !important;
+    border-color: var(--bs-btn-disabled-border-color) !important;
+    opacity: var(--bs-btn-disabled-opacity) !important;
+}
 .censor-btn,
 .progress-custom {
     --col1: var(--bs-primary);

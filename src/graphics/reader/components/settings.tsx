@@ -21,6 +21,7 @@ interface SettingsProps {
 declare function dark(): void;
 
 export function Settings(props: SettingsProps) {
+    const disabled = props.settings.list === "incentives";
     return <details id="settings" className='m2'>
         <summary className='btn btn-primary'>
             <i className='bi bi-gear-fill'></i>
@@ -32,25 +33,25 @@ export function Settings(props: SettingsProps) {
                     localStorage.setItem("dark_mode", !curr_light ? "light" : "dark");
                     dark();
                 }}><i className="bi bi-moon-fill"></i></Button>{" "}
-                <Button variant="outline-primary" className="px-2 py-1 small" onClick={(e) => {
+                <Button variant="outline-primary" className="px-2 py-1 small" disabled={disabled} onClick={(e) => {
                     props.setSettings(defaultSettings);
                 }}><i className="bi bi-arrow-counterclockwise"></i></Button>
             </small>
 
             <h5>Local Settings</h5>
-            <CheckSetting name="show" title="Filters" current={props.settings.show}
+            <CheckSetting name="show" title="Filters" current={props.settings.show} disabled={disabled} 
                 options={[icons.unread, icons.read]}
                 onclick={(v) => props.setSettings({ ...props.settings, show: v })}
             />{" "}
-            <CheckSetting name="show" current={props.settings.show}
+            <CheckSetting name="show" current={props.settings.show} disabled={disabled} 
                 options={[icons.approved, icons.undecided, icons.censored]}
                 onclick={(v) => props.setSettings({ ...props.settings, show: v })}
             />
-            <RadioSetting name="dir" title="Sort by" current={props.settings.dir}
+            <RadioSetting name="dir" title="Sort by" current={props.settings.dir} disabled={disabled} 
                 options={[icons.dsc, icons.asc]}
                 onclick={(v) => props.setSettings({ ...props.settings, dir: v })}
             />{" "}
-            <RadioSetting name="sort" current={props.settings.sort}
+            <RadioSetting name="sort" current={props.settings.sort} disabled={disabled} 
                 options={[icons.time, icons.money]}
                 onclick={(v) => props.setSettings({ ...props.settings, sort: v })}
             />
@@ -62,6 +63,7 @@ interface SettingProps<T> {
     name: string;
     title?: string;
     labels?: boolean;
+    disabled?: boolean;
     options: icons.ModAction[];
     current: T;
     onclick: (v: T) => void;
@@ -72,7 +74,7 @@ export function CheckSetting(props: SettingProps<string[]>) {
         {props.title ? <h6>{props.title}</h6> : ""}
         <ToggleButtonGroup type="checkbox" name={props.name} value={props.current} onChange={props.onclick}>
             {props.options.map(o => (
-                <ToggleButton id={`btn-${o.category}`} key={o.category} value={o.category} variant="outline-primary">
+                <ToggleButton id={`btn-${o.category}`} key={o.category} value={o.category} variant="outline-primary" disabled={props.disabled}>
                     {o.icon}{" "}{props.labels && o.action}
                 </ToggleButton>
             ))}
@@ -85,7 +87,7 @@ export function RadioSetting(props: SettingProps<string>) {
         {props.title ? <h6>{props.title}</h6> : ""}
         <ToggleButtonGroup type="radio" name={props.name} value={props.current} onChange={props.onclick}>
             {props.options.map(o => (
-                <ToggleButton id={`btn-${o.category}`} key={o.category} value={o.category} variant="outline-primary">
+                <ToggleButton id={`btn-${o.category}`} key={o.category} value={o.category} variant="outline-primary" disabled={props.disabled}>
                     {o.icon}{" "}{props.labels && o.action}
                 </ToggleButton>
             ))}
@@ -99,7 +101,7 @@ export function TabSetting(props: SettingProps<string>) {
         {props.title ? <h6>{props.title}</h6> : ""}
         <Nav variant="tabs" defaultActiveKey={props.current}>
             {props.options.map(o => (
-                <Nav.Item>
+                <Nav.Item key={o.category}>
                     <Nav.Link eventKey={o.category} onClick={e => props.onclick(o.category)}>{o.icon}{" "}{props.labels && o.action}</Nav.Link>
                 </Nav.Item>
             ))}
