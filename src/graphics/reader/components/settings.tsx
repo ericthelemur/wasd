@@ -1,6 +1,7 @@
 import Button from 'react-bootstrap/Button';
 import ToggleButton from 'react-bootstrap/ToggleButton';
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
+import Nav from 'react-bootstrap/Nav';
 
 import * as icons from './icons';
 import { defaultSettings } from '../reader.graphic';
@@ -37,10 +38,6 @@ export function Settings(props: SettingsProps) {
             </small>
 
             <h5>Local Settings</h5>
-            <RadioSetting name="list" title="Donation list" labels={true} current={props.settings.list}
-                options={[icons.live, icons.all, icons.donors, icons.incentives]}
-                onclick={(v) => props.setSettings({ ...props.settings, list: v })}
-            />
             <CheckSetting name="show" title="Filters" current={props.settings.show}
                 options={[icons.unread, icons.read]}
                 onclick={(v) => props.setSettings({ ...props.settings, show: v })}
@@ -93,5 +90,19 @@ export function RadioSetting(props: SettingProps<string>) {
                 </ToggleButton>
             ))}
         </ToggleButtonGroup>
+    </>
+}
+
+
+export function TabSetting(props: SettingProps<string>) {
+    return <>
+        {props.title ? <h6>{props.title}</h6> : ""}
+        <Nav variant="tabs" defaultActiveKey={props.current}>
+            {props.options.map(o => (
+                <Nav.Item>
+                    <Nav.Link eventKey={o.category} onClick={e => props.onclick(o.category)}>{o.icon}{" "}{props.labels && o.action}</Nav.Link>
+                </Nav.Item>
+            ))}
+        </Nav>
     </>
 }

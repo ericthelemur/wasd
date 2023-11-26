@@ -5,12 +5,13 @@ import { useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import { createRoot } from 'react-dom/client';
 
-import { Settings, SortSettings } from './components/settings';
+import { RadioSetting, Settings, SortSettings, TabSetting } from './components/settings';
 import { AllDonations, Donors, LiveDonations } from './components/donolists';
 import { Incentives } from './components/incentives';
+import * as icons from './components/icons';
 
 
-export const defaultSettings: SortSettings = { list: "live", sort: "money", dir: "asc", show: ["unread", "approved", "undecided"] };
+export const defaultSettings: SortSettings = { list: "live", sort: "time", dir: "dsc", show: ["unread", "approved", "undecided"] };
 
 function fetchFromParams() {
 	const url = new URL(window.location.href);
@@ -49,6 +50,11 @@ export function Reader() {
 		<Container fluid="xxl">
 			<Settings settings={sortSettings} setSettings={setSortSettings} />
 			<h1 className="mt-3">Tiltify Donation Reader</h1>
+			<TabSetting name="list" labels={true} current={sortSettings.list}
+				options={[icons.live, icons.all, icons.donors, icons.incentives]}
+				onclick={(v) => setSortSettings({ ...sortSettings, list: v })}
+			/>
+			<br />
 			{donos}
 		</Container>
 	)
