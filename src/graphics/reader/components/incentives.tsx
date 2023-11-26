@@ -1,6 +1,6 @@
 import { Amount, Milestone, Milestones, Poll, Polls, Reward, Rewards, Target, Targets, Total } from "nodecg-tiltify/src/types/schemas";
 import { useReplicant } from "use-nodecg";
-import { dateFormat, formatAmount, timeFormat } from "../utils";
+import { dateFormat, formatAmount, sortMapSingle, timeFormat } from "../utils";
 import Card from 'react-bootstrap/Card';
 import { ProgressBar } from "./progress";
 import { useState } from "react";
@@ -42,11 +42,10 @@ function RewardCard({ reward }: { reward: Reward }) {
                 <details className="reward">
                     <summary>
                         <i className="bi bi-star-fill"></i>{" "}
-                        {reward.name} for {formatAmount(reward.amount)}<br />
-                        Raised {reward.amount_raised ? formatAmount(reward.amount_raised) : "£0"}
-                        {reward.quantity_remaining && reward.quantity ? ` • ${reward.quantity_remaining}/${reward.quantity} remaining` : ""}
-                        {date_txt ? (" • " + date_txt) : ""}
+                        {reward.name} for {formatAmount(reward.amount)}
+                        {date_txt ? (<span className="text-body-tertiary">date_txt</span>) : ""}
                     </summary>
+                    {reward.quantity_remaining && reward.quantity ? `${reward.quantity_remaining}/${reward.quantity} remaining` : ""}<br />
                     {reward.description}
                 </details>
             </Card.Body>
@@ -92,7 +91,7 @@ function findMilestones(ms: Milestone[] | undefined, total: Amount) {
 function MilestoneCards({ milestones, total }: { milestones: Milestone[], total: Total }) {
     const [showAll, setShowAll] = useState(false);
     const mi = findMilestones(milestones, total);
-    const content = <>{(showAll ? milestones : mi).map(m => <MilestoneCard milestone={m} total={total} />)}</>
+    const content = <>{(showAll ? milestones : mi).map(m => <MilestoneCard key={m.id} milestone={m} total={total} />)}</>
 
     return <>
         <h2 className="mt-3">Milestones <Button className="px-1 py-0" variant="outline-secondary" onClick={() => setShowAll(!showAll)}><span className="small">Show {showAll ? "Less" : "All"}</span></Button></h2>
@@ -128,15 +127,16 @@ function PollCard({ poll }: { poll: Poll }) {
         <Card key={poll.id}>
             <Card.Body>
                 <div className="poll">
-                    <i className="bi bi-bar-chart-fill"></i>{" "}
-                    {poll.name} <span className="text-body-tertiary">Total: {formatAmount(poll.amount_raised)}</span><br />
+                    <h3 className="h5">
+                        <i className="bi bi-bar-chart-fill"></i>{" "}
+                        {poll.name} <span className="ms-auto text-body-tertiary">Total: {formatAmount(poll.amount_raised)}</span>
+                    </h3>
                     {poll.options.map(o => <ProgressBar key={o.name} className="mt-1" label={`${o.name} ${formatAmount(o.amount_raised)}`} value={Number(o.amount_raised.value)} maxVal={Number(poll.amount_raised.value)} complete={Number(o.amount_raised.value) >= winningVal} />)}
                 </div>
             </Card.Body>
         </Card>
     )
 }
-
 
 export function Incentives() {
     const [rewards, _] = useReplicant<Rewards>("rewards", [], { namespace: "nodecg-tiltify" });
@@ -150,15 +150,15 @@ export function Incentives() {
             {milestones && total ? <MilestoneCards milestones={milestones} total={total} /> : ""}
             <h2 className="mt-3">Targets</h2>
             <div className="donations">
-                {targets?.map(t => <TargetCard key={t.id} target={t} />)}
+                {sortMapSingle(targets, t => Number(t.amount_raised.value), t => <TargetCard key={t.id} target={t} />, true)}
             </div>
             <h2 className="mt-3">Polls</h2>
             <div className="donations">
-                {polls?.map(p => <PollCard key={p.id} poll={p} />)}
+                {sortMapSingle(polls, t => Number(t.amount_raised.value), p => <PollCard key={p.id} poll={p} />, true)}
             </div>
             <h2 className="mt-3">Rewards</h2>
             <div className="donations">
-                {rewards?.map(r => <RewardCard key={r.id} reward={r} />)}
+                {sortMapSingle(rewards, t => Number(t.highlighted), r => <RewardCard key={r.id} reward={r} />)}
             </div>
         </>
     )

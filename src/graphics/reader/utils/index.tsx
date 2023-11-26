@@ -31,3 +31,21 @@ export function truncate(str: string, length: number) {
 export interface DonoProp {
     dono: Donation
 }
+
+
+function sortMap<T, U>(rep: T[] | undefined, comp: undefined | ((a: T, b: T) => number), func: (t: T) => U, rev: boolean = false) {
+    if (!rep) return [];
+    const sorted = comp ? [...rep].sort(comp) : rep;
+    const maybe_rev = rev ? sorted.reverse() : sorted;
+    return maybe_rev.map(func);
+}
+
+
+function sorter<T>(f: (t: T) => any, rev: boolean = false) {
+    if (rev) return (a: T, b: T) => Number(f(b)) - Number(f(a))
+    else return (a: T, b: T) => f(a) - f(b)
+}
+
+export function sortMapSingle<T, U>(rep: T[] | undefined, comp: (a: T) => number, func: (t: T) => U, rev: boolean = false) {
+    return sortMap(rep, sorter(comp, rev), func, false);
+}

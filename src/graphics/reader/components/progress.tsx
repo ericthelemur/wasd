@@ -11,7 +11,7 @@ export interface ProgressProps {
 }
 
 export function ProgressBar(props: ProgressProps) {
-    const hit = props.complete || (props.complete === undefined && props.value >= props.maxVal && props.maxVal > 0);
+    const hit = (props.complete || (props.complete === undefined && props.value >= props.maxVal)) && props.maxVal > 0;
     const defaultCol = props.colour2 || "var(--bs-secondary-bg)";
     const hitCol = props.colourHit || "var(--bs-success-bg-subtle)"
     const style = {
