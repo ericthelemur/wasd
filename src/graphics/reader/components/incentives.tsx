@@ -7,6 +7,8 @@ import { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Badge from "react-bootstrap/Badge";
 
+const hitBadge = <Badge bg="success-subtle" className="small text-success"> Hit</Badge>;
+
 function start_date(date: string | null) {
     if (!date) return "";
     const start = new Date(date);
@@ -55,13 +57,19 @@ function RewardCard({ reward }: { reward: Reward }) {
 function TargetCard({ target }: { target: Target }) {
     var date_txt = dates(null, target.ends_at || null);
     const label = `${formatAmount(target.amount_raised)} / ${formatAmount(target.amount)}`;
+    const hit = Number(target.amount_raised.value) >= Number(target.amount.value);
+
     return (
-        <Card key={target.id}>
+        <Card key={target.id} className={hit ? "text-success" : ""}>
             <Card.Body>
                 <div className="target">
+                    <h3 className="h5">
                     <i className="bi bi-bullseye"></i>{" "}
-                    {target.name} {label} <span className="text-body-tertiary">{date_txt}</span><br />
-                    <ProgressBar label={label} value={Number(target.amount_raised.value)} maxVal={Number(target.amount.value)} />
+                        {target.name} <span className="text-body-tertiary">{date_txt}</span>
+                        {hit ? hitBadge : ""}
+                    </h3>
+                    <ProgressBar label={label} value={Number(target.amount_raised.value)} maxVal={Number(target.amount.value)}
+                        colour2={hit ? "var(--bs-success-bg-subtle)" : "var( --bs-secondary-bg)"} />
                 </div>
             </Card.Body>
         </Card>
@@ -100,13 +108,13 @@ function MilestoneCard({ milestone, total }: { milestone: Milestone, total: Tota
     const label = `${formatAmount(total)} / ${formatAmount(milestone.amount)}`;
     const hit = Number(total.value) >= Number(milestone.amount.value)
     return (
-        <Card key={milestone.id}>
+        <Card key={milestone.id} className={hit ? "text-success" : ""}>
             <Card.Body>
                 <div className={"milestone"}>
-                    <h2 className={`h5 ${hit ? "text-success" : ""}`}>
+                    <h3 className="h5">
                         <i className="bi bi-flag-fill"></i>{" "}
-                        {milestone.name} {hit ? <Badge bg="success" className="small"> REACHED</Badge> : ""}<br />
-                    </h2>
+                        {milestone.name} {hit ? hitBadge : ""}
+                    </h3>
                     <ProgressBar label={label} value={Number(total.value)} maxVal={Number(milestone.amount.value)} />
                 </div>
             </Card.Body>
@@ -115,13 +123,14 @@ function MilestoneCard({ milestone, total }: { milestone: Milestone, total: Tota
 }
 
 function PollCard({ poll }: { poll: Poll }) {
+    const winningVal = Math.max(...poll.options.map(o => Number(o.amount_raised.value)));
     return (
         <Card key={poll.id}>
             <Card.Body>
                 <div className="poll">
                     <i className="bi bi-bar-chart-fill"></i>{" "}
                     {poll.name} <span className="text-body-tertiary">Total: {formatAmount(poll.amount_raised)}</span><br />
-                    {poll.options.map(o => <ProgressBar key={o.name} className="mt-1" label={`${o.name} ${formatAmount(o.amount_raised)}`} value={Number(o.amount_raised.value)} maxVal={Number(poll.amount_raised.value)} />)}
+                    {poll.options.map(o => <ProgressBar key={o.name} className="mt-1" label={`${o.name} ${formatAmount(o.amount_raised)}`} value={Number(o.amount_raised.value)} maxVal={Number(poll.amount_raised.value)} complete={Number(o.amount_raised.value) >= winningVal} />)}
                 </div>
             </Card.Body>
         </Card>
@@ -138,16 +147,16 @@ export function Incentives() {
 
     return (
         <>
+            {milestones && total ? <MilestoneCards milestones={milestones} total={total} /> : ""}
             <h2 className="mt-3">Targets</h2>
             <div className="donations">
                 {targets?.map(t => <TargetCard key={t.id} target={t} />)}
             </div>
-            {milestones && total ? <MilestoneCards milestones={milestones} total={total} /> : ""}
             <h2 className="mt-3">Polls</h2>
             <div className="donations">
                 {polls?.map(p => <PollCard key={p.id} poll={p} />)}
             </div>
-            <h2>Rewards</h2>
+            <h2 className="mt-3">Rewards</h2>
             <div className="donations">
                 {rewards?.map(r => <RewardCard key={r.id} reward={r} />)}
             </div>
