@@ -1,11 +1,11 @@
 import '../uwcs-bootstrap.css';
 import 'react-toastify/dist/ReactToastify.css';
-import { Notification } from './components/notification';
 import './alerts.graphic.css';
 
 import { createRoot } from 'react-dom/client';
-
 import { ToastContainer, toast } from 'react-toastify';
+
+import { Notification } from './components/notification';
 
 nodecg.listenFor("show-dono", "nodecg-tiltify", (dono) => {
     toast(<Notification dono={dono} />, {

@@ -1,15 +1,15 @@
-import { Rewards } from "nodecg-tiltify/src/types/schemas/rewards";
-import { Targets } from "nodecg-tiltify/src/types/schemas/targets";
-import { Polls } from "nodecg-tiltify/src/types/schemas/polls";
-import { useReplicant } from "use-nodecg";
-import { truncate } from "../utils/index";
+import { Polls } from 'nodecg-tiltify/src/types/schemas/polls';
+import { Rewards } from 'nodecg-tiltify/src/types/schemas/rewards';
+import { Targets } from 'nodecg-tiltify/src/types/schemas/targets';
+import { useReplicant } from 'use-nodecg';
 
+import { truncate } from '../utils/index';
 
 function Reward({ id }: { id: string }) {
     const [rewards, _] = useReplicant<Rewards>("rewards", [], { namespace: "nodecg-tiltify" });
-    if (rewards === undefined) return;
+    if (rewards === undefined) return null;
     const reward = rewards.find(r => r.id === id);
-    if (reward === undefined) return;
+    if (reward === undefined) return null;
     return (
         <span className="reward text-body-tertiary">
             <i className="bi bi-star-fill"></i>{" "}
@@ -21,9 +21,9 @@ function Reward({ id }: { id: string }) {
 
 function Target({ id }: { id: string }) {
     const [targets, _] = useReplicant<Targets>("targets", [], { namespace: "nodecg-tiltify" });
-    if (targets === undefined) return;
+    if (targets === undefined) return null;
     const target = targets.find(r => r.id === id);
-    if (target === undefined) return;
+    if (target === undefined) return null;
     return (
         <span className="target">
             <i className="bi bi-bullseye"></i>{" "}
@@ -36,15 +36,15 @@ function Target({ id }: { id: string }) {
 function Poll({ id, option_id }: { id: string, option_id: string }) {
     console.log("args", id, option_id);
     const [polls, _] = useReplicant<Polls>("polls", [], { namespace: "nodecg-tiltify" });
-    if (polls === undefined) return;
+    if (polls === undefined) return null;
 
     const poll = polls.find(r => r.id === id);
     console.log("poll", poll);
-    if (poll === undefined) return;
+    if (poll === undefined) return null;
 
     const option = poll.options.find(o => o.id === option_id);
     console.log("option", option);
-    if (option === undefined) return;
+    if (option === undefined) return null;
 
     return (
         <span className="poll">

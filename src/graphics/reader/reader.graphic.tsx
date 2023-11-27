@@ -5,11 +5,10 @@ import { useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import { createRoot } from 'react-dom/client';
 
-import { RadioSetting, Settings, SortSettings, TabSetting } from './components/settings';
 import { AllDonations, Donors, LiveDonations } from './components/donolists';
-import { Incentives } from './components/incentives';
 import * as icons from './components/icons';
-
+import { Incentives } from './components/incentives';
+import { Settings, SortSettings, TabSetting } from './components/settings';
 
 export const defaultSettings: SortSettings = { list: "live", sort: "time", dir: "dsc", show: ["unread", "approved", "undecided"] };
 
@@ -29,7 +28,7 @@ function copyToParams(settings: SortSettings) {
 	const url = new URL(window.location.href);
 	var params = url.searchParams;
 	Object.entries(settings).forEach(([k, v]) => params.set(k, v.toString()));
-    history.replaceState(null, "", url.href);
+	history.replaceState(null, "", url.href);
 }
 
 

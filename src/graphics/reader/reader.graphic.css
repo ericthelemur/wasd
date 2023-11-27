@@ -102,8 +102,14 @@ h2 {
 }
 
 #settings {
-    position: absolute;
+    position: fixed;
     z-index: 10;
+}
+
+@media (min-width: 1400px) {
+    #settings {
+        transform: translateX(-3em);
+    }
 }
 
 #settings summary {
@@ -147,6 +153,7 @@ h2 {
     border-color: var(--bs-btn-disabled-border-color) !important;
     opacity: var(--bs-btn-disabled-opacity) !important;
 }
+
 .censor-btn,
 .progress-custom {
     --col1: var(--bs-primary);

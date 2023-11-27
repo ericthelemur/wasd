@@ -1,10 +1,10 @@
 import Button from 'react-bootstrap/Button';
+import Nav from 'react-bootstrap/Nav';
 import ToggleButton from 'react-bootstrap/ToggleButton';
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
-import Nav from 'react-bootstrap/Nav';
 
-import * as icons from './icons';
 import { defaultSettings } from '../reader.graphic';
+import * as icons from './icons';
 
 export interface SortSettings {
     list: string;
@@ -39,19 +39,19 @@ export function Settings(props: SettingsProps) {
             </small>
 
             <h5>Local Settings</h5>
-            <CheckSetting name="show" title="Filters" current={props.settings.show} disabled={disabled} 
+            <CheckSetting name="show" title="Filters" current={props.settings.show} disabled={disabled}
                 options={[icons.unread, icons.read]}
                 onclick={(v) => props.setSettings({ ...props.settings, show: v })}
             />{" "}
-            <CheckSetting name="show" current={props.settings.show} disabled={disabled} 
+            <CheckSetting name="show" current={props.settings.show} disabled={disabled}
                 options={[icons.approved, icons.undecided, icons.censored]}
                 onclick={(v) => props.setSettings({ ...props.settings, show: v })}
             />
-            <RadioSetting name="dir" title="Sort by" current={props.settings.dir} disabled={disabled} 
+            <RadioSetting name="dir" title="Sort by" current={props.settings.dir} disabled={disabled}
                 options={[icons.dsc, icons.asc]}
                 onclick={(v) => props.setSettings({ ...props.settings, dir: v })}
             />{" "}
-            <RadioSetting name="sort" current={props.settings.sort} disabled={disabled} 
+            <RadioSetting name="sort" current={props.settings.sort} disabled={disabled}
                 options={[icons.time, icons.money]}
                 onclick={(v) => props.setSettings({ ...props.settings, sort: v })}
             />

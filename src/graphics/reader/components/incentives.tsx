@@ -1,11 +1,14 @@
-import { Amount, Milestone, Milestones, Poll, Polls, Reward, Rewards, Target, Targets, Total } from "nodecg-tiltify/src/types/schemas";
-import { useReplicant } from "use-nodecg";
-import { dateFormat, formatAmount, sortMapSingle, timeFormat } from "../utils";
+import {
+    Amount, Milestone, Milestones, Poll, Polls, Reward, Rewards, Target, Targets, Total
+} from 'nodecg-tiltify/src/types/schemas';
+import { useState } from 'react';
+import Badge from 'react-bootstrap/Badge';
+import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
-import { ProgressBar } from "./progress";
-import { useState } from "react";
-import Button from "react-bootstrap/Button";
-import Badge from "react-bootstrap/Badge";
+import { useReplicant } from 'use-nodecg';
+
+import { dateFormat, formatAmount, sortMapSingle, timeFormat } from '../utils';
+import { ProgressBar } from './progress';
 
 const hitBadge = <Badge bg="success-subtle" className="small text-success"> Hit</Badge>;
 
@@ -63,7 +66,7 @@ function TargetCard({ target }: { target: Target }) {
             <Card.Body>
                 <div className="target">
                     <h3 className="h5">
-                    <i className="bi bi-bullseye"></i>{" "}
+                        <i className="bi bi-bullseye"></i>{" "}
                         {target.name} <span className="text-body-tertiary">{date_txt}</span>
                         {hit ? hitBadge : ""}
                     </h3>
