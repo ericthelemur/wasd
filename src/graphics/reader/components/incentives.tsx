@@ -56,6 +56,22 @@ function RewardCard({ reward }: { reward: Reward }) {
     )
 }
 
+
+function TargetCards({ targets }: { targets: Target[] }) {
+    const [showAll, setShowAll] = useState(false);
+    const showOption = targets.length >= 3;
+    const ti = targets.length >= 3 ? targets.slice(0, 3) : targets;
+    const content = sortMapSingle(showAll ? targets : ti, t => Number(t.amount_raised.value), t => <TargetCard key={t.id} target={t} />, true);
+    const btn = <Button className="px-1 py-0" variant="outline-secondary" onClick={() => setShowAll(!showAll)}><span className="small">Show {showAll ? "Less" : "All"}</span></Button>;
+
+    return <>
+        <h2 className="mt-3">Targets {showOption ? btn : ""}</h2>
+        <div className="donations">
+            {content}
+        </div>
+    </>
+}
+
 function TargetCard({ target }: { target: Target }) {
     var date_txt = dates(null, target.ends_at || null);
     const label = `${formatAmount(target.amount_raised)} / ${formatAmount(target.amount)}`;
@@ -93,11 +109,13 @@ function findMilestones(ms: Milestone[] | undefined, total: Amount) {
 
 function MilestoneCards({ milestones, total }: { milestones: Milestone[], total: Total }) {
     const [showAll, setShowAll] = useState(false);
+    const showOption = milestones.length >= 3;
     const mi = findMilestones(milestones, total);
-    const content = <>{(showAll ? milestones : mi).map(m => <MilestoneCard key={m.id} milestone={m} total={total} />)}</>
+    const content = (showAll ? milestones : mi).map(m => <MilestoneCard key={m.id} milestone={m} total={total} />);
+    const btn = <Button className="px-1 py-0" variant="outline-secondary" onClick={() => setShowAll(!showAll)}><span className="small">Show {showAll ? "Less" : "All"}</span></Button>;
 
     return <>
-        <h2 className="mt-3">Milestones <Button className="px-1 py-0" variant="outline-secondary" onClick={() => setShowAll(!showAll)}><span className="small">Show {showAll ? "Less" : "All"}</span></Button></h2>
+        <h2 className="mt-3">Milestones {showOption ? btn : ""}</h2>
         <div className="donations">
             {content}
         </div>
@@ -122,6 +140,23 @@ function MilestoneCard({ milestone, total }: { milestone: Milestone, total: Tota
             </Card.Body>
         </Card>
     )
+}
+
+
+function PollCards({ polls }: { polls: Poll[] }) {
+    const [showAll, setShowAll] = useState(false);
+    if (polls === undefined) return null;
+    const showOption = polls.length >= 3;
+    const ti = showOption ? polls.slice(0, 3) : polls;
+    const content = sortMapSingle(showAll ? polls : ti, t => Number(t.amount_raised.value), p => <PollCard key={p.id} poll={p} />, true);
+    const btn = <Button className="px-1 py-0" variant="outline-secondary" onClick={() => setShowAll(!showAll)}><span className="small">Show {showAll ? "Less" : "All"}</span></Button>;
+
+    return <>
+        <h2 className="mt-3">Polls {showOption ? btn : ""}</h2>
+        <div className="donations">
+            {content}
+        </div>
+    </>
 }
 
 function PollCard({ poll }: { poll: Poll }) {
@@ -151,14 +186,8 @@ export function Incentives() {
     return (
         <>
             {milestones && total ? <MilestoneCards milestones={milestones} total={total} /> : ""}
-            <h2 className="mt-3">Targets</h2>
-            <div className="donations">
-                {sortMapSingle(targets, t => Number(t.amount_raised.value), t => <TargetCard key={t.id} target={t} />, true)}
-            </div>
-            <h2 className="mt-3">Polls</h2>
-            <div className="donations">
-                {sortMapSingle(polls, t => Number(t.amount_raised.value), p => <PollCard key={p.id} poll={p} />, true)}
-            </div>
+            {targets ? <TargetCards targets={targets} /> : ""}
+            {polls ? <PollCards polls={polls} /> : ""}
             <h2 className="mt-3">Rewards</h2>
             <div className="donations">
                 {sortMapSingle(rewards, t => Number(t.highlighted), r => <RewardCard key={r.id} reward={r} />)}
