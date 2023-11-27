@@ -7,14 +7,6 @@
 
 export interface Configschema {
 	/**
-	 * Currency you want amounts displayed in
-	 */
-	displayCurrency?: string;
-	/**
-	 * API key for freecurrencyapi.com, used for uncommon currencies (avoids rate limiting)
-	 */
-	conversionRateKey?: string;
-	/**
 	 * Delay between dono being recieved and auto approval, only if enabled
 	 */
 	autoApproveTimeSec?: number;
