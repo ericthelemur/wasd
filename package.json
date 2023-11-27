@@ -31,7 +31,7 @@
     ],
     "graphics": [
       {
-        "file": "reader.graphic.html",
+        "file": "bar.graphic.html",
         "width": 1920,
         "height": 1080,
         "singleInstance": false
@@ -67,6 +67,7 @@
     "react": "^18.0.0",
     "react-bootstrap": "^2.9.1",
     "react-dom": "^18.0.0",
+    "react-fitty": "^1.0.1",
     "ts-node": "^10.9.1",
     "use-nodecg": "github:vmichalak/use-nodecg"
   },
@@ -75,6 +76,7 @@
     "@parcel/config-default": "*",
     "@parcel/core": "*",
     "@parcel/reporter-cli": "*",
+    "@parcel/transformer-sass": "^2.10.2",
     "@parcel/validator-typescript": "*",
     "@types/node": "^18",
     "@types/obs-studio": "^2.17.2",

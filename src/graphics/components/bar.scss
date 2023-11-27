@@ -1,0 +1,18 @@
+.bar {
+    width: 1920px;
+    height: 70px;
+
+    position: relative;
+    overflow: hidden;
+    position: absolute;
+
+    display: flex;
+    align-items: center;
+
+    background-color: #351344;
+}
+
+.bar>* {
+    margin-bottom: 0;
+    margin-top: 0;
+}
