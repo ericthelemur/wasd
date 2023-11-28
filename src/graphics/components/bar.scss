@@ -10,7 +10,8 @@
     align-items: center;
     gap: 15px;
 
-    padding-left: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
 
     background-color: #351344;
     font-size: 36px;
@@ -20,6 +21,7 @@
     &>* {
         margin-bottom: 0;
         margin-top: 0;
+        width: auto;
     }
 
     & .logo {
@@ -30,6 +32,22 @@
     & h2 {
         font-weight: bold;
         color: var(--bs-emphasis-color);
+    }
+
+    & .announcement {
+        text-align: center;
+        width: 10px;
+        flex-grow: 1;
+        flex-shrink: 1;
+        position: relative;
+        overflow: hidden;
+
+        &>div>div {
+            display: -webkit-box !important;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
     }
 
     & .vr {
