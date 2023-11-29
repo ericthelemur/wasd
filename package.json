@@ -22,10 +22,10 @@
     "compatibleRange": "^2.0.0",
     "dashboardPanels": [
       {
-        "name": "panel",
-        "title": "Panel",
+        "name": "announcements",
+        "title": "Announcements",
         "width": 4,
-        "file": "panel.dashboard.html",
+        "file": "announcements.dashboard.html",
         "headerColor": "#525F78"
       }
     ],
@@ -67,6 +67,7 @@
     "react": "^18.0.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-bootstrap": "^2.9.1",
+    "react-bootstrap-icons": "^1.10.3",
     "react-dom": "^18.0.0",
     "react-fitty": "^1.0.1",
     "ts-node": "^10.9.1",

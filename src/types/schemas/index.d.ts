@@ -2,6 +2,4 @@
 // @ts-ignore
 export * from './configschema';
 // @ts-ignore
-export * from './announcement';
-// @ts-ignore
 export * from './announcements';

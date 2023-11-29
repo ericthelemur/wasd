@@ -11,18 +11,28 @@
         "repeat": {
             "type": "boolean"
         },
-        "duration": {
+        "priority": {
             "type": "number"
+        },
+        "pool": {
+            "type": [
+                "string",
+                "null"
+            ]
         }
     },
     "default": {
         "id": "donate",
         "text": "Donate now at warwickspeed.run/donate",
-        "repeat": true
+        "repeat": true,
+        "priority": 1,
+        "pool": null
     },
     "required": [
         "id",
         "text",
-        "repeat"
+        "repeat",
+        "priority",
+        "pool"
     ]
 }

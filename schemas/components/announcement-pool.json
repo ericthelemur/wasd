@@ -1,0 +1,53 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "priority": {
+            "type": "number"
+        },
+        "items": {
+            "type": "array",
+            "items": {
+                "$ref": "announcement.json"
+            },
+            "default": [
+                {
+                    "id": "donate",
+                    "text": "Donate now at warwickspeed.run/donate",
+                    "repeat": true,
+                    "priority": 1,
+                    "pool": "base"
+                },
+                {
+                    "id": "wasd",
+                    "text": "Warwick's Awesome Speedruns & Demos 2024",
+                    "repeat": true,
+                    "priority": 1,
+                    "pool": "base"
+                },
+                {
+                    "id": "schedule",
+                    "text": "See the full schedule at warwickspeed.run/schedule",
+                    "repeat": true,
+                    "priority": 1,
+                    "pool": "base"
+                },
+                {
+                    "id": "specialeffect",
+                    "text": "WASD 2023 is raising money for SpecialEffect",
+                    "repeat": true,
+                    "priority": 1,
+                    "pool": "base"
+                }
+            ]
+        }
+    },
+    "required": [
+        "name",
+        "priority",
+        "items"
+    ]
+}
