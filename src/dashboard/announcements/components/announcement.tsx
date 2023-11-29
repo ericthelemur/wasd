@@ -1,10 +1,9 @@
+import { Draggable, DraggableProvided, Droppable } from 'react-beautiful-dnd';
 import { GripVertical, Repeat, XLg } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Stack from 'react-bootstrap/Stack';
-import { Announcement } from 'types/schemas/announcements';
-
-import type { DraggableProvided } from 'react-beautiful-dnd';
+import { Announcement, AnnouncementPool } from 'types/schemas/announcements';
 
 export function AnnouncementComp({ announcement, provided }: { announcement: Announcement, provided: DraggableProvided }) {
     return (
@@ -26,4 +25,27 @@ export function AnnouncementComp({ announcement, provided }: { announcement: Ann
             </div>
         </div>
     );
+}
+
+export function AnnouncementPoolComp({ pool }: { pool: AnnouncementPool }) {
+    return (
+        <Droppable droppableId={pool.name} key={pool.name}>
+            {(provided) => (
+                <div
+                    className='vstack p-2'
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                >
+                    {pool.items.map((item, index) => (
+                        <Draggable key={item.id} draggableId={pool.name + "/" + item.id} index={index}>
+                            {(provided) => (
+                                <AnnouncementComp announcement={item} provided={provided} />
+                            )}
+                        </Draggable>
+                    ))}
+                    {provided.placeholder}
+                </div>
+            )}
+        </Droppable>
+    )
 }

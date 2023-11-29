@@ -3,7 +3,7 @@ import './bar.scss';
 import { Total } from 'nodecg-tiltify/src/types/schemas';
 import { useEffect, useState } from 'react';
 import { ReactFitty } from 'react-fitty';
-import { Announcement } from 'types/schemas/announcement';
+import { Announcement } from 'types/schemas/announcements';
 import { useReplicant } from 'use-nodecg';
 
 import specialeffect from '../assets/specialeffect-small.png';

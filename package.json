@@ -24,7 +24,7 @@
       {
         "name": "announcements",
         "title": "Announcements",
-        "width": 4,
+        "width": 6,
         "file": "announcements.dashboard.html",
         "headerColor": "#525F78"
       }

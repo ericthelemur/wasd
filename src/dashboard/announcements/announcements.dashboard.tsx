@@ -2,60 +2,66 @@ import '../../graphics/uwcs-bootstrap.css';
 
 import React from 'react';
 import {
-    DragDropContext, Draggable, DropResult, Droppable, DroppableProvided
+    DragDropContext, Draggable, DraggableLocation, DropResult, Droppable, DroppableProvided
 } from 'react-beautiful-dnd';
 import { XLg } from 'react-bootstrap-icons';
 import { createRoot } from 'react-dom/client';
 import { Announcement, AnnouncementPool, Announcements } from 'types/schemas/announcements';
 import { useReplicant } from 'use-nodecg';
 
-import { AnnouncementComp } from './components/announcement';
+import { AnnouncementComp, AnnouncementPoolComp } from './components/announcement';
 
-function reorder(list: Announcement[], startIndex: number, endIndex: number) {
-	const result = Array.from(list);
+function reorder(pool: AnnouncementPool, startIndex: number, endIndex: number) {
+	const result = Array.from(pool.items);
 	const [removed] = result.splice(startIndex, 1);
 	result.splice(endIndex, 0, removed);
-	return result;
+	pool.items = result;
 };
+
+function move(source: AnnouncementPool, destination: AnnouncementPool, droppableSource: DraggableLocation, droppableDestination: DraggableLocation) {
+	const [removed] = source.items.splice(droppableSource.index, 1);
+	destination.items.splice(droppableDestination.index, 0, removed);
+};
+
 
 export function AnnouncementsPanel() {
 	var [announcements, setAnnouncements] = useReplicant<Announcements>("announcements", []);
+	var [queue, setQueue] = useReplicant<AnnouncementPool>("announcementQueue", { name: "queue", "priority": 1, "items": [] });
 	const [announcement, setAnnouncement] = useReplicant<Announcement>("announcement", { "id": "-", "text": "", "repeat": false, "priority": 1, "pool": null });
-	if (announcements === undefined) return null;
 
 	function onDragEnd(result: DropResult) {
-		if (!result.destination) return;
+		const { source, destination } = result;
+		if (!destination) return;
 
-		console.log(announcements);
-		const items = reorder(announcements![0].items, result.source.index, result.destination.index);
-		announcements![0].items = items;
-		console.log(announcements);
-		setAnnouncements(announcements!);
+		const srcPool = announcements!.find(p => p.name === source.droppableId)!;
+		const destPool = announcements!.find(p => p.name === destination.droppableId)!;
+		if (!srcPool || !destPool) return;
+
+		if (source.droppableId === destination.droppableId) {
+			reorder(srcPool, source.index, destination.index);
+		} else {
+			move(srcPool, destPool, source, destination);
+		}
 	}
 
 	return (
-		<DragDropContext onDragEnd={onDragEnd}>
-			{announcements!.map((pool, index) => (
-				<Droppable droppableId={pool.name}>
-					{(provided) => (
-						<div
-							className='vstack p-2'
-							{...provided.droppableProps}
-							ref={provided.innerRef}
-						>
-							{pool.items.map((item, index) => (
-								<Draggable key={item.id} draggableId={item.id} index={index}>
-									{(provided) => (
-										<AnnouncementComp announcement={item} provided={provided} />
-									)}
-								</Draggable>
-							))}
-							{provided.placeholder}
-						</div>
-					)}
-				</Droppable>
-			))}
-		</DragDropContext >
+		<div className='container-xxl' style={{ height: "100vh" }}>
+			<DragDropContext onDragEnd={onDragEnd}>
+				<div className='d-flex h-100'>
+					<div className="w-50 overflow-scroll sticky-top">
+						{queue && <AnnouncementPoolComp pool={queue} />}
+					</div>
+					<div className="vstack w-50 overflow-scroll">
+						{announcements!.map((pool) => (
+							<div key={pool.name}>
+								<h2>{pool.name}</h2>
+								<AnnouncementPoolComp pool={pool} />
+							</div>
+						))}
+					</div>
+				</div>
+			</DragDropContext >
+		</div>
 	);
 }
 

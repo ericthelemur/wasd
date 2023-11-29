@@ -13,12 +13,6 @@
         },
         "priority": {
             "type": "number"
-        },
-        "pool": {
-            "type": [
-                "string",
-                "null"
-            ]
         }
     },
     "default": {
@@ -32,7 +26,6 @@
         "id",
         "text",
         "repeat",
-        "priority",
-        "pool"
+        "priority"
     ]
 }

@@ -2,7 +2,86 @@
     "$schema": "http://json-schema.org/draft-07/schema",
     "type": "array",
     "items": {
-        "$ref": "components/announcement-pool.json"
+        "$ref": "announcement-pool.json"
     },
-    "default": []
+    "default": [
+        {
+            "name": "Default",
+            "priority": 1,
+            "items": [
+                {
+                    "id": "donate",
+                    "text": "Donate now at warwickspeed.run/donate",
+                    "repeat": true,
+                    "priority": 1
+                },
+                {
+                    "id": "wasd",
+                    "text": "Warwick's Awesome Speedruns & Demos 2024",
+                    "repeat": true,
+                    "priority": 1
+                },
+                {
+                    "id": "schedule",
+                    "text": "See the full schedule at warwickspeed.run/schedule",
+                    "repeat": true,
+                    "priority": 1
+                },
+                {
+                    "id": "specialeffect",
+                    "text": "WASD 2023 is raising money for SpecialEffect",
+                    "repeat": true,
+                    "priority": 1
+                }
+            ]
+        },
+        {
+            "name": "Next",
+            "priority": 1,
+            "items": [
+                {
+                    "id": "run1",
+                    "text": "Up Next is runner with game",
+                    "repeat": true,
+                    "priority": 4
+                },
+                {
+                    "id": "run2",
+                    "text": "In 1 hour, runner is playing game",
+                    "repeat": true,
+                    "priority": 2
+                },
+                {
+                    "id": "run3",
+                    "text": "Watch runner running game in 3 hours",
+                    "repeat": true,
+                    "priority": 1
+                }
+            ]
+        },
+        {
+            "name": "Incentives",
+            "priority": 1,
+            "items": [
+                {
+                    "id": "poll",
+                    "text": "Poll: poll title with £24 for option 1, £26 for option 2, £38 for option 3",
+                    "repeat": true,
+                    "priority": 1
+                },
+                {
+                    "id": "milestone",
+                    "text": "We are £70 away from hitting WASD 2023 Total",
+                    "repeat": true,
+                    "priority": 1
+                },
+                {
+                    "id": "reward",
+                    "text": "Donate £5 to get Prize Raffle Entry",
+                    "repeat": true,
+                    "priority": 1
+                }
+            ]
+        }
+    ]
 }

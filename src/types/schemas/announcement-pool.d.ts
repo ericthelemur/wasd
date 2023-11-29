@@ -5,8 +5,6 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type Announcements = AnnouncementPool[];
-
 export interface AnnouncementPool {
 	name: string;
 	priority: number;
