@@ -3,6 +3,7 @@ import './bar.scss';
 import { Total } from 'nodecg-tiltify/src/types/schemas';
 import { useEffect, useState } from 'react';
 import { ReactFitty } from 'react-fitty';
+import { Announcement } from 'types/schemas/announcement';
 import { useReplicant } from 'use-nodecg';
 
 import specialeffect from '../assets/specialeffect-small.png';
@@ -15,7 +16,7 @@ function VR() {
 
 export function Bar() {
     const [total, _] = useReplicant<Total>("total", { "currency": "GBP", "value": 0 }, { namespace: "nodecg-tiltify" });
-    const [announcement, _1] = useReplicant<string>("announcement", 'Donate now at warwickspeed.run/donate');
+    const [announcement, setAnnouncement] = useReplicant<Announcement>("announcement", { "id": "blank", "text": "", "repeat": false });
 
     const [time, setTime] = useState(timeFormat.format(Date.now()));
 
@@ -33,7 +34,7 @@ export function Bar() {
             <h2>{total && formatAmount(total)}</h2>
             <VR />
             <h2 className="announcement h-auto">
-                <ReactFitty minSize={18} maxSize={36} wrapText={true}>{announcement}</ReactFitty>
+                <ReactFitty minSize={18} maxSize={36} wrapText={true}>{announcement?.text}</ReactFitty>
             </h2>
             <VR />
             <h2>{time}</h2>
