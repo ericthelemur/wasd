@@ -1,0 +1,36 @@
+.form-control {
+    padding: 0.25em 0.5em;
+}
+
+.btn {
+    padding: 0em 0.25em;
+}
+
+svg {
+    margin-bottom: 0.15em;
+}
+
+.card-body {
+    padding: 0.25em 0.5em;
+}
+
+.btn-primary {
+    --bs-btn-disabled-border-color: gray !important;
+    --bs-btn-disabled-bg: gray !important;
+}
+
+.btn-outline-primary {
+    --bs-btn-disabled-border-color: gray !important;
+    --bs-btn-disabled-color: gray !important;
+
+    --bs-btn-hover-bg: var(--bs-primary-border-subtle);
+    --bs-btn-hover-color: var(--bs-primary);
+}
+
+.btn.disabled {
+    color: var(--bs-btn-disabled-color) !important;
+    pointer-events: none !important;
+    background-color: var(--bs-btn-disabled-bg) !important;
+    border-color: var(--bs-btn-disabled-border-color) !important;
+    opacity: var(--bs-btn-disabled-opacity) !important;
+}

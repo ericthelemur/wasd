@@ -26,8 +26,12 @@ function move(source: AnnouncementPool, destination: AnnouncementPool, droppable
 
 export function AnnouncementsPanel() {
 	var [announcements, setAnnouncements] = useReplicant<Announcements>("announcements", []);
-	var [queue, setQueue] = useReplicant<AnnouncementPool>("announcementQueue", { name: "queue", "priority": 1, "items": [] });
 	const [announcement, setAnnouncement] = useReplicant<Announcement>("announcement", { "id": "-", "text": "", "repeat": false, "priority": 1, "pool": null });
+	if (!announcements) return null;
+
+	function ensureUpdate() {
+		setAnnouncements(announcements!);
+	}
 
 	function onDragEnd(result: DropResult) {
 		const { source, destination } = result;
@@ -42,20 +46,23 @@ export function AnnouncementsPanel() {
 		} else {
 			move(srcPool, destPool, source, destination);
 		}
+		ensureUpdate();
 	}
+
+	const queue = announcements.find(p => p.name === "Queue")!;
 
 	return (
 		<div className='container-xxl' style={{ height: "100vh" }}>
 			<DragDropContext onDragEnd={onDragEnd}>
 				<div className='d-flex h-100'>
 					<div className="w-50 overflow-scroll sticky-top">
-						{queue && <AnnouncementPoolComp pool={queue} />}
+						{queue && (<><h3>Queue</h3><AnnouncementPoolComp pool={queue} ensureUpdate={ensureUpdate} /></>)}
 					</div>
 					<div className="vstack w-50 overflow-scroll">
-						{announcements!.map((pool) => (
+						{announcements!.filter(p => p.name !== "Queue").map((pool) => (
 							<div key={pool.name}>
-								<h2>{pool.name}</h2>
-								<AnnouncementPoolComp pool={pool} />
+								<h3>{pool.name}</h3>
+								<AnnouncementPoolComp pool={pool} ensureUpdate={ensureUpdate} />
 							</div>
 						))}
 					</div>

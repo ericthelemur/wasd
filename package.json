@@ -24,7 +24,7 @@
       {
         "name": "announcements",
         "title": "Announcements",
-        "width": 6,
+        "fullbleed": true,
         "file": "announcements.dashboard.html",
         "headerColor": "#525F78"
       }

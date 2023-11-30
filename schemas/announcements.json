@@ -6,6 +6,36 @@
     },
     "default": [
         {
+            "name": "Queue",
+            "priority": 1,
+            "items": [
+                {
+                    "id": "donate",
+                    "text": "Donate now at warwickspeed.run/donate",
+                    "repeat": true,
+                    "priority": 1
+                },
+                {
+                    "id": "wasd",
+                    "text": "Warwick's Awesome Speedruns & Demos 2024",
+                    "repeat": true,
+                    "priority": 1
+                },
+                {
+                    "id": "schedule",
+                    "text": "See the full schedule at warwickspeed.run/schedule",
+                    "repeat": true,
+                    "priority": 1
+                },
+                {
+                    "id": "specialeffect",
+                    "text": "WASD 2023 is raising money for SpecialEffect",
+                    "repeat": true,
+                    "priority": 1
+                }
+            ]
+        },
+        {
             "name": "Default",
             "priority": 1,
             "items": [

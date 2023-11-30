@@ -1,3 +1,5 @@
+import './announcement.scss';
+
 import { Draggable, DraggableProvided, Droppable } from 'react-beautiful-dnd';
 import { GripVertical, Repeat, XLg } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
@@ -5,10 +7,10 @@ import Form from 'react-bootstrap/Form';
 import Stack from 'react-bootstrap/Stack';
 import { Announcement, AnnouncementPool } from 'types/schemas/announcements';
 
-export function AnnouncementComp({ announcement, provided }: { announcement: Announcement, provided: DraggableProvided }) {
+export function AnnouncementComp({ announcement, provided, ensureUpdate }: { announcement: Announcement, provided: DraggableProvided, ensureUpdate: () => void }) {
     return (
         <div ref={provided.innerRef} {...provided.draggableProps} className="card m-1">
-            <div className='card-body p-2 hstack gap-2'>
+            <div className='card-body hstack gap-2'>
                 <div {...provided.dragHandleProps}>
                     <GripVertical />
                 </div>
@@ -16,7 +18,11 @@ export function AnnouncementComp({ announcement, provided }: { announcement: Ann
                 <Stack direction="horizontal" gap={3}>
                     <Button
                         variant={announcement.repeat ? "primary" : "outline-primary"}
-                        onClick={() => announcement.repeat = !announcement.repeat}
+                        onClick={() => {
+                            announcement.repeat = !announcement.repeat
+                            ensureUpdate();
+                        }
+                        }
                     >
                         <Repeat />
                     </Button>
@@ -27,19 +33,19 @@ export function AnnouncementComp({ announcement, provided }: { announcement: Ann
     );
 }
 
-export function AnnouncementPoolComp({ pool }: { pool: AnnouncementPool }) {
+export function AnnouncementPoolComp({ pool, ensureUpdate }: { pool: AnnouncementPool, ensureUpdate: () => void }) {
     return (
         <Droppable droppableId={pool.name} key={pool.name}>
             {(provided) => (
                 <div
-                    className='vstack p-2'
+                    className='vstack p-1'
                     {...provided.droppableProps}
                     ref={provided.innerRef}
                 >
                     {pool.items.map((item, index) => (
                         <Draggable key={item.id} draggableId={pool.name + "/" + item.id} index={index}>
                             {(provided) => (
-                                <AnnouncementComp announcement={item} provided={provided} />
+                                <AnnouncementComp announcement={item} provided={provided} ensureUpdate={ensureUpdate} />
                             )}
                         </Draggable>
                     ))}
