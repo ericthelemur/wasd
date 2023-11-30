@@ -5,10 +5,16 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
+export type AnnQueue = (Announcement | AnnRef)[];
+
 export interface Announcement {
-	id: string;
-	text: string;
-	repeat: boolean;
 	priority: number;
+	text: string;
+	[k: string]: unknown;
+}
+export interface AnnRef {
+	id: string;
+	poolID: string;
+	annID: string;
 	[k: string]: unknown;
 }

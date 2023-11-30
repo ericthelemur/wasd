@@ -1,33 +1,34 @@
 import '../../graphics/uwcs-bootstrap.css';
 
-import React from 'react';
 import {
     DragDropContext, Draggable, DraggableLocation, DropResult, Droppable, DroppableProvided
 } from 'react-beautiful-dnd';
 import { XLg } from 'react-bootstrap-icons';
 import { createRoot } from 'react-dom/client';
-import { Announcement, AnnouncementPool, Announcements } from 'types/schemas/announcements';
+import { AnnPool, AnnPools, AnnQueue, AnnRef, Announcement } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
-import { AnnouncementComp, AnnouncementPoolComp } from './components/announcement';
+import { AnnPoolComp, AnnouncementComp } from './components/announcement';
 
-function reorder(pool: AnnouncementPool, startIndex: number, endIndex: number) {
-	const result = Array.from(pool.items);
+function reorder(pool: AnnPool, startIndex: number, endIndex: number) {
+	const result = Array.from(pool.order);
 	const [removed] = result.splice(startIndex, 1);
 	result.splice(endIndex, 0, removed);
-	pool.items = result;
+	pool.order = result;
 };
 
-function move(source: AnnouncementPool, destination: AnnouncementPool, droppableSource: DraggableLocation, droppableDestination: DraggableLocation) {
-	const [removed] = source.items.splice(droppableSource.index, 1);
-	destination.items.splice(droppableDestination.index, 0, removed);
+function move(source: AnnPool, destination: AnnPool, droppableSource: DraggableLocation, droppableDestination: DraggableLocation) {
+	const [removed] = source.order.splice(droppableSource.index, 1);
+	destination.order.splice(droppableDestination.index, 0, removed);
 };
 
 
 export function AnnouncementsPanel() {
-	var [announcements, setAnnouncements] = useReplicant<Announcements>("announcements", []);
-	const [announcement, setAnnouncement] = useReplicant<Announcement>("announcement", { "id": "-", "text": "", "repeat": false, "priority": 1, "pool": null });
-	if (!announcements) return null;
+	const [announcements, setAnnouncements] = useReplicant<AnnPools>("annPools", { pools: {}, order: [] });
+	const [queue, setQueue] = useReplicant<AnnQueue>("annQueue", []);
+	// const [announcement, setAnnouncement] = useReplicant<Announcement>("announcement", { "id": "-", "text": "", "repeat": false, "priority": 1, "pool": null });
+	console.log(announcements);
+	if (!announcements) return <h2>Not loaded announcements</h2>;
 
 	function ensureUpdate() {
 		setAnnouncements(announcements!);
@@ -37,8 +38,9 @@ export function AnnouncementsPanel() {
 		const { source, destination } = result;
 		if (!destination) return;
 
-		const srcPool = announcements!.find(p => p.name === source.droppableId)!;
-		const destPool = announcements!.find(p => p.name === destination.droppableId)!;
+		const srcPool = announcements!.pools[source.droppableId];
+		const destPool = announcements!.pools[destination.droppableId];
+
 		if (!srcPool || !destPool) return;
 
 		if (source.droppableId === destination.droppableId) {
@@ -49,22 +51,23 @@ export function AnnouncementsPanel() {
 		ensureUpdate();
 	}
 
-	const queue = announcements.find(p => p.name === "Queue")!;
-
 	return (
 		<div className='container-xxl' style={{ height: "100vh" }}>
 			<DragDropContext onDragEnd={onDragEnd}>
 				<div className='d-flex h-100'>
-					<div className="w-50 overflow-scroll sticky-top">
-						{queue && (<><h3>Queue</h3><AnnouncementPoolComp pool={queue} ensureUpdate={ensureUpdate} /></>)}
-					</div>
+					{/* <div className="w-50 overflow-scroll sticky-top">
+						{queue && (<><h3>Queue</h3><AnnouncementPoolComp pool={queue} ensureUpdate={ensureUpdate} controls={false} /></>)}
+					</div> */}
 					<div className="vstack w-50 overflow-scroll">
-						{announcements!.filter(p => p.name !== "Queue").map((pool) => (
-							<div key={pool.name}>
-								<h3>{pool.name}</h3>
-								<AnnouncementPoolComp pool={pool} ensureUpdate={ensureUpdate} />
-							</div>
-						))}
+						{announcements.order.map((id) => {
+							const pool = announcements.pools[id];
+							return (
+								<div key={id}>
+									<h3>{pool.name}</h3>
+									<AnnPoolComp pool={pool} ensureUpdate={ensureUpdate} id={id} />
+								</div>
+							)
+						})}
 					</div>
 				</div>
 			</DragDropContext >

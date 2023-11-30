@@ -5,16 +5,24 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface AnnouncementPool {
+export interface AnnPools {
+	pools: {
+		[k: string]: AnnPool;
+	};
+	order: string[];
+	[k: string]: unknown;
+}
+export interface AnnPool {
 	name: string;
 	priority: number;
-	items: Announcement[];
+	announcements: {
+		[k: string]: Announcement;
+	};
+	order: string[];
 	[k: string]: unknown;
 }
 export interface Announcement {
-	id: string;
-	text: string;
-	repeat: boolean;
 	priority: number;
+	text: string;
 	[k: string]: unknown;
 }

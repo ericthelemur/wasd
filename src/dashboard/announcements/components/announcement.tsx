@@ -1,13 +1,21 @@
 import './announcement.scss';
 
 import { Draggable, DraggableProvided, Droppable } from 'react-beautiful-dnd';
-import { GripVertical, Repeat, XLg } from 'react-bootstrap-icons';
+import { GripVertical, Link, Repeat, XLg } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Stack from 'react-bootstrap/Stack';
-import { Announcement, AnnouncementPool } from 'types/schemas/announcements';
+import { AnnPool, AnnPools, AnnRef, Announcement } from 'types/schemas';
 
-export function AnnouncementComp({ announcement, provided, ensureUpdate }: { announcement: Announcement, provided: DraggableProvided, ensureUpdate: () => void }) {
+interface AnnouncementProps {
+    id: string;
+    announcement: Announcement;
+    provided: DraggableProvided;
+    ensureUpdate: () => void;
+}
+
+export function AnnouncementComp(props: AnnouncementProps) {
+    const { announcement, provided } = props;
     return (
         <div ref={provided.innerRef} {...provided.draggableProps} className="card m-1">
             <div className='card-body hstack gap-2'>
@@ -15,40 +23,42 @@ export function AnnouncementComp({ announcement, provided, ensureUpdate }: { ann
                     <GripVertical />
                 </div>
                 <Form.Control defaultValue={announcement.text} />
-                <Stack direction="horizontal" gap={3}>
-                    <Button
-                        variant={announcement.repeat ? "primary" : "outline-primary"}
-                        onClick={() => {
-                            announcement.repeat = !announcement.repeat
-                            ensureUpdate();
-                        }
-                        }
-                    >
-                        <Repeat />
-                    </Button>
-                    <XLg className="float-end" />
-                </Stack>
+                <Form.Control type="number" defaultValue={announcement.priority} style={{ width: "5em" }} />
+                {<Stack direction="horizontal" gap={3}>
+                    <Link />
+                    <XLg />
+                </Stack>}
             </div>
         </div>
     );
 }
 
-export function AnnouncementPoolComp({ pool, ensureUpdate }: { pool: AnnouncementPool, ensureUpdate: () => void }) {
+export interface AnnPoolProps {
+    id: string;
+    pool: AnnPool;
+    ensureUpdate: () => void;
+}
+
+export function AnnPoolComp(props: AnnPoolProps) {
+    const { id, pool } = props;
     return (
-        <Droppable droppableId={pool.name} key={pool.name}>
+        <Droppable droppableId={id}>
             {(provided) => (
                 <div
                     className='vstack p-1'
                     {...provided.droppableProps}
                     ref={provided.innerRef}
                 >
-                    {pool.items.map((item, index) => (
-                        <Draggable key={item.id} draggableId={pool.name + "/" + item.id} index={index}>
-                            {(provided) => (
-                                <AnnouncementComp announcement={item} provided={provided} ensureUpdate={ensureUpdate} />
-                            )}
-                        </Draggable>
-                    ))}
+                    {pool.order.map((id, index) => {
+                        const item = pool.announcements[id];
+                        return (
+                            <Draggable key={id} draggableId={id} index={index}>
+                                {(provided) => (
+                                    <AnnouncementComp id={id} announcement={item} provided={provided} ensureUpdate={props.ensureUpdate} />
+                                )}
+                            </Draggable>
+                        )
+                    })}
                     {provided.placeholder}
                 </div>
             )}

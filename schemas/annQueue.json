@@ -1,0 +1,15 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "array",
+    "items": {
+        "oneOf": [
+            {
+                "$ref": "components/announcement.json"
+            },
+            {
+                "$ref": "components/annRef.json"
+            }
+        ]
+    },
+    "default": []
+}
