@@ -3,7 +3,8 @@ import '../../graphics/uwcs-bootstrap.css';
 import {
     DragDropContext, Draggable, DraggableLocation, DropResult, Droppable, DroppableProvided
 } from 'react-beautiful-dnd';
-import { XLg } from 'react-bootstrap-icons';
+import { PlusLg, XLg } from 'react-bootstrap-icons';
+import Button from 'react-bootstrap/Button';
 import { createRoot } from 'react-dom/client';
 import { AnnPool, AnnPools, AnnQueue, AnnRef, Announcement } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
@@ -18,9 +19,29 @@ function reorder(pool: AnnPool, startIndex: number, endIndex: number) {
 };
 
 function move(source: AnnPool, destination: AnnPool, droppableSource: DraggableLocation, droppableDestination: DraggableLocation) {
-	const [removed] = source.order.splice(droppableSource.index, 1);
-	destination.order.splice(droppableDestination.index, 0, removed);
+	console.log("move", source, destination);
+	const key = source.order[droppableSource.index];
+	const data = source.announcements[key];
+	destination.announcements[key] = data;
+	delete source.announcements[key];
+	source.order.splice(droppableSource.index, 1);
+	destination.order.splice(droppableDestination.index, 0, key);
 };
+
+function addPool(announcements: AnnPools) {
+	var id;
+	do {
+		id = `pool-${Math.floor(Math.random() * 100000000)}`;
+	} while (announcements.order.includes(id));
+
+	announcements.pools[id] = {
+		"name": "New",
+		"priority": 1,
+		"announcements": {},
+		"order": []
+	}
+	announcements.order.push(id);
+}
 
 
 export function AnnouncementsPanel() {
@@ -59,14 +80,12 @@ export function AnnouncementsPanel() {
 						{queue && (<><h3>Queue</h3><AnnouncementPoolComp pool={queue} ensureUpdate={ensureUpdate} controls={false} /></>)}
 					</div> */}
 					<div className="vstack w-50 overflow-scroll">
+						<h2>Announcement Pools</h2>
+						<Button onClick={() => addPool(announcements)}><PlusLg /></Button>
 						{announcements.order.map((id) => {
 							const pool = announcements.pools[id];
-							return (
-								<div key={id}>
-									<h3>{pool.name}</h3>
-									<AnnPoolComp pool={pool} ensureUpdate={ensureUpdate} id={id} />
-								</div>
-							)
+							if (pool === undefined) return <h3 key={id}>Error: Corresponding Pool does not exist for pool id {id}</h3>
+							return <AnnPoolComp pool={pool} ensureUpdate={ensureUpdate} id={id} key={id} />
 						})}
 					</div>
 				</div>

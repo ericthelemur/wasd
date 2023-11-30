@@ -42,26 +42,32 @@ export interface AnnPoolProps {
 export function AnnPoolComp(props: AnnPoolProps) {
     const { id, pool } = props;
     return (
-        <Droppable droppableId={id}>
-            {(provided) => (
-                <div
-                    className='vstack p-1'
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                >
-                    {pool.order.map((id, index) => {
-                        const item = pool.announcements[id];
-                        return (
-                            <Draggable key={id} draggableId={id} index={index}>
-                                {(provided) => (
-                                    <AnnouncementComp id={id} announcement={item} provided={provided} ensureUpdate={props.ensureUpdate} />
-                                )}
-                            </Draggable>
-                        )
-                    })}
-                    {provided.placeholder}
-                </div>
-            )}
-        </Droppable>
+        <div>
+            <h3>{pool.name}</h3>
+            <Droppable droppableId={id}>
+                {(provided) => (
+                    <div
+                        className='card pool p-1'
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                    >
+                        <div className='card-body vstack'>
+                            {pool.order.map((id, index) => {
+                                const item = pool.announcements[id];
+                                if (item === undefined) return <h3 key={id}>Error: Corresponding Announcement does not exist for announcement id {id}</h3>
+                                return (
+                                    <Draggable key={id} draggableId={id} index={index}>
+                                        {(provided) => (
+                                            <AnnouncementComp id={id} announcement={item} provided={provided} ensureUpdate={props.ensureUpdate} />
+                                        )}
+                                    </Draggable>
+                                )
+                            })}
+                        </div>
+                        {provided.placeholder}
+                    </div>
+                )}
+            </Droppable>
+        </div>
     )
 }
