@@ -2,7 +2,7 @@
     padding: 0.25em 0.5em;
 }
 
-.btn {
+.announcement .btn {
     padding: 0em 0.25em;
 }
 
@@ -36,5 +36,44 @@ svg {
 }
 
 .pool {
-    min-height: 5em;
+    min-height: 3em;
+}
+
+.pool:empty {
+    border: var(--bs-border-color) var(--bs-border-width);
+}
+
+span.editable {
+    cursor: pointer !important;
+
+    &:hover {
+        border-bottom: var(--bs-border-color) var(--bs-border-width) dotted;
+    }
+
+    &>svg {
+        visibility: hidden;
+        color: var(--bs-border-color);
+        width: 0.6em;
+        height: 0.6em;
+    }
+
+    &:hover>svg {
+        visibility: visible;
+    }
+}
+
+.input-group {
+    display: inline-flex;
+}
+
+input.editable {
+    font-size: calc(1.275rem + .3vw);
+    padding: 0;
+    font-weight: 500;
+}
+
+@media (width >=1200px) {
+    input.editable {
+        font-size: 1.5rem;
+    }
 }

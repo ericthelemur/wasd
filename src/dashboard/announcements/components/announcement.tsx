@@ -1,9 +1,11 @@
 import './announcement.scss';
 
+import { useRef, useState } from 'react';
 import { Draggable, DraggableProvided, Droppable } from 'react-beautiful-dnd';
-import { GripVertical, Link, Repeat, XLg } from 'react-bootstrap-icons';
+import { CheckLg, GripVertical, Link, PenFill, Repeat, XLg } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import InputGroup from 'react-bootstrap/InputGroup';
 import Stack from 'react-bootstrap/Stack';
 import { AnnPool, AnnPools, AnnRef, Announcement } from 'types/schemas';
 
@@ -17,7 +19,7 @@ interface AnnouncementProps {
 export function AnnouncementComp(props: AnnouncementProps) {
     const { announcement, provided } = props;
     return (
-        <div ref={provided.innerRef} {...provided.draggableProps} className="card m-1">
+        <div ref={provided.innerRef} {...provided.draggableProps} className="card announcement m-1">
             <div className='card-body hstack gap-2'>
                 <div {...provided.dragHandleProps}>
                     <GripVertical />
@@ -33,6 +35,29 @@ export function AnnouncementComp(props: AnnouncementProps) {
     );
 }
 
+
+export function Editable(props: { text: string, setText: (text: string) => void, ensureUpdate?: () => void }) {
+    const [editVal, setEditVal] = useState<string | null>(null);
+    const editBox = useRef<HTMLInputElement>(null);
+
+    if (editVal === null) {
+        return <span className="editable" onClick={() => setEditVal(props.text)}>{props.text} <PenFill /></span>
+    } else {
+        return (
+            <Form onSubmit={() => {
+                props.setText(editBox.current!.value);
+                setEditVal(null);
+                if (props.ensureUpdate) props.ensureUpdate();
+            }}>
+                <InputGroup className="h4">
+                    <Button variant="outline-primary" type="submit"><CheckLg /></Button>
+                    <Form.Control ref={editBox} className="editable" defaultValue={editVal} autoFocus />
+                </InputGroup>
+            </Form>
+        )
+    }
+}
+
 export interface AnnPoolProps {
     id: string;
     pool: AnnPool;
@@ -42,16 +67,16 @@ export interface AnnPoolProps {
 export function AnnPoolComp(props: AnnPoolProps) {
     const { id, pool } = props;
     return (
-        <div>
-            <h3>{pool.name}</h3>
-            <Droppable droppableId={id}>
-                {(provided) => (
-                    <div
-                        className='card pool p-1'
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
-                    >
-                        <div className='card-body vstack'>
+        <div className="card my-1">
+            <div className="card-body">
+                <h3><Editable text={pool.name} setText={(v) => pool.name = v} ensureUpdate={props.ensureUpdate} /></h3>
+                <Droppable droppableId={id}>
+                    {(provided) => (
+                        <div
+                            className='pool p-1 vstack'
+                            {...provided.droppableProps}
+                            ref={provided.innerRef}
+                        >
                             {pool.order.map((id, index) => {
                                 const item = pool.announcements[id];
                                 if (item === undefined) return <h3 key={id}>Error: Corresponding Announcement does not exist for announcement id {id}</h3>
@@ -63,11 +88,11 @@ export function AnnPoolComp(props: AnnPoolProps) {
                                     </Draggable>
                                 )
                             })}
+                            {provided.placeholder}
                         </div>
-                        {provided.placeholder}
-                    </div>
-                )}
-            </Droppable>
+                    )}
+                </Droppable>
+            </div>
         </div>
     )
 }
