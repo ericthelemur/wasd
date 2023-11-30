@@ -81,7 +81,7 @@ export function AnnouncementsPanel() {
 					</div> */}
 					<div className="vstack w-50 overflow-scroll">
 						<h2>Announcement Pools</h2>
-						<Button onClick={() => addPool(announcements)}><PlusLg /></Button>
+						<Button className="d-inline" onClick={() => { addPool(announcements); ensureUpdate() }}><PlusLg /> Add Pool</Button>
 						{announcements.order.map((id) => {
 							const pool = announcements.pools[id];
 							if (pool === undefined) return <h3 key={id}>Error: Corresponding Pool does not exist for pool id {id}</h3>
