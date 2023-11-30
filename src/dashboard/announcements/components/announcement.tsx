@@ -24,7 +24,7 @@ export function AnnouncementComp(props: AnnouncementProps) {
                 <div {...provided.dragHandleProps}>
                     <GripVertical />
                 </div>
-                <Form.Control defaultValue={announcement.text} />
+                <Editable text={announcement.text} setText={v => announcement.text = v} ensureUpdate={props.ensureUpdate} />
                 <Form.Control type="number" defaultValue={announcement.priority} style={{ width: "5em" }} />
                 {<Stack direction="horizontal" gap={3}>
                     <Link />
@@ -44,14 +44,19 @@ export function Editable(props: { text: string, setText: (text: string) => void,
         return <span className="editable" onClick={() => setEditVal(props.text)}>{props.text} <PenFill /></span>
     } else {
         return (
-            <Form onSubmit={() => {
-                props.setText(editBox.current!.value);
-                setEditVal(null);
-                if (props.ensureUpdate) props.ensureUpdate();
-            }}>
-                <InputGroup className="h4">
+            <Form className="flex-grow-1"
+                onSubmit={() => {
+                    props.setText(editBox.current!.value);
+                    setEditVal(null);
+                    if (props.ensureUpdate) props.ensureUpdate();
+                }}
+            >
+                <InputGroup>
                     <Button variant="outline-primary" type="submit"><CheckLg /></Button>
-                    <Form.Control ref={editBox} className="editable" defaultValue={editVal} autoFocus />
+                    <Form.Control ref={editBox} className="editable" autoFocus
+                        defaultValue={editVal}
+                        onKeyDown={e => { if (e.key === "Escape") setEditVal(null) }}
+                    />
                 </InputGroup>
             </Form>
         )

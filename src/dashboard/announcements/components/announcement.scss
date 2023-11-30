@@ -43,11 +43,16 @@ svg {
     border: var(--bs-border-color) var(--bs-border-width);
 }
 
+.editable {
+    flex-grow: 1;
+}
+
 span.editable {
     cursor: pointer !important;
 
     &:hover {
         border-bottom: var(--bs-border-color) var(--bs-border-width) dotted;
+        margin-bottom: calc(-1 * var(--bs-border-width));
     }
 
     &>svg {
@@ -62,18 +67,9 @@ span.editable {
     }
 }
 
-.input-group {
-    display: inline-flex;
-}
-
 input.editable {
-    font-size: calc(1.275rem + .3vw);
-    padding: 0;
-    font-weight: 500;
-}
-
-@media (width >=1200px) {
-    input.editable {
-        font-size: 1.5rem;
-    }
+    font-size: inherit;
+    font-weight: inherit;
+    padding-top: 0;
+    padding-bottom: 0;
 }
