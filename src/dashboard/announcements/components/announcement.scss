@@ -61,7 +61,12 @@ span.editable {
     &:hover>svg {
         visibility: visible;
     }
+
+    &.priority {
+        min-width: 2em;
+    }
 }
+
 
 input.editable {
     font-size: inherit;

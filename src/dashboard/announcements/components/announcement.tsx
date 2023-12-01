@@ -30,8 +30,8 @@ export function AnnouncementComp(props: AnnouncementProps) {
                 <div {...provided.dragHandleProps}>
                     <GripVertical />
                 </div>
-                <Editable text={announcement.text} setText={v => announcement.text = v} ensureUpdate={props.ensureUpdate} outerStyle={{ flexGrow: 1 }} />
-                <Editable text={announcement.priority.toString()} setText={v => announcement.priority = Number(v)} ensureUpdate={props.ensureUpdate} type="number" />
+                <Editable text={announcement.text} setText={v => announcement.text = v} ensureUpdate={props.ensureUpdate} className='flex-grow-1' />
+                <Editable text={announcement.priority.toString()} setText={v => announcement.priority = Number(v)} ensureUpdate={props.ensureUpdate} type="number" className="priority" />
                 {<Stack direction="horizontal" gap={3}>
                     <Button variant="outline-primary" onClick={() => {
                         if (announcement.priority === 0 || confirm(`Are you sure you want to delete\n"${announcement.text}"? `))
@@ -51,18 +51,17 @@ interface EditableProps {
     setText: (text: string) => void;
     ensureUpdate?: () => void;
     type?: string;
-    outerStyle?: CSSProperties;
-    inputStyle?: CSSProperties;
+    className?: string;
 }
 
 export function Editable(props: EditableProps) {
-    const { text, setText, ensureUpdate, type, outerStyle, inputStyle } = props;
+    const { text, setText, ensureUpdate, type } = props;
     const [editVal, setEditVal] = useState<string | null>(null);
     const editBox = useRef<HTMLInputElement>(null);
     const resetEditVal = () => setEditVal(null);
 
     if (editVal === null) {
-        return <span className="editable" onClick={() => setEditVal(text)} style={outerStyle || {}}>{text} <PenFill /></span>
+        return <span className={"editable " + (props.className || "")} onClick={() => setEditVal(text)}>{text} <PenFill /></span>
     } else {
         const submit = () => {
             setText(editBox.current!.value);
@@ -76,11 +75,11 @@ export function Editable(props: EditableProps) {
         };
 
         return (
-            <Form onSubmit={submit} style={outerStyle || {}}>
+            <Form onSubmit={submit} className={(props.className || "")}>
                 <InputGroup>
                     <Form.Control ref={editBox} className="editable" autoFocus
                         defaultValue={editVal} type={type ? type : "text"}
-                        onKeyDown={keyPress} style={inputStyle || {}}
+                        onKeyDown={keyPress}
                     />
                     <Button variant="primary" type="submit"><CheckLg /></Button>
                     <Button variant="outline-primary" onClick={resetEditVal}><XLg /></Button>
@@ -110,13 +109,14 @@ export function AnnPoolComp(props: AnnPoolProps) {
         pool.announcements.splice(index + 1, 0, id);
         props.ensureUpdate();
     }
+    console.log(props.contents, pool.announcements);
 
     return (
         <div className={"card my-1" + (pool.priority === 0 ? " opacity-50" : "")}>
             <div className="card-body">
                 <h3 className="m-1 d-flex gap-2">
-                    <Editable text={pool.name} setText={(v) => pool.name = v} ensureUpdate={props.ensureUpdate} outerStyle={{ flexGrow: 1 }} />
-                    <Editable text={pool.priority.toString()} setText={v => pool.priority = Number(v)} ensureUpdate={props.ensureUpdate} type="number" />
+                    <Editable text={pool.name} setText={(v) => pool.name = v} ensureUpdate={props.ensureUpdate} className="flex-grow-1" />
+                    <Editable text={pool.priority.toString()} setText={v => pool.priority = Number(v)} ensureUpdate={props.ensureUpdate} type="number" className='priority' />
                 </h3>
                 <div className="position-relative">
                     <div className="addBtn" onClick={() => insertAnnouncement(0)}>
@@ -128,6 +128,10 @@ export function AnnPoolComp(props: AnnPoolProps) {
                         <div className='pool vstack' {...provided.droppableProps} ref={provided.innerRef}>
                             {props.contents.map((ann, index) => {
                                 const id = pool.announcements[index];
+                                console.log("DID", id);
+                                if (id === undefined) {
+                                    console.log("UNDEF ID", ann, id, props.contents, pool.announcements);
+                                }
                                 if (ann === undefined) return <h3 key={id}>Error: Corresponding Announcement does not exist for announcement id {id}</h3>
                                 return (
                                     <Draggable key={id} draggableId={id} index={index}>
