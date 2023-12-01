@@ -129,12 +129,13 @@ export function AnnPoolComp(props: AnnPoolProps) {
                     {(provided) => (
                         <div className='pool vstack' {...provided.droppableProps} ref={provided.innerRef}>
                             {props.contents.map((ann, index) => {
-                                const id = pool.announcements[index];
-                                if (id === undefined) return <h5 key={id}>Error: Content and IDs mismatch for {id}</h5>
-                                if (ann === undefined) return <h5 key={id}>Error: Corresponding Announcement does not exist for announcement id {id}</h5>
+                                const baseAID = pool.announcements[index];
+                                const aid = (id === "queue" ? "queue-" : "") + baseAID;
+                                if (aid === undefined) return <h5 key={aid}>Error: Content and IDs mismatch for {aid}</h5>
+                                if (ann === undefined) return <h5 key={aid}>Error: Corresponding Announcement does not exist for announcement id {aid}</h5>
                                 return (
-                                    <Draggable key={id} draggableId={id} index={index}>
-                                        {provided => <AnnouncementComp id={id} announcement={ann} provided={provided}
+                                    <Draggable key={aid} draggableId={aid} index={index}>
+                                        {provided => <AnnouncementComp id={baseAID} announcement={ann} provided={provided}
                                             ensureUpdate={props.ensureUpdate} delete={deleteAnnouncement} insert={() => insertAnnouncement(index)}
                                         />}
                                     </Draggable>

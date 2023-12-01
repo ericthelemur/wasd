@@ -94,7 +94,8 @@ export function AnnouncementsPanel() {
 		if (source.droppableId !== "queue" && destination.droppableId !== "queue") movePools(source, destination, pools!);
 		else if (source.droppableId === "queue" && destination.droppableId === "queue") reorder(queue!, source.index, destination.index);
 		else if (source.droppableId !== "queue" && destination.droppableId === "queue") {
-			queue!.announcements.splice(destination.index, 0, pools![source.droppableId].announcements[source.index]);
+			const key = pools![source.droppableId].announcements[source.index];
+			queue!.announcements.splice(destination.index, 0, key);
 		} else { // (source.droppableId === "queue" && destination.droppableId !== "queue")
 			queue!.announcements.splice(source.index, 1);
 		}
