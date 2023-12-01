@@ -1,15 +1,14 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "type": "array",
-    "items": {
-        "oneOf": [
-            {
-                "$ref": "components/announcement.json"
-            },
-            {
-                "$ref": "components/annRef.json"
-            }
+    "$ref": "components/annPool.json",
+    "default": {
+        "name": "Queue",
+        "priority": 1,
+        "announcements": [
+            "wasd",
+            "donate",
+            "schedule",
+            "specialeffect"
         ]
-    },
-    "default": []
+    }
 }

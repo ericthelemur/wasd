@@ -9,22 +9,20 @@
             "type": "number"
         },
         "announcements": {
-            "type": "object",
-            "additionalProperties": {
-                "$ref": "announcement.json"
-            }
-        },
-        "order": {
             "type": "array",
             "items": {
-                "type": "string"
+                "$ref": "annID.json"
             }
         }
     },
     "required": [
         "name",
         "priority",
-        "order",
         "announcements"
-    ]
+    ],
+    "default": {
+        "name": "New",
+        "priority": 0,
+        "announcements": []
+    }
 }

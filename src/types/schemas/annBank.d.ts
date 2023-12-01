@@ -5,9 +5,12 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface AnnQueue {
-	name: string;
+export interface AnnBank {
+	[k: string]: Announcement;
+}
+export interface Announcement {
+	type?: string;
 	priority: number;
-	announcements: string[];
+	text: string;
 	[k: string]: unknown;
 }

@@ -6,23 +6,11 @@
  */
 
 export interface AnnPools {
-	pools: {
-		[k: string]: AnnPool;
-	};
-	order: string[];
-	[k: string]: unknown;
+	[k: string]: AnnPool;
 }
 export interface AnnPool {
 	name: string;
 	priority: number;
-	announcements: {
-		[k: string]: Announcement;
-	};
-	order: string[];
-	[k: string]: unknown;
-}
-export interface Announcement {
-	priority: number;
-	text: string;
+	announcements: string[];
 	[k: string]: unknown;
 }

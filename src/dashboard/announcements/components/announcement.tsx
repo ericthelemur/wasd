@@ -93,28 +93,21 @@ export function Editable(props: EditableProps) {
 export interface AnnPoolProps {
     id: string;
     pool: AnnPool;
+    contents: Announcement[];
     ensureUpdate: () => void;
+    addAnn: () => string;
 }
 
 export function AnnPoolComp(props: AnnPoolProps) {
     const { id, pool } = props;
 
     const deleteAnnouncement = (id: string) => {
-        delete pool.announcements[id];
-        pool.order = pool.order.filter(e => e !== id);
+        pool.announcements.splice(pool.announcements.findIndex(a => a === id), 1);
         props.ensureUpdate();
     }
     const insertAnnouncement = (index: number) => {
-        var id;
-        do {
-            id = `ann-${Math.floor(Math.random() * 100000000)}`;
-        } while (pool.order.includes(id));
-
-        pool.announcements[id] = {
-            "text": "New Announcement",
-            "priority": 0
-        }
-        pool.order.splice(index + 1, 0, id);
+        const id = props.addAnn();
+        pool.announcements.splice(index + 1, 0, id);
         props.ensureUpdate();
     }
 
@@ -133,12 +126,12 @@ export function AnnPoolComp(props: AnnPoolProps) {
                 <Droppable droppableId={id}>
                     {(provided) => (
                         <div className='pool vstack' {...provided.droppableProps} ref={provided.innerRef}>
-                            {pool.order.map((id, index) => {
-                                const item = pool.announcements[id];
-                                if (item === undefined) return <h3 key={id}>Error: Corresponding Announcement does not exist for announcement id {id}</h3>
+                            {props.contents.map((ann, index) => {
+                                const id = pool.announcements[index];
+                                if (ann === undefined) return <h3 key={id}>Error: Corresponding Announcement does not exist for announcement id {id}</h3>
                                 return (
                                     <Draggable key={id} draggableId={id} index={index}>
-                                        {provided => <AnnouncementComp id={id} announcement={item} provided={provided}
+                                        {provided => <AnnouncementComp id={id} announcement={ann} provided={provided}
                                             ensureUpdate={props.ensureUpdate} delete={deleteAnnouncement} insert={() => insertAnnouncement(index)}
                                         />}
                                     </Draggable>

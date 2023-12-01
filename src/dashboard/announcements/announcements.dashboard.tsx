@@ -6,61 +6,70 @@ import {
 import { PlusLg, XLg } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
 import { createRoot } from 'react-dom/client';
-import { AnnPool, AnnPools, AnnQueue, AnnRef, Announcement } from 'types/schemas';
+import { AnnBank, AnnPool, AnnPools, AnnQueue, Announcement } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
 import { AnnPoolComp, AnnouncementComp } from './components/announcement';
 
 function reorder(pool: AnnPool, startIndex: number, endIndex: number) {
-	const result = Array.from(pool.order);
+	const result = Array.from(pool.announcements);
 	const [removed] = result.splice(startIndex, 1);
 	result.splice(endIndex, 0, removed);
-	pool.order = result;
+	pool.announcements = result;
 };
 
 function move(source: AnnPool, destination: AnnPool, droppableSource: DraggableLocation, droppableDestination: DraggableLocation) {
 	console.log("move", source, destination);
-	const key = source.order[droppableSource.index];
-	const data = source.announcements[key];
-	destination.announcements[key] = data;
-	delete source.announcements[key];
-	source.order.splice(droppableSource.index, 1);
-	destination.order.splice(droppableDestination.index, 0, key);
+	const [removed] = source.announcements.splice(droppableSource.index, 1);
+	destination.announcements.splice(droppableDestination.index, 0, removed);
 };
 
-function addPool(announcements: AnnPools) {
+function genID(prefix: string, exclusions: string[]) {
 	var id;
 	do {
-		id = `pool-${Math.floor(Math.random() * 100000000)}`;
-	} while (announcements.order.includes(id));
+		id = `${prefix}-${Math.floor(Math.random() * 100000000)}`;
+	} while (exclusions.includes(id));
+	return id;
+}
 
-	announcements.pools[id] = {
+function addPool(pools: AnnPools) {
+	const id = genID("pool", Object.keys(pools));
+
+	pools[id] = {
 		"name": "New",
 		"priority": 0,
-		"announcements": {},
-		"order": []
+		"announcements": []
 	}
-	announcements.order.push(id);
+}
+
+function addAnn(bank: AnnBank) {
+	const id = genID("ann", Object.keys(bank));
+
+	bank[id] = {
+		"text": "New Announcement",
+		"priority": 0
+	}
+	return id;
 }
 
 
 export function AnnouncementsPanel() {
-	const [announcements, setAnnouncements] = useReplicant<AnnPools>("annPools", { pools: {}, order: [] });
-	const [queue, setQueue] = useReplicant<AnnQueue>("annQueue", []);
+	const [pools, setPools] = useReplicant<AnnPools>("annPools", {});
+	const [bank, setBank] = useReplicant<AnnBank>("annBank", {});
+	const [queue, setQueue] = useReplicant<AnnQueue>("annQueue", { "name": "Queue", "priority": 0, "announcements": [] });
 	// const [announcement, setAnnouncement] = useReplicant<Announcement>("announcement", { "id": "-", "text": "", "repeat": false, "priority": 1, "pool": null });
-	console.log(announcements);
-	if (!announcements) return <h2>Not loaded announcements</h2>;
+	console.log(pools);
+	if (!pools) return <h2>Not loaded announcements</h2>;
 
 	function ensureUpdate() {
-		setAnnouncements(announcements!);
+		setPools(pools!);
 	}
 
-	function onDragEnd(result: DropResult) {
-		const { source, destination } = result;
-		if (!destination) return;
+	const newAnn = () => addAnn(bank!);
 
-		const srcPool = announcements!.pools[source.droppableId];
-		const destPool = announcements!.pools[destination.droppableId];
+	function movePools(source: DraggableLocation, destination: DraggableLocation) {
+		const srcPool = pools![source.droppableId];
+		const destPool = pools![destination.droppableId];
 
 		if (!srcPool || !destPool) return;
 
@@ -69,6 +78,21 @@ export function AnnouncementsPanel() {
 		} else {
 			move(srcPool, destPool, source, destination);
 		}
+	}
+
+	function onDragEnd(result: DropResult) {
+		const { source, destination } = result;
+		if (!destination) return;
+
+		if (source.droppableId !== "queue" && destination.droppableId !== "queue") movePools(source, destination);
+		// else if (source.droppableId === "queue" && destination.droppableId === "queue") {
+		// 	reorder(srcPool, source.index, destination.index);
+		// 	const [removed] = queue.splice(startIndex, 1);
+		// 	queue.splice(endIndex, 0, removed);
+		// } else if (source.droppableId !== "queue" && destination.droppableId === "queue") {
+		// } else { // (source.droppableId === "queue" && destination.droppableId !== "queue")
+		// }
+
 		ensureUpdate();
 	}
 
@@ -77,15 +101,16 @@ export function AnnouncementsPanel() {
 			<DragDropContext onDragEnd={onDragEnd}>
 				<div className='d-flex h-100'>
 					{/* <div className="w-50 overflow-scroll sticky-top">
-						{queue && (<><h3>Queue</h3><AnnouncementPoolComp pool={queue} ensureUpdate={ensureUpdate} controls={false} /></>)}
+						{queue && (<><h3>Queue</h3><AnnQueueComp queue={queue} announcements={announcements} ensureUpdate={ensureUpdate} /></>)}
 					</div> */}
 					<div className="vstack w-50 overflow-scroll">
 						<h2>Announcement Pools</h2>
-						<Button className="d-inline" onClick={() => { addPool(announcements); ensureUpdate() }}><PlusLg /> Add Pool</Button>
-						{announcements.order.map((id) => {
-							const pool = announcements.pools[id];
+						<Button className="d-inline" onClick={() => { addPool(pools); ensureUpdate() }}><PlusLg /> Add Pool</Button>
+						{Object.entries(pools).map(([id, pool]) => {
 							if (pool === undefined) return <h3 key={id}>Error: Corresponding Pool does not exist for pool id {id}</h3>
-							return <AnnPoolComp pool={pool} ensureUpdate={ensureUpdate} id={id} key={id} />
+							const contents = pool.announcements.map(aid => bank![aid]);
+							console.log("CONTENTS", contents);
+							return <AnnPoolComp id={id} key={id} pool={pool} contents={contents} ensureUpdate={ensureUpdate} addAnn={newAnn} />
 						})}
 					</div>
 				</div>
