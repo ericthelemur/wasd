@@ -43,10 +43,6 @@ svg {
     border: var(--bs-border-color) var(--bs-border-width);
 }
 
-.editable {
-    flex-grow: 1;
-}
-
 span.editable {
     cursor: pointer !important;
 
@@ -89,7 +85,7 @@ input.editable {
     & .addIcon {
         visibility: hidden;
         position: absolute;
-        width: 50%;
+        width: 75%;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
