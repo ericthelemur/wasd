@@ -112,11 +112,13 @@ export function AnnPoolComp(props: AnnPoolProps) {
     console.log(props.contents, pool.announcements);
 
     return (
-        <div className={"card my-1" + (pool.priority === 0 ? " opacity-50" : "")}>
+        <div className={"card my-1" + (pool.priority === 0 && id !== "queue" ? " opacity-50" : "")}>
             <div className="card-body">
                 <h3 className="m-1 d-flex gap-2">
-                    <Editable text={pool.name} setText={(v) => pool.name = v} ensureUpdate={props.ensureUpdate} className="flex-grow-1" />
-                    <Editable text={pool.priority.toString()} setText={v => pool.priority = Number(v)} ensureUpdate={props.ensureUpdate} type="number" className='priority' />
+                    <Editable text={pool.name} className="flex-grow-1" ensureUpdate={props.ensureUpdate}
+                        setText={(v) => pool.name = v} />
+                    {id !== "queue" && <Editable type="number" className='priority' ensureUpdate={props.ensureUpdate}
+                        text={pool.priority.toString()} setText={v => pool.priority = Number(v)} />}
                 </h3>
                 <div className="position-relative">
                     <div className="addBtn" onClick={() => insertAnnouncement(0)}>
@@ -128,11 +130,8 @@ export function AnnPoolComp(props: AnnPoolProps) {
                         <div className='pool vstack' {...provided.droppableProps} ref={provided.innerRef}>
                             {props.contents.map((ann, index) => {
                                 const id = pool.announcements[index];
-                                console.log("DID", id);
-                                if (id === undefined) {
-                                    console.log("UNDEF ID", ann, id, props.contents, pool.announcements);
-                                }
-                                if (ann === undefined) return <h3 key={id}>Error: Corresponding Announcement does not exist for announcement id {id}</h3>
+                                if (id === undefined) return <h5 key={id}>Error: Content and IDs mismatch for {id}</h5>
+                                if (ann === undefined) return <h5 key={id}>Error: Corresponding Announcement does not exist for announcement id {id}</h5>
                                 return (
                                     <Draggable key={id} draggableId={id} index={index}>
                                         {provided => <AnnouncementComp id={id} announcement={ann} provided={provided}

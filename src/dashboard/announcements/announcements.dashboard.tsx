@@ -48,14 +48,28 @@ function addPool(pools: AnnPools) {
 	}
 }
 
-function addAnn(bank: AnnBank) {
-	const id = genID("ann", Object.keys(bank));
+function addAnn(bank: AnnBank, temp = false) {
+	const id = genID(temp ? "temp" : "ann", Object.keys(bank));
 
 	bank[id] = {
 		"text": "New Announcement",
 		"priority": 0
 	}
 	return id;
+}
+
+
+function movePools(source: DraggableLocation, destination: DraggableLocation, pools: AnnPools) {
+	const srcPool = pools![source.droppableId];
+	const destPool = pools![destination.droppableId];
+
+	if (!srcPool || !destPool) return;
+
+	if (source.droppableId === destination.droppableId) {
+		reorder(srcPool, source.index, destination.index);
+	} else {
+		move(srcPool, destPool, source, destination);
+	}
 }
 
 
@@ -67,49 +81,40 @@ export function AnnouncementsPanel() {
 	console.log(pools);
 	if (!pools) return <h2>Not loaded announcements</h2>;
 
-	function ensureUpdate(updateBank: boolean = true, updatePools: boolean = true) {
+	function ensureUpdate(updateBank: boolean = true, updatePools: boolean = true, updateQueue: boolean = true) {
 		if (updateBank) setBank(bank!);
 		if (updatePools) setPools(pools!);
-	}
-
-	const newAnn = () => addAnn(bank!);
-
-	function movePools(source: DraggableLocation, destination: DraggableLocation) {
-		const srcPool = pools![source.droppableId];
-		const destPool = pools![destination.droppableId];
-
-		if (!srcPool || !destPool) return;
-
-		if (source.droppableId === destination.droppableId) {
-			reorder(srcPool, source.index, destination.index);
-		} else {
-			move(srcPool, destPool, source, destination);
-		}
+		if (updateQueue) setQueue(queue!);
 	}
 
 	function onDragEnd(result: DropResult) {
 		const { source, destination } = result;
 		if (!destination) return;
 
-		if (source.droppableId !== "queue" && destination.droppableId !== "queue") movePools(source, destination);
-		// else if (source.droppableId === "queue" && destination.droppableId === "queue") {
-		// 	reorder(srcPool, source.index, destination.index);
-		// 	const [removed] = queue.splice(startIndex, 1);
-		// 	queue.splice(endIndex, 0, removed);
-		// } else if (source.droppableId !== "queue" && destination.droppableId === "queue") {
-		// } else { // (source.droppableId === "queue" && destination.droppableId !== "queue")
-		// }
+		if (source.droppableId !== "queue" && destination.droppableId !== "queue") movePools(source, destination, pools!);
+		else if (source.droppableId === "queue" && destination.droppableId === "queue") reorder(queue!, source.index, destination.index);
+		else if (source.droppableId !== "queue" && destination.droppableId === "queue") {
+			queue!.announcements.splice(destination.index, 0, pools![source.droppableId].announcements[source.index]);
+		} else { // (source.droppableId === "queue" && destination.droppableId !== "queue")
+			queue!.announcements.splice(source.index, 1);
+		}
 
 		ensureUpdate();
 	}
 
+	const newAnn = () => addAnn(bank!);
+	const qeueContents = queue!.announcements.map(aid => bank![aid]);
 	return (
 		<div className='container-xxl' style={{ height: "100vh" }}>
 			<DragDropContext onDragEnd={onDragEnd}>
 				<div className='d-flex h-100'>
-					{/* <div className="w-50 overflow-scroll sticky-top">
-						{queue && (<><h3>Queue</h3><AnnQueueComp queue={queue} announcements={announcements} ensureUpdate={ensureUpdate} /></>)}
-					</div> */}
+					<div className="w-50 overflow-scroll sticky-top">
+						{queue && (<>
+							<h3>Queue</h3>
+							<AnnPoolComp id="queue" pool={queue} contents={qeueContents}
+								ensureUpdate={ensureUpdate} addAnn={() => addAnn(bank!, true)} />
+						</>)}
+					</div>
 					<div className="vstack w-50">
 						<h2>Announcement Pools</h2>
 						<Button className="d-inline" onClick={() => { addPool(pools); ensureUpdate() }}><PlusLg /> Add Pool</Button>
@@ -117,7 +122,8 @@ export function AnnouncementsPanel() {
 							{Object.entries(pools).map(([id, pool]) => {
 								if (pool === undefined) return <h3 key={id}>Error: Corresponding Pool does not exist for pool id {id}</h3>
 								const contents = pool.announcements.map(aid => bank![aid]);
-								return <AnnPoolComp id={id} key={id} pool={pool} contents={contents} ensureUpdate={ensureUpdate} addAnn={newAnn} />
+								return <AnnPoolComp id={id} key={id} pool={pool} contents={contents}
+									ensureUpdate={ensureUpdate} addAnn={newAnn} />
 							})}
 						</div>
 					</div>
