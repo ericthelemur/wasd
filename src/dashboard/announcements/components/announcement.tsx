@@ -119,10 +119,11 @@ export function AnnPoolComp(props: AnnPoolProps) {
     }
 
     return (
-        <div className="card my-1">
+        <div className={"card my-1" + (pool.priority === 0 ? " opacity-50" : "")}>
             <div className="card-body">
-                <h3 className="m-1">
-                    <Editable text={pool.name} setText={(v) => pool.name = v} ensureUpdate={props.ensureUpdate} />
+                <h3 className="m-1 d-flex gap-2">
+                    <Editable text={pool.name} setText={(v) => pool.name = v} ensureUpdate={props.ensureUpdate} outerStyle={{ flexGrow: 1 }} />
+                    <Editable text={pool.priority.toString()} setText={v => pool.priority = Number(v)} ensureUpdate={props.ensureUpdate} type="number" />
                 </h3>
                 <div className="position-relative">
                     <div className="addBtn" onClick={() => insertAnnouncement(0)}>

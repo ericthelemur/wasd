@@ -36,7 +36,7 @@ function addPool(announcements: AnnPools) {
 
 	announcements.pools[id] = {
 		"name": "New",
-		"priority": 1,
+		"priority": 0,
 		"announcements": {},
 		"order": []
 	}
