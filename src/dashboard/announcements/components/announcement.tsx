@@ -9,12 +9,12 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Stack from 'react-bootstrap/Stack';
-import { AnnPool, Announcement } from 'types/schemas';
+import { AnnPool, AnnRef, Announcement } from 'types/schemas';
 
 import add from '../../assets/add.svg';
 
 interface AnnouncementProps {
-    id: string;
+    id: AnnRef;
     announcement: Announcement;
     provided: DraggableProvided;
     ensureUpdate: () => void;
@@ -35,7 +35,7 @@ export function AnnouncementComp(props: AnnouncementProps) {
                 {<Stack direction="horizontal" gap={3}>
                     <Button variant="outline-primary" onClick={() => {
                         if (announcement.priority === 0 || confirm(`Are you sure you want to delete\n"${announcement.text}"? `))
-                            props.delete(props.id)
+                            props.delete(props.id.id)
                     }}><XLg /></Button>
                 </Stack>}
             </div>
@@ -101,12 +101,12 @@ export function AnnPoolComp(props: AnnPoolProps) {
     const { id, pool } = props;
 
     const deleteAnnouncement = (id: string) => {
-        pool.announcements.splice(pool.announcements.findIndex(a => a === id), 1);
+        pool.announcements.splice(pool.announcements.findIndex(a => a.id === id), 1);
         props.ensureUpdate();
     }
     const insertAnnouncement = (index: number) => {
         const id = props.addAnn();
-        pool.announcements.splice(index + 1, 0, id);
+        pool.announcements.splice(index + 1, 0, { id: id });
         props.ensureUpdate();
     }
     console.log(props.contents, pool.announcements);
@@ -130,7 +130,7 @@ export function AnnPoolComp(props: AnnPoolProps) {
                         <div className='pool vstack' {...provided.droppableProps} ref={provided.innerRef}>
                             {props.contents.map((ann, index) => {
                                 const baseAID = pool.announcements[index];
-                                const aid = (id === "queue" ? "queue-" : "") + baseAID;
+                                const aid = `${id === "queue" ? "queue-" : ""}${baseAID.id}-${baseAID.time ? baseAID.time : ""}`;
                                 if (aid === undefined) return <h5 key={aid}>Error: Content and IDs mismatch for {aid}</h5>
                                 if (ann === undefined) return <h5 key={aid}>Error: Corresponding Announcement does not exist for announcement id {aid}</h5>
                                 return (

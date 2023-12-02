@@ -9,10 +9,18 @@
             "name": "Base",
             "priority": 1,
             "announcements": [
-                "wasd",
-                "donate",
-                "schedule",
-                "specialeffect"
+                {
+                    "id": "wasd"
+                },
+                {
+                    "id": "donate"
+                },
+                {
+                    "id": "schedule"
+                },
+                {
+                    "id": "specialeffect"
+                }
             ]
         }
     }

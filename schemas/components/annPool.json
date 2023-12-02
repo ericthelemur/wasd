@@ -11,7 +11,7 @@
         "announcements": {
             "type": "array",
             "items": {
-                "$ref": "annID.json"
+                "$ref": "annRef.json"
             }
         }
     },

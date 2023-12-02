@@ -11,6 +11,11 @@ export interface AnnPools {
 export interface AnnPool {
 	name: string;
 	priority: number;
-	announcements: string[];
+	announcements: AnnRef[];
+	[k: string]: unknown;
+}
+export interface AnnRef {
+	id: string;
+	time?: number;
 	[k: string]: unknown;
 }
