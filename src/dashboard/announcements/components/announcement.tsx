@@ -35,22 +35,21 @@ export function AnnouncementComp(props: AnnouncementProps) {
                 <div {...provided.dragHandleProps}>
                     <GripVertical />
                 </div>
-                {queue && !temp ? <>
-                    <span className="btn btn-outline-secondary" onClick={props.unlink}>
-                        <Link45deg />
-                    </span>
-                    <span className='flex-grow-1 forbid'>{announcement.text}</span>
-                </> : <>
-                    {queue && <Pen />}
-                    <Editable text={announcement.text} setText={v => announcement.text = v} ensureUpdate={props.ensureUpdate} className='flex-grow-1' />
-                </>}
+                {queue && !temp ? <span className='flex-grow-1 forbid'><Link45deg /> {announcement.text}</span>
+                    : <>
+                        {queue && <Pen className="small" />}
+                        <Editable text={announcement.text} setText={v => announcement.text = v} ensureUpdate={props.ensureUpdate} className='flex-grow-1' />
+                    </>}
                 {!queue && <Editable text={announcement.priority.toString()} setText={v => announcement.priority = Number(v)} ensureUpdate={props.ensureUpdate} type="number" className="priority" />}
-                {<Stack direction="horizontal" gap={3}>
+                {<InputGroup style={{ width: "unset" }}>
+                    {queue && !temp && <Button variant="outline-secondary" onClick={props.unlink}>
+                        <Link45deg />
+                    </Button>}
                     <Button variant="outline-primary" onClick={() => {
                         if (announcement.priority === 0 || confirm(`Are you sure you want to delete\n"${announcement.text}"? `))
                             props.delete(props.id.id)
                     }}><XLg /></Button>
-                </Stack>}
+                </InputGroup>}
             </div>
             <div className="addBtn" onClick={props.insert}>
                 <img className="addIcon" src={add} />
