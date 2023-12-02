@@ -129,18 +129,18 @@ export function AnnouncementsPanel() {
 	return (
 		<div className='container-xxl' style={{ height: "100vh" }}>
 			<DragDropContext onDragEnd={onDragEnd} onBeforeDragStart={onBeforeDragStart}>
-				<div className='d-flex h-100'>
+				<div className='d-flex h-100 gap-3'>
 					<div className="w-50 overflow-scroll sticky-top">
-						{queue && (<>
+						{queue && (<div className="p-2">
 							<h3>Queue</h3>
 							<AnnPoolComp id="queue" pool={queue} contents={qeueContents}
 								ensureUpdate={ensureUpdate} addAnn={() => addAnn(bank!, true)} unlink={unlink} />
-						</>)}
+						</div>)}
 					</div>
 					<div className="vstack w-50">
 						<h2>Announcement Pools</h2>
 						<Button className="d-inline" onClick={() => { addPool(pools); ensureUpdate() }}><PlusLg /> Add Pool</Button>
-						<div className="pools overflow-scroll">
+						<div className="pools overflow-scroll vstack gap-3 p-2">
 							{Object.entries(pools).map(([pid, pool]) => {
 								if (pool === undefined) return <h3 key={pid}>Error: Corresponding Pool does not exist for pool id {pid}</h3>
 								const contents = pool.announcements.map(aid => bank![aid.id]);

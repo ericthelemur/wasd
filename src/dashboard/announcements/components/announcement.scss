@@ -90,10 +90,13 @@ input.editable {
     & .addIcon {
         visibility: hidden;
         position: absolute;
-        width: 75%;
+        height: 2em;
+        max-width: 100%;
+        object-fit: contain;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
+        pointer-events: none;
     }
 }
 
