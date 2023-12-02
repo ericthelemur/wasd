@@ -22,7 +22,6 @@ function reorder(pool: AnnPool, startIndex: number, endIndex: number) {
 };
 
 function move(source: AnnPool, destination: AnnPool, droppableSource: DraggableLocation, droppableDestination: DraggableLocation) {
-	console.log("move", source, destination);
 	const src = Array.from(source.announcements);
 	const dst = Array.from(destination.announcements);
 	const [removed] = src.splice(droppableSource.index, 1);
@@ -52,11 +51,12 @@ function addPool(pools: AnnPools) {
 
 function addAnn(bank: AnnBank, temp = false) {
 	const id = genID(temp ? "temp" : "ann", Object.keys(bank));
-
-	bank[id] = {
+	const ann: Announcement = {
 		"text": "New Announcement",
 		"priority": 0
-	}
+	};
+	if (temp) ann.type = "temp";
+	bank[id] = ann;
 	return id;
 }
 
@@ -111,6 +111,19 @@ export function AnnouncementsPanel() {
 		ensureUpdate();
 	}
 
+	function unlink(id: string, index: number, pool: AnnPool, newType: string = "temp") {
+		console.log("Unlinking", id);
+		const oldAnn = bank![id];
+		const newID = genID(newType === "temp" ? "temp" : "ann", Object.keys(bank!));
+		bank![newID] = {
+			"text": oldAnn.text,
+			"priority": oldAnn.priority,
+			"type": newType
+		}
+		pool.announcements[index] = { id: newID, time: Date.now() };
+		return newID;
+	}
+
 	const newAnn = () => addAnn(bank!);
 	const qeueContents = queue!.announcements.map(aid => bank![aid.id]);
 	return (
@@ -121,7 +134,7 @@ export function AnnouncementsPanel() {
 						{queue && (<>
 							<h3>Queue</h3>
 							<AnnPoolComp id="queue" pool={queue} contents={qeueContents}
-								ensureUpdate={ensureUpdate} addAnn={() => addAnn(bank!, true)} />
+								ensureUpdate={ensureUpdate} addAnn={() => addAnn(bank!, true)} unlink={unlink} />
 						</>)}
 					</div>
 					<div className="vstack w-50">
