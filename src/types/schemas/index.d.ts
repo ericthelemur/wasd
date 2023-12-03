@@ -7,3 +7,5 @@ export * from './annBank';
 export * from './annPools';
 // @ts-ignore
 export * from './annQueue';
+// @ts-ignore
+export * from './currentAnnouncement';

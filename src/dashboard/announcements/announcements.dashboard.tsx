@@ -7,7 +7,7 @@ import {
 import { PlusLg, Trash, XLg } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
 import { createRoot } from 'react-dom/client';
-import { AnnBank, AnnPool, AnnPools, AnnQueue, Announcement } from 'types/schemas';
+import { AnnBank, AnnPool, AnnPools, AnnQueue, Announcement } from '../../types/schemas';
 import { useReplicant } from 'use-nodecg';
 
 import { AnnPoolComp, AnnouncementComp } from './components/announcement';

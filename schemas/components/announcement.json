@@ -10,6 +10,9 @@
         },
         "text": {
             "type": "string"
+        },
+        "lastShown": {
+            "type": "number"
         }
     },
     "default": {
