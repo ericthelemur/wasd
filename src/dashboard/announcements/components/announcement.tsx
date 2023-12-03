@@ -17,7 +17,6 @@ interface AnnouncementProps {
     id: AnnRef;
     announcement: Announcement;
     provided: DraggableProvided;
-    ensureUpdate: () => void;
     delete: (id: string) => void;
     insert: () => void;
     unlink?: () => void;
@@ -38,9 +37,9 @@ export function AnnouncementComp(props: AnnouncementProps) {
                 {queue && !temp ? <span className='flex-grow-1 forbid'><Link45deg /> {announcement.text}</span>
                     : <>
                         {queue && <Pen className="small" />}
-                        <Editable text={announcement.text} setText={v => announcement.text = v} ensureUpdate={props.ensureUpdate} className='flex-grow-1' />
+                        <Editable text={announcement.text} setText={v => announcement.text = v} className='flex-grow-1' />
                     </>}
-                {!queue && <Editable text={announcement.priority.toString()} setText={v => announcement.priority = Number(v)} ensureUpdate={props.ensureUpdate} type="number" className="priority" />}
+                {!queue && <Editable text={announcement.priority.toString()} setText={v => announcement.priority = Number(v)} type="number" className="priority" />}
                 {<InputGroup style={{ width: "unset" }}>
                     {queue && !temp && <Button variant="outline-secondary" onClick={props.unlink}>
                         <Link45deg />
@@ -61,13 +60,12 @@ export function AnnouncementComp(props: AnnouncementProps) {
 interface EditableProps {
     text: string;
     setText: (text: string) => void;
-    ensureUpdate?: () => void;
     type?: string;
     className?: string;
 }
 
 export function Editable(props: EditableProps) {
-    const { text, setText, ensureUpdate, type } = props;
+    const { text, setText, type } = props;
     const [editVal, setEditVal] = useState<string | null>(null);
     const editBox = useRef<HTMLInputElement>(null);
     const resetEditVal = () => setEditVal(null);
@@ -78,7 +76,6 @@ export function Editable(props: EditableProps) {
         const submit = () => {
             setText(editBox.current!.value);
             resetEditVal();
-            if (ensureUpdate) ensureUpdate();
         };
         const keyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
             if (e.key === "Escape") resetEditVal();
@@ -105,7 +102,6 @@ export interface AnnPoolProps {
     id: string;
     pool: AnnPool;
     contents: Announcement[];
-    ensureUpdate: () => void;
     addAnn: () => string;
     unlink?: (id: string, index: number, pool: AnnPool) => void;
 }
@@ -116,12 +112,10 @@ export function AnnPoolComp(props: AnnPoolProps) {
 
     const deleteAnnouncement = (id: string) => {
         pool.announcements.splice(pool.announcements.findIndex(a => a.id === id), 1);
-        props.ensureUpdate();
     }
     const insertAnnouncement = (index: number) => {
         const id = props.addAnn();
         pool.announcements.splice(index + 1, 0, { id: id });
-        props.ensureUpdate();
     }
 
     return (
@@ -129,9 +123,9 @@ export function AnnPoolComp(props: AnnPoolProps) {
             <div className="card-body">
                 {!queue &&
                     <h3 className="m-1 d-flex gap-2">
-                        <Editable text={pool.name} className="flex-grow-1" ensureUpdate={props.ensureUpdate}
+                        <Editable text={pool.name} className="flex-grow-1"
                             setText={(v) => pool.name = v} />
-                        <Editable type="number" className='priority' ensureUpdate={props.ensureUpdate}
+                        <Editable type="number" className='priority'
                             text={pool.priority.toString()} setText={v => pool.priority = Number(v)} />
                     </h3>
                 }
@@ -155,7 +149,7 @@ export function AnnPoolComp(props: AnnPoolProps) {
                                 return (
                                     <Draggable key={aid} draggableId={aid} index={index}>
                                         {provided => <AnnouncementComp id={baseAID} announcement={ann} provided={provided} queue={queue}
-                                            ensureUpdate={props.ensureUpdate} delete={deleteAnnouncement} insert={() => insertAnnouncement(index)}
+                                            delete={deleteAnnouncement} insert={() => insertAnnouncement(index)}
                                             unlink={unlink}
                                         />}
                                     </Draggable>

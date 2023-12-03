@@ -84,12 +84,6 @@ export function AnnouncementsPanel() {
 	console.log(pools);
 	if (!pools) return <h2>Not loaded announcements</h2>;
 
-	function ensureUpdate(updateBank: boolean = true, updatePools: boolean = true, updateQueue: boolean = true) {
-		if (updateBank) setBank(bank!);
-		if (updatePools) setPools(pools!);
-		if (updateQueue) setQueue(queue!);
-	}
-
 	function onBeforeDragStart(start: DragStart) {
 		if (start.source.droppableId === "queue") setShowBin(true);
 	}
@@ -107,8 +101,6 @@ export function AnnouncementsPanel() {
 		} else { // (source.droppableId === "queue" && destination.droppableId !== "queue")
 			queue!.announcements.splice(source.index, 1);
 		}
-
-		ensureUpdate();
 	}
 
 	function unlink(id: string, index: number, pool: AnnPool, newType: string = "temp") {
@@ -134,18 +126,18 @@ export function AnnouncementsPanel() {
 						{queue && (<div className="p-2">
 							<h3>Queue</h3>
 							<AnnPoolComp id="queue" pool={queue} contents={qeueContents}
-								ensureUpdate={ensureUpdate} addAnn={() => addAnn(bank!, true)} unlink={unlink} />
+								addAnn={() => addAnn(bank!, true)} unlink={unlink} />
 						</div>)}
 					</div>
 					<div className="vstack w-50">
 						<h2>Announcement Pools</h2>
-						<Button className="d-inline" onClick={() => { addPool(pools); ensureUpdate() }}><PlusLg /> Add Pool</Button>
+						<Button className="d-inline" onClick={() => addPool(pools)}><PlusLg /> Add Pool</Button>
 						<div className="pools overflow-scroll vstack gap-3 p-2">
 							{Object.entries(pools).map(([pid, pool]) => {
 								if (pool === undefined) return <h3 key={pid}>Error: Corresponding Pool does not exist for pool id {pid}</h3>
 								const contents = pool.announcements.map(aid => bank![aid.id]);
 								return <AnnPoolComp id={pid} key={pid} pool={pool} contents={contents}
-									ensureUpdate={ensureUpdate} addAnn={newAnn} />
+									addAnn={newAnn} />
 							})}
 							{showBin && <div className="trash"><Trash className="queue-trash" /></div>}
 						</div>
