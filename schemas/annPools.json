@@ -22,6 +22,11 @@
                     "id": "specialeffect"
                 }
             ]
+        },
+        "archive": {
+            "name": "Archive",
+            "priority": 0,
+            "announcements": []
         }
     }
 }

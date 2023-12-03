@@ -10,16 +10,26 @@ module.exports = function (nodecg: NodeCG.ServerAPI) {
 	const queue = nodecg.Replicant("annQueue") as unknown as NodeCG.ServerReplicantWithSchemaDefault<AnnQueue>;
 	const current = nodecg.Replicant("currentAnnouncement") as unknown as NodeCG.ServerReplicantWithSchemaDefault<Announcement>;
 
+	function lastQueued(time: number) {
+		const times: { [id: string]: number } = {};
+		queue.value.announcements.forEach((ref, i) => {
+			times[ref.id] = time + DISPLAY_TIME * i;
+		});
+		return times;
+	}
+
 	function pickNext(time: number) {
+		const lastQueuedTimes = lastQueued(time);
 		var maxRef: AnnRef | undefined;
 		var maxAnn: Announcement | undefined;
 		var maxPriority = 0;
 		for (const pool of Object.values(pools.value)) {
 			for (const ref of pool.announcements) {
 				const ann = bank.value[ref.id];
-				const timeSince = ann.lastShown ? (time - ann.lastShown) / 1000 : 30;
-				const weight = pool.priority * ann.priority * (timeSince);
-				nodecg.log.info(ref.id, timeSince, weight);
+				const age = lastQueuedTimes[ref.id] || ann.lastShown || time - 5 * 60 * 10000;
+				const timeSince = (time - age) / 1000;
+				const weight = pool.priority * ann.priority * timeSince;
+
 				if (maxPriority < weight) {
 					maxPriority = weight;
 					maxRef = ref;
@@ -27,7 +37,6 @@ module.exports = function (nodecg: NodeCG.ServerAPI) {
 				}
 			}
 		}
-		if (maxAnn) maxAnn.lastShown = time;
 		return maxRef;
 	}
 
