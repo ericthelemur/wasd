@@ -116,6 +116,11 @@ export function AnnouncementsPanel() {
 		return newID;
 	}
 
+	function deleteAnn(id: string) {
+		queue!.announcements = queue!.announcements.filter(a => a.id !== id);
+		delete bank![id];
+	}
+
 	const newAnn = () => addAnn(bank!);
 	const qeueContents = queue!.announcements.map(aid => bank![aid.id]);
 	return (
@@ -137,7 +142,7 @@ export function AnnouncementsPanel() {
 								if (pool === undefined) return <h3 key={pid}>Error: Corresponding Pool does not exist for pool id {pid}</h3>
 								const contents = pool.announcements.map(aid => bank![aid.id]);
 								return <AnnPoolComp id={pid} key={pid} pool={pool} contents={contents}
-									addAnn={newAnn} />
+									addAnn={newAnn} deleteAnn={deleteAnn} />
 							})}
 							{showBin && <div className="trash"><Trash className="queue-trash" /></div>}
 						</div>

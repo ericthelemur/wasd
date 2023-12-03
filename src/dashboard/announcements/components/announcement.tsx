@@ -104,6 +104,7 @@ export interface AnnPoolProps {
     contents: Announcement[];
     addAnn: () => string;
     unlink?: (id: string, index: number, pool: AnnPool) => void;
+    deleteAnn?: (id: string) => void;
 }
 
 export function AnnPoolComp(props: AnnPoolProps) {
@@ -112,6 +113,7 @@ export function AnnPoolComp(props: AnnPoolProps) {
 
     const deleteAnnouncement = (id: string) => {
         pool.announcements.splice(pool.announcements.findIndex(a => a.id === id), 1);
+        if (props.deleteAnn) props.deleteAnn(id);
     }
     const insertAnnouncement = (index: number) => {
         const id = props.addAnn();
