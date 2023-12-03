@@ -71,7 +71,7 @@
     "react-dom": "^18.0.0",
     "react-fitty": "^1.0.1",
     "ts-node": "^10.9.1",
-    "use-nodecg": "github:vmichalak/use-nodecg"
+    "use-nodecg": "github:ericthelemur/use-nodecg"
   },
   "devDependencies": {
     "@nodecg/types": "^2.0.0",
