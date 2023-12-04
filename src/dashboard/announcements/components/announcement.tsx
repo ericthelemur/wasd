@@ -3,7 +3,7 @@ import './announcement.scss';
 import { CSSProperties, EventHandler, useRef, useState } from 'react';
 import { Draggable, DraggableProvided, Droppable } from 'react-beautiful-dnd';
 import {
-    CheckLg, GripVertical, Link, Link45deg, Pen, PenFill, PlusCircle, Repeat, XCircle, XLg
+    CheckLg, FastForward, GripVertical, Link, Link45deg, Pen, PenFill, PlusCircle, Repeat, XCircle, XLg
 } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -20,6 +20,7 @@ interface AnnouncementProps {
     delete: (id: string) => void;
     insert: () => void;
     unlink?: () => void;
+    skipTo?: () => void;
     queue?: boolean;
 }
 
@@ -41,6 +42,9 @@ export function AnnouncementComp(props: AnnouncementProps) {
                     </>}
                 {!queue && <Editable text={announcement.priority.toString()} setText={v => announcement.priority = Number(v)} type="number" className="priority" />}
                 {<InputGroup style={{ width: "unset" }}>
+                    {queue && <Button variant="outline-secondary" onClick={props.skipTo}>
+                        <FastForward />
+                    </Button>}
                     {queue && !temp && <Button variant="outline-secondary" onClick={props.unlink}>
                         <Link45deg />
                     </Button>}
@@ -105,6 +109,7 @@ export interface AnnPoolProps {
     addAnn: () => string;
     unlink?: (id: string, index: number, pool: AnnPool) => void;
     deleteAnn?: (id: string) => void;
+    skipTo?: (index: number, id: string, ann: Announcement) => void;
 }
 
 export function AnnPoolComp(props: AnnPoolProps) {
@@ -152,7 +157,7 @@ export function AnnPoolComp(props: AnnPoolProps) {
                                     <Draggable key={aid} draggableId={aid} index={index}>
                                         {provided => <AnnouncementComp id={baseAID} announcement={ann} provided={provided} queue={queue}
                                             delete={deleteAnnouncement} insert={() => insertAnnouncement(index)}
-                                            unlink={unlink}
+                                            unlink={unlink} skipTo={props.skipTo ? () => props.skipTo!(index, baseAID.id, ann) : undefined}
                                         />}
                                     </Draggable>
                                 )

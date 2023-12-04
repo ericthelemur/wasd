@@ -118,6 +118,10 @@ export function AnnouncementsPanel() {
 		return newID;
 	}
 
+	function skipTo(index: number, id: string, ann: Announcement) {
+		queue!.announcements.splice(0, index);
+	}
+
 	function deleteAnn(id: string) {
 		queue!.announcements = queue!.announcements.filter(a => a.id !== id);
 		delete bank![id];
@@ -146,7 +150,7 @@ export function AnnouncementsPanel() {
 						{queue && (<div className="p-2">
 							<h3>Queue</h3>
 							<AnnPoolComp id="queue" pool={queue} contents={qeueContents}
-								addAnn={() => addAnn(bank!, true)} unlink={unlink} />
+								addAnn={() => addAnn(bank!, true)} unlink={unlink} skipTo={skipTo} />
 						</div>)}
 					</div>
 					<div className="vstack w-50">
