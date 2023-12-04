@@ -12,7 +12,9 @@ import { useReplicant } from 'use-nodecg';
 
 import { AnnPoolComp, AnnouncementComp } from './components/announcement';
 import { useState } from 'react';
+import { CurrentAnnouncement } from 'types/schemas/currentAnnouncement';
 
+const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "numeric", second: "numeric" });
 
 function reorder(pool: AnnPool, startIndex: number, endIndex: number) {
 	const result = Array.from(pool.announcements);
@@ -80,7 +82,7 @@ export function AnnouncementsPanel() {
 	const [pools, setPools] = useReplicant<AnnPools>("annPools", {});
 	const [bank, setBank] = useReplicant<AnnBank>("annBank", {});
 	const [queue, setQueue] = useReplicant<AnnQueue>("annQueue", { "name": "Queue", "priority": 0, "announcements": [] });
-	// const [announcement, setAnnouncement] = useReplicant<Announcement>("announcement", { "id": "-", "text": "", "repeat": false, "priority": 1, "pool": null });
+	const [currentAnnouncement, setAnnouncement] = useReplicant<CurrentAnnouncement>("currentAnnouncement", { "text": "", "annID": null, "endTime": 0 });
 	console.log(pools);
 	if (!pools) return <h2>Not loaded announcements</h2>;
 
@@ -121,6 +123,8 @@ export function AnnouncementsPanel() {
 		delete bank![id];
 	}
 
+	const currentAnn = bank && currentAnnouncement && currentAnnouncement.annID ? bank[currentAnnouncement.annID] : undefined;
+
 	const newAnn = () => addAnn(bank!);
 	const qeueContents = queue!.announcements.map(aid => bank![aid.id]);
 	return (
@@ -128,6 +132,17 @@ export function AnnouncementsPanel() {
 			<DragDropContext onDragEnd={onDragEnd} onBeforeDragStart={onBeforeDragStart}>
 				<div className='d-flex h-100 gap-3'>
 					<div className="w-50 overflow-scroll sticky-top">
+						{currentAnnouncement && currentAnn && (<div className="p-2">
+							<h3>Current</h3>
+							<div className="card announcement m-1">
+								<div className="card-body hstack gap-2">
+									<span className="flex-grow-1">
+										{currentAnn.text}
+									</span>
+									until {timeFormat.format(currentAnnouncement.endTime)}
+								</div>
+							</div>
+						</div>)}
 						{queue && (<div className="p-2">
 							<h3>Queue</h3>
 							<AnnPoolComp id="queue" pool={queue} contents={qeueContents}
