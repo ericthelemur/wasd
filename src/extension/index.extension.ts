@@ -2,7 +2,7 @@ import type NodeCG from '@nodecg/types';
 import { AnnBank, AnnPools, AnnQueue, AnnRef, Announcement, CurrentAnnouncement } from 'types/schemas';
 
 const QUEUE_LEN = 12;
-const DISPLAY_TIME = 10000;
+const DISPLAY_TIME = 5000;
 
 module.exports = function (nodecg: NodeCG.ServerAPI) {
 	const bank = nodecg.Replicant("annBank") as unknown as NodeCG.ServerReplicantWithSchemaDefault<AnnBank>;

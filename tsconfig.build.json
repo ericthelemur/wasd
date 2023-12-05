@@ -19,6 +19,7 @@
 		"sourceMap": true,
 		"inlineSourceMap": false,
 		"baseUrl": "src",
+		"skipLibCheck": true,
 		"paths": {
 			"nodecg-tiltify/*": [
 				"../../nodecg-tiltify/*"
