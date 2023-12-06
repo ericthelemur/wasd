@@ -1,18 +1,14 @@
 import './announcement.scss';
 
-import { CSSProperties, EventHandler, useRef, useState } from 'react';
 import { Draggable, DraggableProvided, Droppable } from 'react-beautiful-dnd';
-import {
-    CheckLg, FastForward, GripVertical, Link, Link45deg, Pen, PenFill, PlusCircle, Repeat, XCircle, XLg
-} from 'react-bootstrap-icons';
+import { FastForward, GripVertical, Link45deg, Pen, XLg } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
-import Stack from 'react-bootstrap/Stack';
 import { AnnPool, AnnRef, Announcement } from 'types/schemas';
 
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import add from '../../assets/add.svg';
-import { TransitionGroup, CSSTransition } from 'react-transition-group';
+import Editable from "./editable";
 
 interface AnnouncementProps {
     id: AnnRef;
@@ -39,10 +35,10 @@ export function AnnouncementComp(props: AnnouncementProps) {
                 {queue && !temp ? <span className='flex-grow-1 forbid'><Link45deg /> {announcement.text}</span>
                     : <>
                         {queue && <Pen className="small" />}
-                        <Editable text={announcement.text} setText={v => announcement.text = v} className='flex-grow-1' />
+                        <Editable text={announcement.text} setText={v => announcement.text = v} className='flex-grow-1' as="textarea" />
                     </>}
                 {!queue && <Editable text={announcement.priority.toString()} setText={v => announcement.priority = Number(v)} type="number" className="priority" />}
-                {<InputGroup className="card-ctrls" style={{ width: "unset" }}>
+                {<InputGroup className="card-ctrls">
                     {queue && <Button variant="outline-secondary" onClick={props.skipTo}>
                         <FastForward />
                     </Button>}
@@ -60,47 +56,6 @@ export function AnnouncementComp(props: AnnouncementProps) {
             </div>
         </div>
     );
-}
-
-interface EditableProps {
-    text: string;
-    setText: (text: string) => void;
-    type?: string;
-    className?: string;
-}
-
-export function Editable(props: EditableProps) {
-    const { text, setText, type } = props;
-    const [editVal, setEditVal] = useState<string | null>(null);
-    const editBox = useRef<HTMLInputElement>(null);
-    const resetEditVal = () => setEditVal(null);
-
-    if (editVal === null) {
-        return <span className={"editable " + (props.className || "")} onClick={() => setEditVal(text)}>{text} <PenFill /></span>
-    } else {
-        const submit = () => {
-            setText(editBox.current!.value);
-            resetEditVal();
-        };
-        const keyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-            if (e.key === "Escape") resetEditVal();
-            else if (["Enter", "Backspace"].includes(e.key)) return;
-            else if (type === "number" && !/[0-9]/.test(e.key)) e.preventDefault();
-        };
-
-        return (
-            <Form onSubmit={submit} className={(props.className || "")}>
-                <InputGroup>
-                    <Form.Control ref={editBox} className="editable" autoFocus
-                        defaultValue={editVal} type={type ? type : "text"}
-                        onKeyDown={keyPress}
-                    />
-                    <Button variant="primary" type="submit"><CheckLg /></Button>
-                    <Button variant="outline-primary" onClick={resetEditVal}><XLg /></Button>
-                </InputGroup>
-            </Form>
-        )
-    }
 }
 
 export interface AnnPoolProps {

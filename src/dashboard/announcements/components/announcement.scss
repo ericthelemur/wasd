@@ -64,6 +64,8 @@ span.editable {
 
     &.priority {
         min-width: 2em;
+        max-width: 5em;
+        flex-shrink: 0;
     }
 }
 
@@ -169,4 +171,8 @@ input.editable {
     opacity: 0;
     max-height: 0;
     transition: opacity 500ms ease-in, max-height 500ms ease-in;
+}
+
+.input-group {
+    width: unset;
 }

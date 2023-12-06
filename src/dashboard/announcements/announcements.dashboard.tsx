@@ -134,13 +134,13 @@ export function AnnouncementsPanel() {
 	const qeueContents = queue!.announcements.map(aid => bank![aid.id]);
 	return (
 		<div className="vstack" style={{ height: "100vh" }}>
-			<iframe src="/bundles/wasd/graphics/bar.graphic.html" height="70" width="100%" className="sticky-top" />
+			<iframe src="/bundles/wasd/graphics/bar.graphic.html" height="70" width="100%" className="sticky-top" style={{ maxWidth: 1920, margin: "auto" }} />
 			<div className='container-xxl h-0 flex-grow-1'>
 				<DragDropContext onDragEnd={onDragEnd} onBeforeDragStart={onBeforeDragStart}>
 					<div className='d-flex gap-3 h-100'>
 						<div className="w-50 overflow-scroll sticky-top">
 							{currentAnnouncement && currentAnn && (<div className="p-2">
-								<InputGroup className="card-ctrls announcement float-end" style={{ width: "unset" }}>
+								<InputGroup className="card-ctrls announcement float-end">
 									<Button variant="outline-primary" onClick={() => currentAnnouncement.pause = !currentAnnouncement.pause}>{currentAnnouncement.pause ? <Play /> : <Pause />}</Button>
 								</InputGroup>
 								<h3>Current</h3>
