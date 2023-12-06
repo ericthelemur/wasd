@@ -20,6 +20,9 @@
         },
         "endTime": {
             "type": "number"
+        },
+        "pause": {
+            "type": "boolean"
         }
     },
     "required": [

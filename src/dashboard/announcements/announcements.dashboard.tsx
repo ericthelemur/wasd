@@ -4,7 +4,7 @@ import {
 	BeforeCapture,
 	DragDropContext, DragStart, Draggable, DraggableLocation, DropResult, Droppable, DroppableProvided
 } from 'react-beautiful-dnd';
-import { PlusLg, Trash, XLg } from 'react-bootstrap-icons';
+import { Pause, Play, PlusLg, Trash, XLg } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
 import { createRoot } from 'react-dom/client';
 import { AnnBank, AnnPool, AnnPools, AnnQueue, Announcement } from '../../types/schemas';
@@ -13,6 +13,7 @@ import { useReplicant } from 'use-nodecg';
 import { AnnPoolComp, AnnouncementComp } from './components/announcement';
 import { useState } from 'react';
 import { CurrentAnnouncement } from 'types/schemas/currentAnnouncement';
+import InputGroup from 'react-bootstrap/InputGroup';
 
 const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "numeric", second: "numeric" });
 
@@ -139,6 +140,9 @@ export function AnnouncementsPanel() {
 					<div className='d-flex gap-3 h-100'>
 						<div className="w-50 overflow-scroll sticky-top">
 							{currentAnnouncement && currentAnn && (<div className="p-2">
+								<InputGroup className="card-ctrls announcement float-end" style={{ width: "unset" }}>
+									<Button variant="outline-primary" onClick={() => currentAnnouncement.pause = !currentAnnouncement.pause}>{currentAnnouncement.pause ? <Play /> : <Pause />}</Button>
+								</InputGroup>
 								<h3>Current</h3>
 								<div className="card announcement m-1">
 									<div className="card-body hstack gap-2">
@@ -146,7 +150,7 @@ export function AnnouncementsPanel() {
 											{currentAnn.text}
 										</span>
 										<span className="flex-shrink-0">
-											until {timeFormat.format(currentAnnouncement.endTime)}
+											{currentAnnouncement.pause ? "paused" : `until ${timeFormat.format(currentAnnouncement.endTime)}`}
 										</span>
 									</div>
 								</div>

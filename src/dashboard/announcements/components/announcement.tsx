@@ -156,11 +156,7 @@ export function AnnPoolComp(props: AnnPoolProps) {
                                             props.unlink!(baseAID.id, index, pool);
                                     } : undefined;
                                     return (
-                                        <CSSTransition
-                                            timeout={500}
-                                            key={aid}
-                                            classNames="item"
-                                        >
+                                        <CSSTransition timeout={500} key={aid} classNames="item">
                                             <Draggable key={aid} draggableId={aid} index={index}>
                                                 {provided => <AnnouncementComp id={baseAID} announcement={ann} provided={provided} queue={queue}
                                                     delete={deleteAnnouncement} insert={() => insertAnnouncement(index)}

@@ -83,6 +83,8 @@ module.exports = function (nodecg: NodeCG.ServerAPI) {
 	const now = Date.now();
 	if (current.value.endTime < now) playNext();
 	setTimeout(() => {
-		setInterval(playNext, DISPLAY_TIME);
+		setInterval(() => {
+			if (!current.value.pause) playNext();
+		}, DISPLAY_TIME);
 	}, Math.max(1, current.value.endTime - now))
 };
