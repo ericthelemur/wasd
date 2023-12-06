@@ -71,6 +71,7 @@
     "react-css-transition-replace": "^5.0.1",
     "react-dom": "^18.0.0",
     "react-fitty": "^1.0.1",
+    "react-transition-group": "^4.4.5",
     "ts-node": "^10.9.1",
     "use-nodecg": "github:ericthelemur/use-nodecg"
   },

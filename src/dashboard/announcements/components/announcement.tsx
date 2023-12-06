@@ -12,6 +12,7 @@ import Stack from 'react-bootstrap/Stack';
 import { AnnPool, AnnRef, Announcement } from 'types/schemas';
 
 import add from '../../assets/add.svg';
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
 
 interface AnnouncementProps {
     id: AnnRef;
@@ -31,7 +32,7 @@ export function AnnouncementComp(props: AnnouncementProps) {
 
     return (
         <div ref={provided.innerRef} {...provided.draggableProps} className="card announcement m-1">
-            <div className={'card-body hstack gap-2' + (fade ? " opacity-50" : "")}>
+            <div className={'card-body d-flex gap-2' + (fade ? " opacity-50" : "")}>
                 <div {...provided.dragHandleProps}>
                     <GripVertical />
                 </div>
@@ -41,7 +42,7 @@ export function AnnouncementComp(props: AnnouncementProps) {
                         <Editable text={announcement.text} setText={v => announcement.text = v} className='flex-grow-1' />
                     </>}
                 {!queue && <Editable text={announcement.priority.toString()} setText={v => announcement.priority = Number(v)} type="number" className="priority" />}
-                {<InputGroup style={{ width: "unset" }}>
+                {<InputGroup className="card-ctrls" style={{ width: "unset" }}>
                     {queue && <Button variant="outline-secondary" onClick={props.skipTo}>
                         <FastForward />
                     </Button>}
@@ -143,26 +144,34 @@ export function AnnPoolComp(props: AnnPoolProps) {
                 </div>
                 <Droppable droppableId={id}>
                     {(provided) => (
-                        <div className='pool vstack' {...provided.droppableProps} ref={provided.innerRef}>
-                            {props.contents.map((ann, index) => {
-                                const baseAID = pool.announcements[index];
-                                const aid = `${queue ? "queue-" : ""}${baseAID.id}-${baseAID.time ? baseAID.time : ""}`;
-                                if (aid === undefined) return <h5 key={aid}>Error: Content and IDs mismatch for {aid}</h5>
-                                if (ann === undefined) return <h5 key={aid}>Error: Corresponding Announcement does not exist for announcement id {aid}</h5>
-                                const unlink = props.unlink ? () => {
-                                    if (confirm("Unlink queued announcement from source?\n" + ann.text))
-                                        props.unlink!(baseAID.id, index, pool);
-                                } : undefined;
-                                return (
-                                    <Draggable key={aid} draggableId={aid} index={index}>
-                                        {provided => <AnnouncementComp id={baseAID} announcement={ann} provided={provided} queue={queue}
-                                            delete={deleteAnnouncement} insert={() => insertAnnouncement(index)}
-                                            unlink={unlink} skipTo={props.skipTo ? () => props.skipTo!(index, baseAID.id, ann) : undefined}
-                                        />}
-                                    </Draggable>
-                                )
-                            })}
-                            {provided.placeholder}
+                        <div {...provided.droppableProps} ref={provided.innerRef}>
+                            <TransitionGroup className='pool vstack'>
+                                {props.contents.map((ann, index) => {
+                                    const baseAID = pool.announcements[index];
+                                    const aid = `${queue ? "queue-" : ""}${baseAID.id}-${baseAID.time ? baseAID.time : ""}`;
+                                    if (aid === undefined) return <h5 key={aid}>Error: Content and IDs mismatch for {aid}</h5>
+                                    if (ann === undefined) return <h5 key={aid}>Error: Corresponding Announcement does not exist for announcement id {aid}</h5>
+                                    const unlink = props.unlink ? () => {
+                                        if (confirm("Unlink queued announcement from source?\n" + ann.text))
+                                            props.unlink!(baseAID.id, index, pool);
+                                    } : undefined;
+                                    return (
+                                        <CSSTransition
+                                            timeout={500}
+                                            key={aid}
+                                            classNames="item"
+                                        >
+                                            <Draggable key={aid} draggableId={aid} index={index}>
+                                                {provided => <AnnouncementComp id={baseAID} announcement={ann} provided={provided} queue={queue}
+                                                    delete={deleteAnnouncement} insert={() => insertAnnouncement(index)}
+                                                    unlink={unlink} skipTo={props.skipTo ? () => props.skipTo!(index, baseAID.id, ann) : undefined}
+                                                />}
+                                            </Draggable>
+                                        </CSSTransition>
+                                    )
+                                })}
+                                {provided.placeholder}
+                            </TransitionGroup>
                         </div>
                     )}
                 </Droppable>

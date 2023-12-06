@@ -147,3 +147,33 @@ input.editable {
 .forbid {
     cursor: not-allowed;
 }
+
+.card-ctrls {
+    width: unset;
+    height: fit-content;
+    flex-shrink: 0;
+}
+
+
+
+.item-enter {
+    opacity: 0;
+    max-height: 0;
+}
+
+.item-enter-active {
+    opacity: 1;
+    max-height: 100px;
+    transition: opacity 500ms ease-in, max-height 500ms ease-in;
+}
+
+.item-exit {
+    opacity: 1;
+    max-height: 100px;
+}
+
+.item-exit-active {
+    opacity: 0;
+    max-height: 0;
+    transition: opacity 500ms ease-in, max-height 500ms ease-in;
+}
