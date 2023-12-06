@@ -132,42 +132,47 @@ export function AnnouncementsPanel() {
 	const newAnn = () => addAnn(bank!);
 	const qeueContents = queue!.announcements.map(aid => bank![aid.id]);
 	return (
-		<div className='container-xxl' style={{ height: "100vh" }}>
-			<DragDropContext onDragEnd={onDragEnd} onBeforeDragStart={onBeforeDragStart}>
-				<div className='d-flex h-100 gap-3'>
-					<div className="w-50 overflow-scroll sticky-top">
-						{currentAnnouncement && currentAnn && (<div className="p-2">
-							<h3>Current</h3>
-							<div className="card announcement m-1">
-								<div className="card-body hstack gap-2">
-									<span className="flex-grow-1">
-										{currentAnn.text}
-									</span>
-									until {timeFormat.format(currentAnnouncement.endTime)}
+		<div className="vstack" style={{ height: "100vh" }}>
+			<iframe src="/bundles/wasd/graphics/bar.graphic.html" height="70" width="100%" className="sticky-top" />
+			<div className='container-xxl h-0 flex-grow-1'>
+				<DragDropContext onDragEnd={onDragEnd} onBeforeDragStart={onBeforeDragStart}>
+					<div className='d-flex gap-3 h-100'>
+						<div className="w-50 overflow-scroll sticky-top">
+							{currentAnnouncement && currentAnn && (<div className="p-2">
+								<h3>Current</h3>
+								<div className="card announcement m-1">
+									<div className="card-body hstack gap-2">
+										<span className="flex-grow-1 line-clamp-1">
+											{currentAnn.text}
+										</span>
+										<span className="flex-shrink-0">
+											until {timeFormat.format(currentAnnouncement.endTime)}
+										</span>
+									</div>
 								</div>
+							</div>)}
+							{queue && (<div className="p-2">
+								<h3>Queue</h3>
+								<AnnPoolComp id="queue" pool={queue} contents={qeueContents}
+									addAnn={() => addAnn(bank!, true)} unlink={unlink} skipTo={skipTo} />
+							</div>)}
+						</div>
+						<div className="vstack w-50">
+							<h2>Announcement Pools</h2>
+							<Button className="d-inline" onClick={() => addPool(pools)}><PlusLg /> Add Pool</Button>
+							<div className="pools overflow-scroll vstack gap-3 p-2">
+								{Object.entries(pools).map(([pid, pool]) => {
+									if (pool === undefined) return <h3 key={pid}>Error: Corresponding Pool does not exist for pool id {pid}</h3>
+									const contents = pool.announcements.map(aid => bank![aid.id]);
+									return <AnnPoolComp id={pid} key={pid} pool={pool} contents={contents}
+										addAnn={newAnn} deleteAnn={deleteAnn} />
+								})}
+								{showBin && <div className="trash"><Trash className="queue-trash" /></div>}
 							</div>
-						</div>)}
-						{queue && (<div className="p-2">
-							<h3>Queue</h3>
-							<AnnPoolComp id="queue" pool={queue} contents={qeueContents}
-								addAnn={() => addAnn(bank!, true)} unlink={unlink} skipTo={skipTo} />
-						</div>)}
-					</div>
-					<div className="vstack w-50">
-						<h2>Announcement Pools</h2>
-						<Button className="d-inline" onClick={() => addPool(pools)}><PlusLg /> Add Pool</Button>
-						<div className="pools overflow-scroll vstack gap-3 p-2">
-							{Object.entries(pools).map(([pid, pool]) => {
-								if (pool === undefined) return <h3 key={pid}>Error: Corresponding Pool does not exist for pool id {pid}</h3>
-								const contents = pool.announcements.map(aid => bank![aid.id]);
-								return <AnnPoolComp id={pid} key={pid} pool={pool} contents={contents}
-									addAnn={newAnn} deleteAnn={deleteAnn} />
-							})}
-							{showBin && <div className="trash"><Trash className="queue-trash" /></div>}
 						</div>
 					</div>
-				</div>
-			</DragDropContext >
+				</DragDropContext >
+			</div>
 		</div>
 	);
 }
