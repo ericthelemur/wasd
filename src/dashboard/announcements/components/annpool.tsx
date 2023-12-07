@@ -1,12 +1,12 @@
 import './announcement.scss';
 
-import { Draggable, Droppable } from 'react-beautiful-dnd';
+import { Draggable, DraggableProvided, Droppable } from 'react-beautiful-dnd';
 import { AnnPool, AnnRef, Announcement } from 'types/schemas';
 
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import add from '../../assets/add.svg';
 import Editable from "./editable";
-import { AnnouncementComp } from './announcement';
+import { AnnouncementComp, AnnouncementError } from './announcement';
 
 
 export interface AnnPoolProps {
@@ -42,9 +42,12 @@ export function AnnPoolComp(props: AnnPoolProps) {
     const { id, pool } = props;
     const queue = id === "queue";
 
-    const removeAnnouncement = (id: string) => {
-        pool.announcements.splice(pool.announcements.findIndex((a) => a.id === id), 1);
+    const removeIndex = (index: number) => {
+        pool.announcements.splice(index, 1);
         if (props.removeAnn) props.removeAnn(id);
+    }
+    const removeAnnouncement = (id: string) => {
+        removeIndex(pool.announcements.findIndex((a) => a.id === id));
     }
     const insertAnnouncement = (index: number) => {
         const id = props.addAnn();
@@ -55,24 +58,33 @@ export function AnnPoolComp(props: AnnPoolProps) {
             props.unlink!(ref.id, index, pool);
     } : undefined;
 
+
+    function wrap(id: string, index: number, content: (provided: DraggableProvided) => JSX.Element) {
+        return <CSSTransition timeout={500} key={id} classNames="item">
+            <Draggable key={id} draggableId={id} index={index}>
+                {content}
+            </Draggable>
+        </CSSTransition>
+    }
+
     function AnnWrapper(ann: Announcement, index: number) {
         const ref = pool.announcements[index];
-        if (ref === undefined) return <h5>Error: Content and IDs mismatch {index}</h5>
-        if (ann === undefined) return <h5>Error: Announcement does not exist for id {ref.id}</h5>
+        if (ref === undefined || ann === undefined) {
+            return wrap(`err-${index}`, index, provided =>
+                <AnnouncementError index={index} provided={provided}
+                    msg={ref === undefined ? `Error: Content and IDs mismatch ${index}` : `Error: Announcement does not exist for id ${ref.id}`}
+                    insert={() => insertAnnouncement(index)} remove={() => removeIndex(index)}
+                />)
+        }
         const aid = `${queue ? "queue-" : ""}${ref.id}${ref.time ? `-${ref.time}` : ""}`;
 
-        return (
-            <CSSTransition timeout={500} key={aid} classNames="item">
-                <Draggable key={aid} draggableId={aid} index={index}>
-                    {provided => <AnnouncementComp id={ref} announcement={ann} provided={provided} queue={queue}
-                        remove={() => removeAnnouncement(ref.id)}
-                        unlink={unlink && (() => unlink(ref, index, ann.text))}
-                        insert={() => insertAnnouncement(index)}
-                        skipTo={props.skipTo && (() => props.skipTo!(index, ref.id, ann))}
-                    />}
-                </Draggable>
-            </CSSTransition>
-        )
+        return wrap(aid, index, provided =>
+            <AnnouncementComp id={ref} announcement={ann} provided={provided} queue={queue}
+                remove={() => removeAnnouncement(ref.id)}
+                unlink={unlink && (() => unlink(ref, index, ann.text))}
+                insert={() => insertAnnouncement(index)}
+                skipTo={props.skipTo && (() => props.skipTo!(index, ref.id, ann))}
+            />)
     }
 
 

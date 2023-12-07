@@ -77,3 +77,29 @@ export function AnnouncementComp(props: AnnouncementProps) {
         </div>
     );
 }
+
+interface AnnErrorProps {
+    msg: string;
+    index: number;
+    provided: DraggableProvided;
+    remove: () => void;
+    insert: () => void;
+}
+
+export function AnnouncementError(props: AnnErrorProps) {
+
+    return (
+        <div ref={props.provided.innerRef} {...props.provided.draggableProps} className="card announcement m-1">
+            <div className={'card-body d-flex gap-2 opacity-50'}>
+                <div {...props.provided.dragHandleProps}> <GripVertical /> </div>
+                <h6>{props.msg}</h6>
+                <InputGroup className="card-ctrls">
+                    <Button variant="outline-primary" onClick={props.remove}><XLg /></Button>
+                </InputGroup>
+            </div>
+            <div className="addBtn" onClick={props.insert}>
+                <img className="addIcon" src={add} />
+            </div>
+        </div>
+    );
+}
