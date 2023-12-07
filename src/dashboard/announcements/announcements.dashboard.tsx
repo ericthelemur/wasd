@@ -1,19 +1,15 @@
 import '../../graphics/uwcs-bootstrap.css';
 
-import {
-	BeforeCapture,
-	DragDropContext, DragStart, Draggable, DraggableLocation, DropResult, Droppable, DroppableProvided
-} from 'react-beautiful-dnd';
-import { Pause, Play, PlusLg, Trash, XLg } from 'react-bootstrap-icons';
+import { DragDropContext, DragStart, DraggableLocation, DropResult } from 'react-beautiful-dnd';
+import { Pause, Play, PlusLg, Trash } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
 import { createRoot } from 'react-dom/client';
-import { AnnBank, AnnPool, AnnPools, AnnQueue, Announcement } from '../../types/schemas';
 import { useReplicant } from 'use-nodecg';
+import { AnnBank, AnnPool, AnnPools, AnnQueue, Announcement, CurrentAnnouncement } from '../../types/schemas';
 
-import { AnnPoolComp, AnnouncementComp } from './components/announcement';
 import { useState } from 'react';
-import { CurrentAnnouncement } from 'types/schemas/currentAnnouncement';
 import InputGroup from 'react-bootstrap/InputGroup';
+import { AnnPoolComp } from './components/annpool';
 
 const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "numeric", second: "numeric" });
 
@@ -84,7 +80,7 @@ export function AnnouncementsPanel() {
 	const [bank, setBank] = useReplicant<AnnBank>("annBank", {});
 	const [queue, setQueue] = useReplicant<AnnQueue>("annQueue", { "name": "Queue", "priority": 0, "announcements": [] });
 	const [currentAnnouncement, setAnnouncement] = useReplicant<CurrentAnnouncement>("currentAnnouncement", { "text": "", "annID": null, "endTime": 0 });
-	console.log(pools);
+	// console.log(pools);
 	if (!pools) return <h2>Not loaded announcements</h2>;
 
 	function onBeforeDragStart(start: DragStart) {
@@ -107,7 +103,6 @@ export function AnnouncementsPanel() {
 	}
 
 	function unlink(id: string, index: number, pool: AnnPool, newType: string = "temp") {
-		console.log("Unlinking", id);
 		const oldAnn = bank![id];
 		const newID = genID(newType === "temp" ? "temp" : "ann", Object.keys(bank!));
 		bank![newID] = {
@@ -169,7 +164,7 @@ export function AnnouncementsPanel() {
 									if (pool === undefined) return <h3 key={pid}>Error: Corresponding Pool does not exist for pool id {pid}</h3>
 									const contents = pool.announcements.map(aid => bank![aid.id]);
 									return <AnnPoolComp id={pid} key={pid} pool={pool} contents={contents}
-										addAnn={newAnn} deleteAnn={deleteAnn} />
+										addAnn={newAnn} removeAnn={deleteAnn} />
 								})}
 								{showBin && <div className="trash"><Trash className="queue-trash" /></div>}
 							</div>

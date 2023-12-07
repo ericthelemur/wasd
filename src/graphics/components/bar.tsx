@@ -44,7 +44,7 @@ export function BarAnnouncement() {
     const [currentAnnouncement, setAnnouncement] = useReplicant<CurrentAnnouncement>("currentAnnouncement", { "text": "", "annID": null, "endTime": 0 });
     return <h2 className="announcement">
         <ReactCSSTransitionReplace transitionName="fade-wait" transitionEnterTimeout={1000} transitionLeaveTimeout={400}>
-            <ReactFitty key={currentAnnouncement?.annID} minSize={18} maxSize={36} wrapText={true} className='text' style={{ height: "70px" }}>
+            <ReactFitty key={currentAnnouncement?.annID} minSize={18} maxSize={36} wrapText={true} className='text' style={{ height: "60px" }}>
                 {currentAnnouncement?.text || ""}
             </ReactFitty>
         </ReactCSSTransitionReplace>
