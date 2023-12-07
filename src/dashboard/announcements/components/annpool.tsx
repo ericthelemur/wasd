@@ -7,15 +7,14 @@ import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import add from '../../assets/add.svg';
 import Editable from "./editable";
 import { AnnouncementComp, AnnouncementError } from './announcement';
-
+import { sendToF } from "common/listeners";
+import type { AddAnnouncement } from "common/listenerTypes";
 
 export interface AnnPoolProps {
     id: string;
     pool: AnnPool;
     contents: Announcement[];
-    addAnn: () => string;
     unlink?: (id: string, index: number, pool: AnnPool) => void;
-    removeAnn?: (id: string) => void;
     skipTo?: (index: number, id: string, ann: Announcement) => void;
 }
 
@@ -29,9 +28,9 @@ function PoolTitle(props: AnnPoolProps) {
     </h3>)
 }
 
-function InsertHandle({ insert }: { insert: () => void }) {
+function InsertHandle(props: AddAnnouncement['type']) {
     return (
-        <div className="addBtn" onClick={insert}>
+        <div className="addBtn" onClick={sendToF<AddAnnouncement>("addAnnouncement", props)}>
             <img className="addIcon" src={add} />
         </div>
     )
@@ -42,17 +41,6 @@ export function AnnPoolComp(props: AnnPoolProps) {
     const { id, pool } = props;
     const queue = id === "queue";
 
-    const removeIndex = (index: number) => {
-        pool.announcements.splice(index, 1);
-        if (props.removeAnn) props.removeAnn(id);
-    }
-    const removeAnnouncement = (id: string) => {
-        removeIndex(pool.announcements.findIndex((a) => a.id === id));
-    }
-    const insertAnnouncement = (index: number) => {
-        const id = props.addAnn();
-        pool.announcements.splice(index + 1, 0, { id: id });
-    }
     const unlink = props.unlink ? (ref: AnnRef, index: number, text: string) => {
         if (confirm("Unlink queued announcement from source?\n" + text))
             props.unlink!(ref.id, index, pool);
@@ -71,18 +59,15 @@ export function AnnPoolComp(props: AnnPoolProps) {
         const ref = pool.announcements[index];
         if (ref === undefined || ann === undefined) {
             return wrap(`err-${index}`, index, provided =>
-                <AnnouncementError index={index} provided={provided}
+                <AnnouncementError id={ref} pid={id} index={index} provided={provided}
                     msg={ref === undefined ? `Error: Content and IDs mismatch ${index}` : `Error: Announcement does not exist for id ${ref.id}`}
-                    insert={() => insertAnnouncement(index)} remove={() => removeIndex(index)}
                 />)
         }
         const aid = `${queue ? "queue-" : ""}${ref.id}${ref.time ? `-${ref.time}` : ""}`;
 
         return wrap(aid, index, provided =>
-            <AnnouncementComp id={ref} announcement={ann} provided={provided} queue={queue}
-                remove={() => removeAnnouncement(ref.id)}
+            <AnnouncementComp id={ref} pid={id} announcement={ann} provided={provided} queue={queue}
                 unlink={unlink && (() => unlink(ref, index, ann.text))}
-                insert={() => insertAnnouncement(index)}
                 skipTo={props.skipTo && (() => props.skipTo!(index, ref.id, ann))}
             />)
     }
@@ -93,7 +78,7 @@ export function AnnPoolComp(props: AnnPoolProps) {
             <div className="card-body">
                 {!queue && <PoolTitle {...props} />}
                 <div className="position-relative">
-                    <InsertHandle insert={() => insertAnnouncement(0)} />
+                    <InsertHandle pid={id} after={null} />
                 </div>
                 <Droppable droppableId={id}>
                     {(provided) => (

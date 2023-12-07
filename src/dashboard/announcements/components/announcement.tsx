@@ -8,13 +8,14 @@ import { AnnRef, Announcement } from 'types/schemas';
 
 import add from '../../assets/add.svg';
 import Editable from "./editable";
+import { AddAnnouncement, RemoveAnnouncement } from 'common/listenerTypes';
+import { sendTo, sendToF } from 'common/listeners';
 
 interface AnnouncementProps {
     id: AnnRef;
+    pid: string;
     announcement: Announcement;
     provided: DraggableProvided;
-    remove: (id: string) => void;
-    insert: () => void;
     unlink?: () => void;
     skipTo?: () => void;
     queue?: boolean;
@@ -44,7 +45,7 @@ function AnnouncementControls(props: AnnouncementProps) {
     function del() {
         console.log("Deleting");
         if (announcement.priority === 0 || confirm(`Are you sure you want to delete\n"${announcement.text}"? `)) {
-            props.remove(id.id);
+            sendTo<RemoveAnnouncement>("removeAnnouncement", { aid: id.id });
         }
     }
 
@@ -71,7 +72,7 @@ export function AnnouncementComp(props: AnnouncementProps) {
                 <AnnouncementBody {...props} />
                 <AnnouncementControls {...props} />
             </div>
-            <div className="addBtn" onClick={props.insert}>
+            <div className="addBtn" onClick={sendToF<AddAnnouncement>("addAnnouncement", { pid: props.pid, after: props.id })}>
                 <img className="addIcon" src={add} />
             </div>
         </div>
@@ -79,27 +80,26 @@ export function AnnouncementComp(props: AnnouncementProps) {
 }
 
 interface AnnErrorProps {
+    id?: AnnRef;
+    pid: string;
     msg: string;
     index: number;
     provided: DraggableProvided;
-    remove: () => void;
-    insert: () => void;
 }
 
 export function AnnouncementError(props: AnnErrorProps) {
-
     return (
         <div ref={props.provided.innerRef} {...props.provided.draggableProps} className="card announcement m-1">
             <div className={'card-body d-flex gap-2 opacity-50'}>
                 <div {...props.provided.dragHandleProps}> <GripVertical /> </div>
                 <h6>{props.msg}</h6>
-                <InputGroup className="card-ctrls">
-                    <Button variant="outline-primary" onClick={props.remove}><XLg /></Button>
-                </InputGroup>
+                {props.id && <InputGroup className="card-ctrls">
+                    <Button variant="outline-primary" onClick={sendToF<RemoveAnnouncement>("removeAnnouncement", { aid: props.id!.id })}><XLg /></Button>
+                </InputGroup>}
             </div>
-            <div className="addBtn" onClick={props.insert}>
+            {props.id && <div className="addBtn" onClick={sendToF<AddAnnouncement>("addAnnouncement", { pid: props.pid, after: props.id! })}>
                 <img className="addIcon" src={add} />
-            </div>
+            </div>}
         </div>
     );
 }

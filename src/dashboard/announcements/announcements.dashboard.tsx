@@ -10,6 +10,8 @@ import { AnnBank, AnnPool, AnnPools, AnnQueue, Announcement, CurrentAnnouncement
 import { useState } from 'react';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { AnnPoolComp } from './components/annpool';
+import { sendToF } from 'common/listeners';
+import { AddPool } from 'common/listenerTypes';
 
 const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "numeric", second: "numeric" });
 
@@ -38,27 +40,6 @@ function genID(prefix: string, exclusions: string[]) {
 	return id;
 }
 
-function addPool(pools: AnnPools) {
-	const id = genID("pool", Object.keys(pools));
-
-	pools[id] = {
-		"name": "New",
-		"priority": 0,
-		"announcements": []
-	}
-}
-
-function addAnn(bank: AnnBank, temp = false) {
-	const id = genID(temp ? "temp" : "ann", Object.keys(bank));
-	const ann: Announcement = {
-		"text": "New Announcement",
-		"priority": 0
-	};
-	if (temp) ann.type = "temp";
-	bank[id] = ann;
-	return id;
-}
-
 
 function movePools(source: DraggableLocation, destination: DraggableLocation, pools: AnnPools) {
 	const srcPool = pools![source.droppableId];
@@ -76,10 +57,10 @@ function movePools(source: DraggableLocation, destination: DraggableLocation, po
 
 export function AnnouncementsPanel() {
 	const [showBin, setShowBin] = useState(false);
-	const [pools, setPools] = useReplicant<AnnPools>("annPools", {});
-	const [bank, setBank] = useReplicant<AnnBank>("annBank", {});
-	const [queue, setQueue] = useReplicant<AnnQueue>("annQueue", { "name": "Queue", "priority": 0, "announcements": [] });
-	const [currentAnnouncement, setAnnouncement] = useReplicant<CurrentAnnouncement>("currentAnnouncement", { "text": "", "annID": null, "endTime": 0 });
+	const [pools,] = useReplicant<AnnPools>("annPools", {});
+	const [bank,] = useReplicant<AnnBank>("annBank", {});
+	const [queue,] = useReplicant<AnnQueue>("annQueue", { "name": "Queue", "priority": 0, "announcements": [] });
+	const [currentAnnouncement,] = useReplicant<CurrentAnnouncement>("currentAnnouncement", { "text": "", "annID": null, "endTime": 0 });
 	// console.log(pools);
 	if (!pools) return <h2>Not loaded announcements</h2>;
 
@@ -118,14 +99,8 @@ export function AnnouncementsPanel() {
 		queue!.announcements.splice(0, index);
 	}
 
-	function deleteAnn(id: string) {
-		queue!.announcements = queue!.announcements.filter(a => a.id !== id);
-		delete bank![id];
-	}
-
 	const currentAnn = bank && currentAnnouncement && currentAnnouncement.annID ? bank[currentAnnouncement.annID] : undefined;
 
-	const newAnn = () => addAnn(bank!);
 	const qeueContents = queue!.announcements.map(aid => bank![aid.id]);
 	return (
 		<div className="vstack" style={{ height: "100vh" }}>
@@ -152,19 +127,17 @@ export function AnnouncementsPanel() {
 							</div>)}
 							{queue && (<div className="p-2">
 								<h3>Queue</h3>
-								<AnnPoolComp id="queue" pool={queue} contents={qeueContents}
-									addAnn={() => addAnn(bank!, true)} unlink={unlink} skipTo={skipTo} />
+								<AnnPoolComp id="queue" pool={queue} contents={qeueContents} unlink={unlink} skipTo={skipTo} />
 							</div>)}
 						</div>
 						<div className="vstack w-50">
 							<h2>Announcement Pools</h2>
-							<Button className="d-inline" onClick={() => addPool(pools)}><PlusLg /> Add Pool</Button>
+							<Button className="d-inline" onClick={sendToF("addPool", {})}><PlusLg /> Add Pool</Button>
 							<div className="pools overflow-scroll vstack gap-3 p-2">
 								{Object.entries(pools).map(([pid, pool]) => {
 									if (pool === undefined) return <h3 key={pid}>Error: Corresponding Pool does not exist for pool id {pid}</h3>
 									const contents = pool.announcements.map(aid => bank![aid.id]);
-									return <AnnPoolComp id={pid} key={pid} pool={pool} contents={contents}
-										addAnn={newAnn} removeAnn={deleteAnn} />
+									return <AnnPoolComp id={pid} key={pid} pool={pool} contents={contents} />
 								})}
 								{showBin && <div className="trash"><Trash className="queue-trash" /></div>}
 							</div>

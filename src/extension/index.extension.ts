@@ -7,4 +7,5 @@ module.exports = function (nodecg: NodeCG.ServerAPI) {
 	const replicants = require("./replicants");
 
 	const queue = require("./queue");
+	const listeners = require("./listeners");
 };
