@@ -11,7 +11,6 @@ import { useState } from 'react';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { AnnPoolComp } from './components/annpool';
 import { sendToF } from 'common/listeners';
-import { AddPool } from 'common/listenerTypes';
 
 const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "numeric", second: "numeric" });
 

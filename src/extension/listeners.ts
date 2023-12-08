@@ -19,11 +19,11 @@ function genID(prefix: string, exclusions: string[]) {
 
 // Pools
 const defaultPool: () => AnnPool = () => { return { name: "New Pool", priority: 0, announcements: [] } }
-listenTo<LT.AddPool>("addPool", () => {
+listenTo("addPool", () => {
     const id = genID("pool", Object.keys(pools.value));
     pools.value[id] = defaultPool();
 })
-listenTo<LT.RemovePool>("removePool", ({ pid }, ack) => {
+listenTo("removePool", ({ pid }, ack) => {
     const pool: AnnPool = pools.value[pid];
     if (!pool) return sendError(ack, "Pool does not exist");
     if (!pool.announcements) return sendError(ack, "Empty pool before deleting");
@@ -33,7 +33,7 @@ listenTo<LT.RemovePool>("removePool", ({ pid }, ack) => {
 // Announcements
 const defaultAnn: () => Announcement = () => { return { text: "New Announcement", priority: 0 } }
 
-listenTo<LT.AddAnnouncement>("addAnnouncement", ({ pid, after }, ack) => {
+listenTo("addAnnouncement", ({ pid, after }, ack) => {
     const pool: AnnPool = pools.value[pid];
     if (!pool) return sendError(ack, "Pool does not exist");
 
@@ -48,7 +48,7 @@ listenTo<LT.AddAnnouncement>("addAnnouncement", ({ pid, after }, ack) => {
     pool.announcements.splice(index + 1, 0, { id: id });
 })
 
-listenTo<LT.RemoveAnnouncement>("removeAnnouncement", ({ aid }, ack) => {
+listenTo("removeAnnouncement", ({ aid }, ack) => {
     if (!(aid in bank.value)) return sendError(ack, "Announcement does not exist");
     Object.values(pools.value).forEach(pool => {
         pool.announcements = pool.announcements.filter(a => a.id !== aid);

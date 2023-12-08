@@ -8,7 +8,6 @@ import add from '../../assets/add.svg';
 import Editable from "./editable";
 import { AnnouncementComp, AnnouncementError } from './announcement';
 import { sendToF } from "common/listeners";
-import type { AddAnnouncement } from "common/listenerTypes";
 
 export interface AnnPoolProps {
     id: string;
@@ -28,9 +27,9 @@ function PoolTitle(props: AnnPoolProps) {
     </h3>)
 }
 
-function InsertHandle(props: AddAnnouncement['type']) {
+function InsertHandle(props: { pid: string; after: AnnRef | null; }) {
     return (
-        <div className="addBtn" onClick={sendToF<AddAnnouncement>("addAnnouncement", props)}>
+        <div className="addBtn" onClick={sendToF("addAnnouncement", props)}>
             <img className="addIcon" src={add} />
         </div>
     )

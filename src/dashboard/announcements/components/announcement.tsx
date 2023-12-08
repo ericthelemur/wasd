@@ -8,7 +8,6 @@ import { AnnRef, Announcement } from 'types/schemas';
 
 import add from '../../assets/add.svg';
 import Editable from "./editable";
-import { AddAnnouncement, RemoveAnnouncement } from 'common/listenerTypes';
 import { sendTo, sendToF } from 'common/listeners';
 
 interface AnnouncementProps {
@@ -45,7 +44,7 @@ function AnnouncementControls(props: AnnouncementProps) {
     function del() {
         console.log("Deleting");
         if (announcement.priority === 0 || confirm(`Are you sure you want to delete\n"${announcement.text}"? `)) {
-            sendTo<RemoveAnnouncement>("removeAnnouncement", { aid: id.id });
+            sendTo("removeAnnouncement", { aid: id.id });
         }
     }
 
@@ -72,7 +71,7 @@ export function AnnouncementComp(props: AnnouncementProps) {
                 <AnnouncementBody {...props} />
                 <AnnouncementControls {...props} />
             </div>
-            <div className="addBtn" onClick={sendToF<AddAnnouncement>("addAnnouncement", { pid: props.pid, after: props.id })}>
+            <div className="addBtn" onClick={sendToF("addAnnouncement", { pid: props.pid, after: props.id })}>
                 <img className="addIcon" src={add} />
             </div>
         </div>
@@ -94,10 +93,10 @@ export function AnnouncementError(props: AnnErrorProps) {
                 <div {...props.provided.dragHandleProps}> <GripVertical /> </div>
                 <h6>{props.msg}</h6>
                 {props.id && <InputGroup className="card-ctrls">
-                    <Button variant="outline-primary" onClick={sendToF<RemoveAnnouncement>("removeAnnouncement", { aid: props.id!.id })}><XLg /></Button>
+                    <Button variant="outline-primary" onClick={sendToF("removeAnnouncement", { aid: props.id!.id })}><XLg /></Button>
                 </InputGroup>}
             </div>
-            {props.id && <div className="addBtn" onClick={sendToF<AddAnnouncement>("addAnnouncement", { pid: props.pid, after: props.id! })}>
+            {props.id && <div className="addBtn" onClick={sendToF("addAnnouncement", { pid: props.pid, after: props.id! })}>
                 <img className="addIcon" src={add} />
             </div>}
         </div>
