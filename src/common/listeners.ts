@@ -5,6 +5,7 @@ import { getNodeCG } from "../extension/utils";
 import { NodeCGAPIClient } from "@nodecg/types/client/api/api.client";
 
 var ncg: NodeCGAPIClient | NodeCG.ServerAPI;
+declare var nodecg: NodeCGAPIClient;
 try {
     ncg = nodecg;
 } catch {
