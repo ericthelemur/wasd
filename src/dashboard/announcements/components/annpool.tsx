@@ -6,15 +6,13 @@ import { AnnPool, AnnRef, Announcement } from 'types/schemas';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import add from '../../assets/add.svg';
 import Editable from "./editable";
-import { AnnouncementComp, AnnouncementError } from './announcement';
-import { sendToF } from "common/listeners";
+import { AnnouncementComp, AnnouncementError, InsertHandle } from './announcement';
+import { sendTo, sendToF } from "common/listeners";
 
 export interface AnnPoolProps {
     id: string;
     pool: AnnPool;
     contents: Announcement[];
-    unlink?: (id: string, index: number, pool: AnnPool) => void;
-    skipTo?: (index: number, id: string, ann: Announcement) => void;
 }
 
 function PoolTitle(props: AnnPoolProps) {
@@ -25,14 +23,6 @@ function PoolTitle(props: AnnPoolProps) {
         <Editable type="number" className='priority'
             text={pool.priority.toString()} setText={v => pool.priority = Number(v)} />
     </h3>)
-}
-
-function InsertHandle(props: { pid: string; after: AnnRef | null; }) {
-    return (
-        <div className="addBtn" onClick={sendToF("addAnnouncement", props)}>
-            <img className="addIcon" src={add} />
-        </div>
-    )
 }
 
 
@@ -67,31 +57,23 @@ export function DnDTransitionsList<T>({ id, ids, data, content }: DndTransitions
 }
 
 export function AnnPoolComp(props: AnnPoolProps) {
-    const { id, pool } = props;
-    const queue = id === "queue";
-
-    const unlink = props.unlink ? (ref: AnnRef, index: number, text: string) => {
-        if (confirm("Unlink queued announcement from source?\n" + text))
-            props.unlink!(ref.id, index, pool);
-    } : undefined;
+    const { id: pid, pool } = props;
+    const queue = pid === "queue";
 
     return (
         <div className={"card my-1" + (pool.priority === 0 && !queue ? " opacity-50" : "")}>
             <div className="card-body">
                 {!queue && <PoolTitle {...props} />}
-                <div className="position-relative">
-                    <InsertHandle pid={id} after={null} />
-                </div>
-                <DnDTransitionsList id={id}
+                <DnDTransitionsList id={pid}
                     ids={pool.announcements.map(r => `${queue ? "queue-" : ""}${r.id}${r.time ? `-${r.time}` : ""}`)}
                     data={props.contents}
                     content={(id, index, ann, provided) => {
                         const ref = pool.announcements[index];
-                        return <AnnouncementComp id={ref} pid={id} announcement={ann} provided={provided} queue={queue}
-                            unlink={unlink && (() => unlink(ref, index, ann.text))}
-                            skipTo={props.skipTo && (() => props.skipTo!(index, ref.id, ann))}
-                        />
+                        return <AnnouncementComp id={ref} pid={pid} announcement={ann} provided={provided} queue={queue} />
                     }} />
+                <div className="position-relative">
+                    <InsertHandle pid={pid} before={null} />
+                </div>
             </div>
         </div>
     )

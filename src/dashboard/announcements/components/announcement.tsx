@@ -15,8 +15,6 @@ interface AnnouncementProps {
     pid: string;
     announcement: Announcement;
     provided: DraggableProvided;
-    unlink?: () => void;
-    skipTo?: () => void;
     queue?: boolean;
 }
 
@@ -51,11 +49,19 @@ function AnnouncementControls(props: AnnouncementProps) {
     return (
         <InputGroup className="card-ctrls">
             {queue &&
-                <Button variant="outline-secondary" onClick={props.skipTo}><FastForward /></Button>}
+                <Button variant="outline-secondary" onClick={sendToF("skipTo", { aref: id })}><FastForward /></Button>}
             {queue && !temp &&
-                <Button variant="outline-secondary" onClick={props.unlink}><Link45deg /></Button>}
+                <Button variant="outline-secondary" onClick={sendToF("unlink", { aref: id })}><Link45deg /></Button>}
             <Button variant="outline-primary" onClick={del}><XLg /></Button>
         </InputGroup>
+    )
+}
+
+export function InsertHandle(props: { pid: string; before: AnnRef | null; }) {
+    return (
+        <div className="addBtn" onClick={sendToF("addAnnouncement", props)}>
+            <img className="addIcon" src={add} />
+        </div>
     )
 }
 
@@ -66,13 +72,11 @@ export function AnnouncementComp(props: AnnouncementProps) {
 
     return (
         <div ref={provided.innerRef} {...provided.draggableProps} className="card announcement m-1">
+            <InsertHandle pid={props.pid} before={props.id} />
             <div className={'card-body d-flex gap-2' + (fade ? " opacity-50" : "")}>
                 <div {...provided.dragHandleProps}> <GripVertical /> </div>
                 <AnnouncementBody {...props} />
                 <AnnouncementControls {...props} />
-            </div>
-            <div className="addBtn" onClick={sendToF("addAnnouncement", { pid: props.pid, after: props.id })}>
-                <img className="addIcon" src={add} />
             </div>
         </div>
     );
@@ -96,9 +100,7 @@ export function AnnouncementError(props: AnnErrorProps) {
                     <Button variant="outline-primary" onClick={sendToF("removeAnnouncement", { aid: props.id!.id })}><XLg /></Button>
                 </InputGroup>}
             </div>
-            {props.id && <div className="addBtn" onClick={sendToF("addAnnouncement", { pid: props.pid, after: props.id! })}>
-                <img className="addIcon" src={add} />
-            </div>}
+            {props.id && <InsertHandle pid={props.pid} before={props.id} />}
         </div>
     );
 }

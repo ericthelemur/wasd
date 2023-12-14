@@ -10,49 +10,10 @@ import { AnnBank, AnnPool, AnnPools, AnnQueue, Announcement, CurrentAnnouncement
 import { useState } from 'react';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { AnnPoolComp } from './components/annpool';
-import { sendToF } from 'common/listeners';
+import { sendTo, sendToF } from 'common/listeners';
+import { klona } from "klona";
 
 const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "numeric", second: "numeric" });
-
-function reorder(pool: AnnPool, startIndex: number, endIndex: number) {
-	const result = Array.from(pool.announcements);
-	const [removed] = result.splice(startIndex, 1);
-	result.splice(endIndex, 0, removed);
-	pool.announcements = result;
-};
-
-function move(source: AnnPool, destination: AnnPool, droppableSource: DraggableLocation, droppableDestination: DraggableLocation) {
-	const src = Array.from(source.announcements);
-	const dst = Array.from(destination.announcements);
-	const [removed] = src.splice(droppableSource.index, 1);
-	dst.splice(droppableDestination.index, 0, removed);
-	source.announcements = src;
-	destination.announcements = dst;
-};
-
-
-function genID(prefix: string, exclusions: string[]) {
-	var id;
-	do {
-		id = `${prefix}-${Math.floor(Math.random() * 100000000)}`;
-	} while (exclusions.includes(id));
-	return id;
-}
-
-
-function movePools(source: DraggableLocation, destination: DraggableLocation, pools: AnnPools) {
-	const srcPool = pools![source.droppableId];
-	const destPool = pools![destination.droppableId];
-
-	if (!srcPool || !destPool) return;
-
-	if (source.droppableId === destination.droppableId) {
-		reorder(srcPool, source.index, destination.index);
-	} else {
-		move(srcPool, destPool, source, destination);
-	}
-}
-
 
 export function AnnouncementsPanel() {
 	const [showBin, setShowBin] = useState(false);
@@ -72,30 +33,29 @@ export function AnnouncementsPanel() {
 		const { source, destination } = result;
 		if (!destination) return;
 
-		if (source.droppableId !== "queue" && destination.droppableId !== "queue") movePools(source, destination, pools!);
-		else if (source.droppableId === "queue" && destination.droppableId === "queue") reorder(queue!, source.index, destination.index);
-		else if (source.droppableId !== "queue" && destination.droppableId === "queue") {
-			const key = pools![source.droppableId].announcements[source.index];
-			queue!.announcements.splice(destination.index, 0, { id: key.id, time: Date.now() });
-		} else { // (source.droppableId === "queue" && destination.droppableId !== "queue")
-			queue!.announcements.splice(source.index, 1);
+		if (source.droppableId !== "queue" && destination.droppableId !== "queue") {
+			if (source.index === destination.index) return;
+			const sa = pools![source.droppableId].announcements;
+			const da = pools![destination.droppableId].announcements;
+			console.log(sa.map(a => a.id).join(", "));
+			const ind = source.index < destination.index ? destination.index + 1 : destination.index;
+			sendTo("movePool", {
+				aref: klona(sa[source.index]),
+				oldpid: source.droppableId,
+				newpid: destination.droppableId,
+				before: klona(destination.index === da.length ? null : da[ind])
+			})
+		} else if (source.droppableId === "queue" && destination.droppableId === "queue") sendTo("reorderQueue", {
+			aref: queue!.announcements[source.index],
+			before: queue!.announcements[destination.index]
+		})
+		else if (source.droppableId !== "queue" && destination.droppableId === "queue") sendTo("enqueue", {
+			aid: pools![source.droppableId].announcements[source.index].id,
+			before: queue!.announcements[destination.index]
+		})
+		else { // (source.droppableId === "queue" && destination.droppableId !== "queue")
+			sendTo("dequeue", { aref: queue!.announcements[source.index] })
 		}
-	}
-
-	function unlink(id: string, index: number, pool: AnnPool, newType: string = "temp") {
-		const oldAnn = bank![id];
-		const newID = genID(newType === "temp" ? "temp" : "ann", Object.keys(bank!));
-		bank![newID] = {
-			"text": oldAnn.text,
-			"priority": oldAnn.priority,
-			"type": newType
-		}
-		pool.announcements[index] = { id: newID, time: Date.now() };
-		return newID;
-	}
-
-	function skipTo(index: number, id: string, ann: Announcement) {
-		queue!.announcements.splice(0, index);
 	}
 
 	const currentAnn = bank && currentAnnouncement && currentAnnouncement.annID ? bank[currentAnnouncement.annID] : undefined;
@@ -126,7 +86,7 @@ export function AnnouncementsPanel() {
 							</div>)}
 							{queue && (<div className="p-2">
 								<h3>Queue</h3>
-								<AnnPoolComp id="queue" pool={queue} contents={qeueContents} unlink={unlink} skipTo={skipTo} />
+								<AnnPoolComp id="queue" pool={queue} contents={qeueContents} />
 							</div>)}
 						</div>
 						<div className="vstack w-50">
