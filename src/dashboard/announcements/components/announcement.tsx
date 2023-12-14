@@ -16,6 +16,7 @@ interface AnnouncementProps {
     announcement: Announcement;
     provided: DraggableProvided;
     queue?: boolean;
+    strike?: boolean;
 }
 
 function AnnouncementBody(props: AnnouncementProps) {
@@ -67,9 +68,20 @@ export function InsertHandle(props: { pid: string; before: AnnRef | null; }) {
 
 
 export function AnnouncementComp(props: AnnouncementProps) {
-    const { announcement, provided, queue } = props;
+    const { announcement, provided, queue, strike } = props;
+    if (announcement === undefined) return <AnnouncementError {...props} msg="Announcement is undefined" index={-1} />
     const fade = (!queue && announcement.priority === 0) || (queue && announcement.text === "New Announcement")
 
+    if (strike) {
+        return (
+            <div ref={provided.innerRef} {...provided.draggableProps} className="card announcement m-1" style={{ textDecoration: "line-through" }}>
+                <div className='card-body d-flex gap-2 opacity-50'>
+                    <div {...provided.dragHandleProps} style={{ pointerEvents: "none" }}> <GripVertical /> </div>
+                    <AnnouncementBody {...props} />
+                </div>
+            </div>
+        )
+    }
     return (
         <div ref={provided.innerRef} {...provided.draggableProps} className="card announcement m-1">
             <InsertHandle pid={props.pid} before={props.id} />

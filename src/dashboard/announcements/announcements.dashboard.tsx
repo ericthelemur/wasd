@@ -5,7 +5,7 @@ import { Pause, Play, PlusLg, Trash } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
 import { createRoot } from 'react-dom/client';
 import { useReplicant } from 'use-nodecg';
-import { AnnBank, AnnPool, AnnPools, AnnQueue, Announcement, CurrentAnnouncement } from '../../types/schemas';
+import { AnnBank, AnnPool, AnnPools, AnnQueue, AnnRef, Announcement, CurrentAnnouncement } from '../../types/schemas';
 
 import { useState } from 'react';
 import InputGroup from 'react-bootstrap/InputGroup';
@@ -15,8 +15,21 @@ import { klona } from "klona";
 
 const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "numeric", second: "numeric" });
 
+interface HoverStates {
+	dragging: boolean;
+	hoverQueue: boolean;
+	showBin: boolean;
+}
+
+interface PreludeInfo {
+	lastCA: AnnRef | null,
+	prelude: AnnRef[]
+}
+
 export function AnnouncementsPanel() {
-	const [showBin, setShowBin] = useState(false);
+	const [hv, setHover] = useState<HoverStates>({ dragging: false, hoverQueue: false, showBin: false });
+	const [prelude, setPrelude] = useState<PreludeInfo>({ lastCA: null, prelude: [] });
+
 	const [pools,] = useReplicant<AnnPools>("annPools", {});
 	const [bank,] = useReplicant<AnnBank>("annBank", {});
 	const [queue,] = useReplicant<AnnQueue>("annQueue", { "name": "Queue", "priority": 0, "announcements": [] });
@@ -24,43 +37,54 @@ export function AnnouncementsPanel() {
 	// console.log(pools);
 	if (!pools) return <h2>Not loaded announcements</h2>;
 
+	if ((hv.dragging || hv.hoverQueue) && currentAnnouncement !== undefined && currentAnnouncement.text !== "") {
+		if (prelude.lastCA === null) {
+			setPrelude({ ...prelude, lastCA: { id: currentAnnouncement.annID!, time: currentAnnouncement.time } });
+		} else if (prelude.lastCA.id != currentAnnouncement.annID && prelude.lastCA.time != currentAnnouncement.time) {
+			const lca = { id: currentAnnouncement.annID!, time: currentAnnouncement.time };
+			setPrelude({ lastCA: lca, prelude: [...prelude.prelude, lca] });
+		}
+	}
+	if (!hv.dragging && !hv.hoverQueue && prelude.prelude.length > 0) setPrelude({ lastCA: null, prelude: [] });
+
 	function onBeforeDragStart(start: DragStart) {
-		if (start.source.droppableId === "queue") setShowBin(true);
+		setHover({ ...hv, dragging: true, showBin: start.source.droppableId === "queue" });
 	}
 
 	function onDragEnd(result: DropResult) {
-		if (showBin) setShowBin(false);
+		setHover({ ...hv, dragging: false, showBin: false });
+		setPrelude({ lastCA: null, prelude: [] });
+
 		const { source, destination } = result;
 		if (!destination) return;
 
 		if (source.droppableId !== "queue" && destination.droppableId !== "queue") {
 			if (source.index === destination.index) return;
-			const sa = pools![source.droppableId].announcements;
 			const da = pools![destination.droppableId].announcements;
-			console.log(sa.map(a => a.id).join(", "));
-			const ind = source.index < destination.index ? destination.index + 1 : destination.index;
+			const ind = source.droppableId === destination.droppableId && source.index < destination.index ? destination.index + 1 : destination.index;
 			sendTo("movePool", {
-				aref: klona(sa[source.index]),
+				aref: klona(pools![source.droppableId].announcements[source.index]),
 				oldpid: source.droppableId,
 				newpid: destination.droppableId,
 				before: klona(destination.index === da.length ? null : da[ind])
 			})
 		} else if (source.droppableId === "queue" && destination.droppableId === "queue") sendTo("reorderQueue", {
-			aref: queue!.announcements[source.index],
-			before: queue!.announcements[destination.index]
+			aref: queue!.announcements[source.index - prelude.prelude.length],
+			before: queue!.announcements[destination.index - prelude.prelude.length]
 		})
 		else if (source.droppableId !== "queue" && destination.droppableId === "queue") sendTo("enqueue", {
 			aid: pools![source.droppableId].announcements[source.index].id,
-			before: queue!.announcements[destination.index]
+			before: queue!.announcements[destination.index - prelude.prelude.length]
 		})
 		else { // (source.droppableId === "queue" && destination.droppableId !== "queue")
-			sendTo("dequeue", { aref: queue!.announcements[source.index] })
+			sendTo("dequeue", { aref: queue!.announcements[source.index - prelude.prelude.length] })
 		}
 	}
 
 	const currentAnn = bank && currentAnnouncement && currentAnnouncement.annID ? bank[currentAnnouncement.annID] : undefined;
 
-	const qeueContents = queue!.announcements.map(aid => bank![aid.id]);
+	const queueContents = queue!.announcements.map(aid => bank![aid.id]);
+	const queuePreludeAnns = prelude.prelude.map(aid => bank![aid.id]);
 	return (
 		<div className="vstack" style={{ height: "100vh" }}>
 			<iframe src="/bundles/wasd/graphics/bar.graphic.html" height="70" width="100%" className="sticky-top" style={{ maxWidth: 1920, margin: "auto" }} />
@@ -84,9 +108,9 @@ export function AnnouncementsPanel() {
 									</div>
 								</div>
 							</div>)}
-							{queue && (<div className="p-2">
+							{queue && (<div className="p-2" onMouseEnter={() => setHover({ ...hv, hoverQueue: true })} onMouseLeave={() => setHover({ ...hv, hoverQueue: false })}>
 								<h3>Queue</h3>
-								<AnnPoolComp id="queue" pool={queue} contents={qeueContents} />
+								<AnnPoolComp id="queue" pool={queue} contents={queueContents} preludeRefs={prelude.prelude} prelude={queuePreludeAnns} />
 							</div>)}
 						</div>
 						<div className="vstack w-50">
@@ -98,7 +122,7 @@ export function AnnouncementsPanel() {
 									const contents = pool.announcements.map(aid => bank![aid.id]);
 									return <AnnPoolComp id={pid} key={pid} pool={pool} contents={contents} />
 								})}
-								{showBin && <div className="trash"><Trash className="queue-trash" /></div>}
+								{hv.showBin && <div className="trash"><Trash className="queue-trash" /></div>}
 							</div>
 						</div>
 					</div>

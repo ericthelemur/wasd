@@ -3,7 +3,7 @@ import { AnnBank, AnnPools, AnnQueue, AnnRef, Announcement, CurrentAnnouncement 
 import { current, pools, bank, queue } from "./replicants";
 import { getNodeCG } from './utils';
 
-const QUEUE_LEN = 6;
+const QUEUE_LEN = 12;
 const DISPLAY_TIME = 5000;
 const nodecg = getNodeCG();
 
@@ -70,15 +70,17 @@ function playNext() {
         const newAnn = bank.value[newRef.id];
         if (!newAnn) return nodecg.log.warn("No announcement found for ref", newRef.id);
         current.value = {
+            ...current.value,
             text: newAnn.text,
             annID: newRef.id,
-            endTime: Date.now() + DISPLAY_TIME
+            endTime: Date.now() + DISPLAY_TIME,
+            time: newRef.time
         }
     }
 }
 
 const now = Date.now();
-if (current.value.endTime < now) playNext();
+if (!current.value.pause && current.value.endTime < now) playNext();
 setTimeout(() => {
     setInterval(() => {
         if (!current.value.pause) playNext();

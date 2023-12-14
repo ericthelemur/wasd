@@ -9,6 +9,7 @@ export interface CurrentAnnouncement {
 	text: string | null;
 	annID: string | null;
 	endTime: number;
+	time?: number;
 	pause?: boolean;
 	[k: string]: unknown;
 }

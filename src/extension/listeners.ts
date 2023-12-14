@@ -75,7 +75,7 @@ function movePool(source: AnnPool, dest: AnnPool, aid: AnnRef, before: AnnRef | 
 const defaultAnn: () => Announcement = () => { return { text: "New Announcement", priority: 0 } }
 
 listenTo("addAnnouncement", ({ pid, before }, ack) => {
-    const pool: AnnPool = pools.value[pid];
+    const pool: AnnPool = pid === "queue" ? queue.value : pools.value[pid];
     if (!pool) return sendError(ack, "Pool does not exist");
 
     const temp = pid === "queue";

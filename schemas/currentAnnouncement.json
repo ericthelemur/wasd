@@ -21,6 +21,9 @@
         "endTime": {
             "type": "number"
         },
+        "time": {
+            "type": "number"
+        },
         "pause": {
             "type": "boolean"
         }

@@ -13,6 +13,8 @@ export interface AnnPoolProps {
     id: string;
     pool: AnnPool;
     contents: Announcement[];
+    prelude?: Announcement[];
+    preludeRefs?: AnnRef[];
 }
 
 function PoolTitle(props: AnnPoolProps) {
@@ -56,20 +58,27 @@ export function DnDTransitionsList<T>({ id, ids, data, content }: DndTransitions
     )
 }
 
+function makeID(queue: boolean) {
+    return (r: AnnRef) => `${queue ? "queue-" : ""}${r.id}${r.time ? `-${r.time}` : ""}`
+}
 export function AnnPoolComp(props: AnnPoolProps) {
     const { id: pid, pool } = props;
     const queue = pid === "queue";
-
+    const prelude = props.prelude || [];
+    const n = pool.announcements.length;
+    const refs = [...(props.preludeRefs || []), ...pool.announcements].slice(0, n);
+    const data = [...prelude, ...props.contents].slice(0, n);
+    if (queue && props.prelude) console.log(props.prelude.length, refs.map(makeID(queue)));
     return (
         <div className={"card my-1" + (pool.priority === 0 && !queue ? " opacity-50" : "")}>
             <div className="card-body">
                 {!queue && <PoolTitle {...props} />}
                 <DnDTransitionsList id={pid}
-                    ids={pool.announcements.map(r => `${queue ? "queue-" : ""}${r.id}${r.time ? `-${r.time}` : ""}`)}
-                    data={props.contents}
+                    ids={refs.map(makeID(queue))}
+                    data={data}
                     content={(id, index, ann, provided) => {
                         const ref = pool.announcements[index];
-                        return <AnnouncementComp id={ref} pid={pid} announcement={ann} provided={provided} queue={queue} />
+                        return <AnnouncementComp id={ref} pid={pid} announcement={ann} provided={provided} queue={queue} strike={index < prelude.length} />
                     }} />
                 <div className="position-relative">
                     <InsertHandle pid={pid} before={null} />
