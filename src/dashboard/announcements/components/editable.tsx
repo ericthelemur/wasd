@@ -21,7 +21,7 @@ export default function Editable(props: EditableProps) {
     const resetEditVal = () => setEditVal(null);
 
     if (editVal === null) {
-        return <span className={"editable " + (props.className || "")} onClick={() => setEditVal(text)}>{text} <PenFill /></span>
+        return <span className={"input-group-text editable " + (props.className || "")} onClick={() => setEditVal(text)}>{text} <PenFill /></span>
     } else {
         const submit = () => {
             setText(editBox.current!.value);
@@ -34,16 +34,14 @@ export default function Editable(props: EditableProps) {
         };
 
         return (
-            <Form onSubmit={submit} className={(props.className || "")}>
-                <InputGroup>
-                    <Form.Control ref={editBox} className="editable" autoFocus
-                        defaultValue={editVal} type={type ? type : "text"}
-                        onKeyDown={keyPress} as={props.as || undefined} onFocus={e => e.target.select()}
-                    />
-                    <Button variant="primary" type="submit"><CheckLg /></Button>
-                    <Button variant="outline-primary" onClick={resetEditVal}><XLg /></Button>
-                </InputGroup>
-            </Form>
+            <>
+                <Form.Control ref={editBox} className="editable" autoFocus
+                    defaultValue={editVal} type={type ? type : "text"}
+                    onKeyDown={keyPress} as={props.as || undefined} onFocus={e => e.target.select()}
+                />
+                <Button variant="primary" type="submit" onSubmit={submit}><CheckLg /></Button>
+                <Button variant="outline-primary" onClick={resetEditVal}><XLg /></Button>
+            </>
         )
     }
 }

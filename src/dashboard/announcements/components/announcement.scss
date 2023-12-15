@@ -14,6 +14,9 @@ svg {
     padding: 0.25em 0.5em;
 }
 
+:root {
+    --bs-btn-font-size: 1em !important;
+}
 
 .btn-primary {
     --bs-btn-disabled-border-color: gray !important;
@@ -58,8 +61,9 @@ span.editable {
     &>svg {
         visibility: hidden;
         color: var(--bs-border-color);
-        width: 0.6em;
-        height: 0.6em;
+        width: 0.7em;
+        height: 0.7em;
+        margin-left: 0.25em;
     }
 
     &:hover>svg {
@@ -76,6 +80,14 @@ input.editable {
 
 .input-group {
     width: unset;
+
+    & .input-group-text {
+        padding: 0.1em 0.25em;
+    }
+
+    & .btn {
+        padding: 0.1em 0.25em !important;
+    }
 }
 
 .priority {
@@ -95,7 +107,7 @@ input.editable {
     height: 0.5em;
 
     position: absolute;
-    top: -0.75em;
+    top: -0.5em;
     left: 0;
     z-index: 1000;
 
@@ -152,6 +164,7 @@ input.editable {
     width: unset;
     height: fit-content;
     flex-shrink: 0;
+    font-size: 0.8em;
 }
 
 .line-clamp-1 {

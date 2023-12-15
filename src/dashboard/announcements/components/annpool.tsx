@@ -60,7 +60,7 @@ export function AnnPoolComp(props: AnnPoolProps) {
                         return <AnnouncementComp id={ref} pid={pid} announcement={ann} provided={provided}
                             queue={queue} strike={index < (props.prelude?.length || 0)} />
                     }} />
-                <div className="position-relative">
+                <div className="position-relative mt-2">
                     <InsertHandle pid={pid} before={null} />
                 </div>
             </div>

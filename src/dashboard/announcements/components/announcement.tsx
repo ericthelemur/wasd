@@ -23,14 +23,14 @@ function AnnouncementBody(props: AnnouncementProps) {
     const { announcement, queue } = props;
     const temp = announcement.type === "temp";
     const text = queue && !temp
-        ? <span className='flex-grow-1 forbid'><Link45deg /> {announcement.text}</span>
+        ? <span className='flex-grow-1 forbid input-group-text'><Link45deg /> {announcement.text}</span>
         : <>
             {queue && <Pen className="small" />}
-            <Editable className='flex-grow-1' as="textarea" text={announcement.text}
+            <Editable className='flex-grow-1 input-group-text' text={announcement.text}
                 setText={v => announcement.text = v} />
         </>
     const priority = queue ? undefined :
-        <Editable type="number" className="priority" text={announcement.priority.toString()}
+        <Editable type="number" className="priority input-group-text" text={announcement.priority.toString()}
             setText={v => announcement.priority = Number(v)} />
     return <>{text}{priority}</>
 }
@@ -48,13 +48,13 @@ function AnnouncementControls(props: AnnouncementProps) {
     }
 
     return (
-        <InputGroup className="card-ctrls">
+        <>
             {queue &&
                 <Button variant="outline-secondary" onClick={sendToF("skipTo", { aref: id })}><FastForward /></Button>}
             {queue && !temp &&
                 <Button variant="outline-secondary" onClick={sendToF("unlink", { aref: id })}><Link45deg /></Button>}
             <Button variant="outline-primary" onClick={del}><XLg /></Button>
-        </InputGroup>
+        </>
     )
 }
 
@@ -72,15 +72,13 @@ export function AnnouncementComp(props: AnnouncementProps) {
     if (announcement === undefined) return <AnnouncementError {...props} msg="Announcement is undefined" index={-1} />
     const fade = (!queue && announcement.priority === 0) || (queue && announcement.text === "New Announcement")
 
-    return <div ref={provided.innerRef} {...provided.draggableProps} className="card announcement m-1"
+    return <div ref={provided.innerRef} {...provided.draggableProps} className="input-group m-1"
         {...(strike ? { textDecoration: "line-through" } : {})}
     >
+        <div className="btn btn-outline-secondary" {...provided.dragHandleProps}> <GripVertical /> </div>
         {!strike && <InsertHandle pid={props.pid} before={props.id} />}
-        <div className={'card-body d-flex gap-2' + (fade || strike ? " opacity-50" : "")}>
-            <div {...provided.dragHandleProps}> <GripVertical /> </div>
-            <AnnouncementBody {...props} />
-            {strike && <AnnouncementControls {...props} />}
-        </div>
+        <AnnouncementBody {...props} />
+        {!strike && <AnnouncementControls {...props} />}
     </div>;
 }
 
