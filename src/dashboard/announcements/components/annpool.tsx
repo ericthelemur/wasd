@@ -8,6 +8,7 @@ import add from '../../assets/add.svg';
 import Editable from "./editable";
 import { AnnouncementComp, AnnouncementError, InsertHandle } from './announcement';
 import { sendTo, sendToF } from "common/listeners";
+import { DnDTransitionsList } from './dndlist';
 
 export interface AnnPoolProps {
     id: string;
@@ -27,48 +28,26 @@ function PoolTitle(props: AnnPoolProps) {
     </h3>)
 }
 
-
-function DnDTransitionItem(id: string, index: number, content: (provided: DraggableProvided) => JSX.Element) {
-    return <CSSTransition timeout={500} key={id} classNames="item">
-        <Draggable key={id} draggableId={id} index={index}>
-            {content}
-        </Draggable>
-    </CSSTransition>
-}
-
-interface DndTransitionsListProps<T> {
-    id: string;
-    data: T[];
-    ids: string[];
-    content: (id: string, index: number, item: T, provided: DraggableProvided) => JSX.Element;
-}
-
-export function DnDTransitionsList<T>({ id, ids, data, content }: DndTransitionsListProps<T>) {
-    return (
-        <Droppable droppableId={id}>
-            {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef}>
-                    <TransitionGroup className='pool vstack'>
-                        {data.map((d, i) => DnDTransitionItem(ids[i], i, (p) => content(ids[i], i, d, p)))}
-                        {provided.placeholder}
-                    </TransitionGroup>
-                </div>
-            )}
-        </Droppable>
-    )
-}
-
 function makeID(queue: boolean) {
     return (r: AnnRef) => `${queue ? "queue-" : ""}${r.id}${r.time ? `-${r.time}` : ""}`
 }
+
 export function AnnPoolComp(props: AnnPoolProps) {
     const { id: pid, pool } = props;
     const queue = pid === "queue";
-    const prelude = props.prelude || [];
-    const n = pool.announcements.length;
-    const refs = [...(props.preludeRefs || []), ...pool.announcements].slice(0, n);
-    const data = [...prelude, ...props.contents].slice(0, n);
-    if (queue && props.prelude) console.log(props.prelude.length, refs.map(makeID(queue)));
+
+    // Construct list with prelude -- simulates a freeze of queue in ui
+    var refs, data;
+    if (queue) {
+        const prelude = props.prelude || [];
+        const n = pool.announcements.length;
+        refs = [...(props.preludeRefs || []), ...pool.announcements].slice(0, n);
+        data = [...prelude, ...props.contents].slice(0, n);
+    } else {
+        refs = pool.announcements;
+        data = props.contents;
+    }
+
     return (
         <div className={"card my-1" + (pool.priority === 0 && !queue ? " opacity-50" : "")}>
             <div className="card-body">
@@ -78,7 +57,8 @@ export function AnnPoolComp(props: AnnPoolProps) {
                     data={data}
                     content={(id, index, ann, provided) => {
                         const ref = pool.announcements[index];
-                        return <AnnouncementComp id={ref} pid={pid} announcement={ann} provided={provided} queue={queue} strike={index < prelude.length} />
+                        return <AnnouncementComp id={ref} pid={pid} announcement={ann} provided={provided}
+                            queue={queue} strike={index < (props.prelude?.length || 0)} />
                     }} />
                 <div className="position-relative">
                     <InsertHandle pid={pid} before={null} />

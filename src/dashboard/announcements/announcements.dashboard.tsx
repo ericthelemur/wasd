@@ -91,7 +91,7 @@ export function AnnouncementsPanel() {
 			<div className='container-xxl h-0 flex-grow-1'>
 				<DragDropContext onDragEnd={onDragEnd} onBeforeDragStart={onBeforeDragStart}>
 					<div className='d-flex gap-3 h-100'>
-						<div className="w-50 overflow-scroll sticky-top">
+						<div className="w-50 overflow-auto sticky-top">
 							{currentAnnouncement && currentAnn && (<div className="p-2">
 								<InputGroup className="card-ctrls announcement float-end">
 									<Button variant="outline-primary" onClick={() => currentAnnouncement.pause = !currentAnnouncement.pause}>{currentAnnouncement.pause ? <Play /> : <Pause />}</Button>
@@ -116,7 +116,7 @@ export function AnnouncementsPanel() {
 						<div className="vstack w-50">
 							<h2>Announcement Pools</h2>
 							<Button className="d-inline" onClick={sendToF("addPool", {})}><PlusLg /> Add Pool</Button>
-							<div className="pools overflow-scroll vstack gap-3 p-2">
+							<div className="pools overflow-auto vstack gap-3 p-2">
 								{Object.entries(pools).map(([pid, pool]) => {
 									if (pool === undefined) return <h3 key={pid}>Error: Corresponding Pool does not exist for pool id {pid}</h3>
 									const contents = pool.announcements.map(aid => bank![aid.id]);
