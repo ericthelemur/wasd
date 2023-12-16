@@ -7,7 +7,7 @@ import { createRoot } from 'react-dom/client';
 import { useReplicant } from 'use-nodecg';
 import { AnnBank, AnnPool, AnnPools, AnnQueue, AnnRef, Announcement, CurrentAnnouncement } from '../../types/schemas';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { AnnPoolComp } from './components/annpool';
 import { sendTo, sendToF } from 'common/listeners';
@@ -37,15 +37,17 @@ export function AnnouncementsPanel() {
 	// console.log(pools);
 	if (!pools) return <h2>Not loaded announcements</h2>;
 
-	if ((hv.dragging || hv.hoverQueue) && currentAnnouncement !== undefined && currentAnnouncement.text !== "") {
-		if (prelude.lastCA === null) {
-			setPrelude({ ...prelude, lastCA: { id: currentAnnouncement.annID!, time: currentAnnouncement.time } });
-		} else if (prelude.lastCA.id != currentAnnouncement.annID && prelude.lastCA.time != currentAnnouncement.time) {
-			const lca = { id: currentAnnouncement.annID!, time: currentAnnouncement.time };
-			setPrelude({ lastCA: lca, prelude: [...prelude.prelude, lca] });
+	useEffect(() => {
+		if ((hv.dragging || hv.hoverQueue) && currentAnnouncement !== undefined && currentAnnouncement.text !== "") {
+			if (prelude.lastCA === null) {
+				setPrelude({ ...prelude, lastCA: { id: currentAnnouncement.annID!, time: currentAnnouncement.time } });
+			} else if (prelude.lastCA.id != currentAnnouncement.annID && prelude.lastCA.time != currentAnnouncement.time) {
+				const lca = { id: currentAnnouncement.annID!, time: currentAnnouncement.time };
+				setPrelude({ lastCA: lca, prelude: [...prelude.prelude, lca] });
+			}
 		}
-	}
-	if (!hv.dragging && !hv.hoverQueue && prelude.prelude.length > 0) setPrelude({ lastCA: null, prelude: [] });
+		if (!hv.dragging && !hv.hoverQueue && prelude.prelude.length > 0) setPrelude({ lastCA: null, prelude: [] });
+	}, [hv, prelude, currentAnnouncement, setPrelude]);
 
 	function onBeforeDragStart(start: DragStart) {
 		setHover({ ...hv, dragging: true, showBin: start.source.droppableId === "queue" });

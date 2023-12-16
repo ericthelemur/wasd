@@ -70,16 +70,20 @@ export function InsertHandle(props: { pid: string; before: AnnRef | null; }) {
 export function AnnouncementComp(props: AnnouncementProps) {
     const { announcement, provided, queue, strike } = props;
     if (announcement === undefined) return <AnnouncementError {...props} msg="Announcement is undefined" index={-1} />
-    const fade = (!queue && announcement.priority === 0) || (queue && announcement.text === "New Announcement")
+    const fade = (!queue && announcement.priority === 0) || (queue && announcement.text === "New Announcement") || strike;
 
-    return <div ref={provided.innerRef} {...provided.draggableProps} className="input-group m-1"
-        {...(strike ? { textDecoration: "line-through" } : {})}
-    >
-        <div className="btn btn-outline-secondary" {...provided.dragHandleProps}> <GripVertical /> </div>
-        {!strike && <InsertHandle pid={props.pid} before={props.id} />}
-        <AnnouncementBody {...props} />
-        {!strike && <AnnouncementControls {...props} />}
-    </div>;
+    return (
+        <div
+            ref={provided.innerRef} {...provided.draggableProps}
+            className={`input-group m-1 ${fade ? "opacity-50" : ""}`}
+            {...(strike ? { style: { textDecoration: "line-through" } } : {})}
+        >
+            <div className="btn btn-outline-secondary" {...provided.dragHandleProps}> <GripVertical /> </div>
+            {!strike && <InsertHandle pid={props.pid} before={props.id} />}
+            <AnnouncementBody {...props} />
+            {!strike && <AnnouncementControls {...props} />}
+        </div>
+    );
 }
 
 interface AnnErrorProps {

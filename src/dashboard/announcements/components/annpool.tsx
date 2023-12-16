@@ -43,6 +43,7 @@ export function AnnPoolComp(props: AnnPoolProps) {
         const n = pool.announcements.length;
         refs = [...(props.preludeRefs || []), ...pool.announcements].slice(0, n);
         data = [...prelude, ...props.contents].slice(0, n);
+        // console.log(refs.map(makeID(true)).join(", "));
     } else {
         refs = pool.announcements;
         data = props.contents;

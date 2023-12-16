@@ -62,10 +62,11 @@ bank.on("change", (val) => {
     }
 });
 
+var interval: NodeJS.Timeout;
 function playNext() {
     nodecg.log.info("Moving to next donation");
     if (queue.value.announcements) {
-        const [newRef] = queue.value.announcements.splice(0, 1);
+        const newRef = queue.value.announcements[0];
         if (!newRef) return nodecg.log.warn("Reading null value on queue");
         const newAnn = bank.value[newRef.id];
         if (!newAnn) return nodecg.log.warn("No announcement found for ref", newRef.id);
@@ -76,13 +77,15 @@ function playNext() {
             endTime: Date.now() + DISPLAY_TIME,
             time: newRef.time
         }
+        queue.value.announcements.splice(0, 1);
     }
+    clearInterval(interval);
+    interval = setInterval(playNextPause, DISPLAY_TIME);
+}
+
+function playNextPause() {
+    if (!current.value.pause) playNext();
 }
 
 const now = Date.now();
 if (!current.value.pause && current.value.endTime < now) playNext();
-setTimeout(() => {
-    setInterval(() => {
-        if (!current.value.pause) playNext();
-    }, DISPLAY_TIME);
-}, Math.max(1, current.value.endTime - now))
