@@ -88,7 +88,20 @@ function Pools({ pools, bank, showBin }: { pools: AnnPools, bank: AnnBank, showB
 }
 
 function BarIframe() {
-	return <iframe src="/bundles/wasd/graphics/bar.graphic.html" height="70" width="1920" className="sticky-top" />;
+	const iframeRef = createRef<HTMLIFrameElement>();
+	const parRef = createRef<HTMLDivElement>();
+	const [scale, setScale] = useState(1.0);
+	useEffect(() => {
+		const interval = setInterval(() => {
+			if (!parRef.current) return;
+			const newScale = parRef.current.offsetWidth / 1920.0;
+			if (newScale != scale) setScale(newScale);
+		}, 100);
+		return () => clearInterval(interval);
+	})
+	return <div ref={parRef} style={{ transform: `scale(${scale})`, transformOrigin: "top left" }} className='w-100 overflow-none'>
+		<iframe ref={iframeRef} src="/bundles/wasd/graphics/bar.graphic.html" height="70" width="1920" className="sticky-top" />
+	</div>
 }
 
 const defaultPrelude = () => ({ lastCA: null, prelude: [], length: 0 });
