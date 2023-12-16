@@ -58,7 +58,7 @@ span.editable {
         margin-bottom: calc(-1 * var(--bs-border-width));
     }
 
-    &>svg {
+    &>svg.icon {
         visibility: hidden;
         color: var(--bs-border-color);
         width: 0.7em;
@@ -66,7 +66,7 @@ span.editable {
         margin-left: 0.25em;
     }
 
-    &:hover>svg {
+    &:hover>svg.icon {
         visibility: visible;
     }
 }

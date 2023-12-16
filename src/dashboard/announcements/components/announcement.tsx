@@ -23,11 +23,11 @@ function AnnouncementBody(props: AnnouncementProps) {
     const { announcement, queue } = props;
     const temp = announcement.type === "temp";
     const text = queue && !temp
-        ? <span className='flex-grow-1 forbid input-group-text'><Link45deg /> {announcement.text}</span>
+        ? <span className='flex-grow-1 input-group-text'><Link45deg /> {announcement.text}</span>
         : <>
-            {queue && <Pen className="small" />}
-            <Editable className='flex-grow-1' textClasses="input-group-text" text={announcement.text}
-                setText={v => announcement.text = v} />
+            <Editable className='flex-grow-1' textClasses="input-group-text"
+                prefix={queue ? <Pen className="small me-1" /> : ""}
+                text={announcement.text} setText={v => announcement.text = v} />
         </>
     const priority = queue ? undefined :
         <Editable type="number" className="priority" textClasses="input-group-text" text={announcement.priority.toString()}
@@ -41,21 +41,14 @@ function AnnouncementControls(props: AnnouncementProps) {
     const temp = announcement.type === "temp";
 
     function del() {
-        console.log("Deleting");
-        if (announcement.priority === 0 || confirm(`Are you sure you want to delete\n"${announcement.text}"? `)) {
+        if (announcement.priority === 0 || confirm(`Are you sure you want to delete\n"${announcement.text}"? `))
             sendTo("removeAnnouncement", { aid: id.id });
-        }
     }
-
-    return (
-        <>
-            {queue &&
-                <Button variant="outline-secondary" onClick={sendToF("skipTo", { aref: id })}><FastForward /></Button>}
-            {queue && !temp &&
-                <Button variant="outline-secondary" onClick={sendToF("unlink", { aref: id })}><Link45deg /></Button>}
-            <Button variant="outline-primary" onClick={del}><XLg /></Button>
-        </>
-    )
+    return <>
+        {queue && <Button variant="outline-secondary" onClick={sendToF("skipTo", { aref: id })}><FastForward /></Button>}
+        {queue && !temp && <Button variant="outline-secondary" onClick={sendToF("unlink", { aref: id })}><Link45deg /></Button>}
+        <Button variant="outline-primary" onClick={del}><XLg /></Button>
+    </>
 }
 
 export function InsertHandle(props: { pid: string; before: AnnRef | null; }) {
@@ -75,10 +68,13 @@ export function AnnouncementComp(props: AnnouncementProps) {
     return (
         <div
             ref={provided.innerRef} {...provided.draggableProps}
-            className={`input-group m-1 ${fade ? "opacity-50" : ""}`}
+            className={`input-group m-1 ${fade ? "opacity-50" : ""} ${queue ? "forbid" : ""}`}
             {...(strike ? { style: { textDecoration: "line-through" } } : {})}
         >
-            <div className="btn btn-outline-secondary" {...provided.dragHandleProps}> <GripVertical /> </div>
+            <div className="btn btn-outline-secondary" {...provided.dragHandleProps}
+                {...(strike ? { style: { pointerEvents: "none" } } : {})}>
+                <GripVertical />
+            </div>
             {!strike && <InsertHandle pid={props.pid} before={props.id} />}
             <AnnouncementBody {...props} />
             {!strike && <AnnouncementControls {...props} />}

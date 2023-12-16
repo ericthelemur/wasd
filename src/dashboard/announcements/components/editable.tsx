@@ -12,6 +12,7 @@ export interface EditableProps {
     type?: string;
     className?: string;
     textClasses?: string;
+    prefix?: JSX.Element | string;
     as?: ElementType;
 }
 
@@ -22,7 +23,10 @@ export default function Editable(props: EditableProps) {
     const resetEditVal = () => setEditVal(null);
 
     if (editVal === null) {
-        return <span className={`editable ${props.className || ""} ${props.textClasses || ""}`} onClick={() => setEditVal(text)}>{text} <PenFill /></span>
+        return <span className={`editable ${props.className || ""} ${props.textClasses || ""}`}
+            onClick={() => setEditVal(text)}>
+            {props.prefix} {text} <PenFill className="icon" />
+        </span>
     } else {
         const submit = () => {
             setText(editBox.current!.value);
@@ -41,7 +45,7 @@ export default function Editable(props: EditableProps) {
                     defaultValue={editVal} type={type ? type : "text"}
                     onKeyDown={keyPress} as={props.as || undefined} onFocus={e => e.target.select()}
                 />
-                <Button variant="primary" type="submit" onSubmit={submit}><CheckLg /></Button>
+                <Button variant="primary" type="submit" onClick={submit}><CheckLg /></Button>
                 <Button variant="outline-primary" onClick={resetEditVal}><XLg /></Button>
             </>
         )
