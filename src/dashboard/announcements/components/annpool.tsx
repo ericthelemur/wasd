@@ -1,21 +1,19 @@
 import './announcement.scss';
 
-import { Draggable, DraggableProvided, Droppable } from 'react-beautiful-dnd';
 import { AnnPool, AnnRef, Announcement } from 'types/schemas';
 
-import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import add from '../../assets/add.svg';
-import Editable from "./editable";
-import { AnnouncementComp, AnnouncementError, InsertHandle } from './announcement';
-import { sendTo, sendToF } from "common/listeners";
+import { ThreeDots } from 'react-bootstrap-icons';
+import type { PreludeInfo } from '../announcements.dashboard';
+import { AnnouncementComp, InsertHandle } from './announcement';
 import { DnDTransitionsList } from './dndlist';
+import Editable from "./editable";
 
 export interface AnnPoolProps {
     id: string;
     pool: AnnPool;
     contents: Announcement[];
     prelude?: Announcement[];
-    preludeRefs?: AnnRef[];
+    preludeInfo?: PreludeInfo;
 }
 
 function PoolTitle(props: AnnPoolProps) {
@@ -33,17 +31,24 @@ function makeID(queue: boolean) {
 }
 
 export function AnnPoolComp(props: AnnPoolProps) {
-    const { id: pid, pool } = props;
+    const { id: pid, pool, prelude, preludeInfo } = props;
     const queue = pid === "queue";
 
     // Construct list with prelude -- simulates a freeze of queue in ui
+    const prel = prelude?.length || 0;
     var refs, data;
-    if (queue) {
-        const prelude = props.prelude || [];
-        const n = pool.announcements.length;
-        refs = [...(props.preludeRefs || []), ...pool.announcements].slice(0, n);
-        data = [...prelude, ...props.contents].slice(0, n);
-        // console.log(refs.map(makeID(true)).join(", "));
+    if (prelude && preludeInfo && prel > 0) {
+        const preludeList = prelude || [];
+        const n = preludeInfo.length;
+
+        const lastPrelude = preludeInfo.prelude[preludeInfo.prelude.length - 1];
+        const dup = lastPrelude.id === pool.announcements[0].id && lastPrelude.time === pool.announcements[0].time;
+        const pl = dup ? preludeInfo.prelude.slice(0, -1) : preludeInfo.prelude;
+        const dl = dup ? preludeList.slice(0, -1) : preludeList;
+
+        refs = [...pl, ...pool.announcements].slice(0, n);
+        data = [...dl, ...props.contents].slice(0, n);
+        console.log(n, refs.map(makeID(true)).join(", "));
     } else {
         refs = pool.announcements;
         data = props.contents;
@@ -57,13 +62,14 @@ export function AnnPoolComp(props: AnnPoolProps) {
                     ids={refs.map(makeID(queue))}
                     data={data}
                     content={(id, index, ann, provided) => {
-                        const ref = pool.announcements[index];
+                        const ref = pool.announcements[index - prel];
                         return <AnnouncementComp id={ref} pid={pid} announcement={ann} provided={provided}
-                            queue={queue} strike={index < (props.prelude?.length || 0)} />
+                            queue={queue} strike={index < prel} />
                     }} />
                 <div className="position-relative mt-2">
                     <InsertHandle pid={pid} before={null} />
                 </div>
+                {prel > 0 && <ThreeDots className="d-block m-auto" />}
             </div>
         </div>
     )

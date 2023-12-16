@@ -21,14 +21,16 @@ interface HoverStates {
 	showBin: boolean;
 }
 
-interface PreludeInfo {
-	lastCA: AnnRef | null,
-	prelude: AnnRef[]
+export interface PreludeInfo {
+	lastCA: AnnRef | null;
+	prelude: AnnRef[];
+	length: number;
 }
 
+const defaultPrelude = () => ({ lastCA: null, prelude: [], length: 0 });
 export function AnnouncementsPanel() {
 	const [hv, setHover] = useState<HoverStates>({ dragging: false, hoverQueue: false, showBin: false });
-	const [prelude, setPrelude] = useState<PreludeInfo>({ lastCA: null, prelude: [] });
+	const [prelude, setPrelude] = useState<PreludeInfo>(defaultPrelude());
 
 	const [pools,] = useReplicant<AnnPools>("annPools", {});
 	const [bank,] = useReplicant<AnnBank>("annBank", {});
@@ -37,19 +39,25 @@ export function AnnouncementsPanel() {
 	// console.log(pools);
 	if (!pools) return <h2>Not loaded announcements</h2>;
 
-	// useEffect(() => {
+	// Maintain prelude list
 	if ((hv.dragging || hv.hoverQueue) && currentAnnouncement !== undefined && currentAnnouncement.text !== "") {
-		if (prelude.lastCA === null) {
+		if (prelude.length === 0) {
+			console.log("Setting length", queue!.announcements.length);
+			setPrelude({ ...prelude, length: queue!.announcements.length });
+		}
+		if (prelude.lastCA === null) {	// Record current announcement as last if just started
 			setPrelude({ ...prelude, lastCA: { id: currentAnnouncement.annID!, time: currentAnnouncement.time } });
 		} else if (prelude.prelude.length > queue!.announcements.length / 2) {
-			setPrelude({ ...prelude, prelude: [] });
+			setPrelude({ ...prelude, prelude: [] });	// Clear prelude if half of queue
 		} else if (prelude.lastCA.id != currentAnnouncement.annID && prelude.lastCA.time != currentAnnouncement.time) {
+			// Add new announcement to prelude
 			const lca = { id: currentAnnouncement.annID!, time: currentAnnouncement.time };
-			setPrelude({ lastCA: lca, prelude: [...prelude.prelude, lca] });
+			setPrelude({ ...prelude, lastCA: lca, prelude: [...prelude.prelude, lca] });
 		}
 	}
-	if (!hv.dragging && !hv.hoverQueue && prelude.prelude.length > 0) setPrelude({ lastCA: null, prelude: [] });
-	// }, [hv, prelude, currentAnnouncement, setPrelude]);
+	// Reset prelude on dragging stop
+	if (!hv.dragging && !hv.hoverQueue && prelude.prelude.length > 0) setPrelude(defaultPrelude());
+
 
 	function onBeforeDragStart(start: DragStart) {
 		setHover({ ...hv, dragging: true, showBin: start.source.droppableId === "queue" });
@@ -57,7 +65,7 @@ export function AnnouncementsPanel() {
 
 	function onDragEnd(result: DropResult) {
 		setHover({ ...hv, dragging: false, showBin: false });
-		setPrelude({ lastCA: null, prelude: [] });
+		setPrelude(defaultPrelude());
 
 		const { source, destination } = result;
 		if (!destination) return;
@@ -114,7 +122,7 @@ export function AnnouncementsPanel() {
 							</div>)}
 							{queue && (<div className="p-2" onMouseEnter={() => setHover({ ...hv, hoverQueue: true })} onMouseLeave={() => setHover({ ...hv, hoverQueue: false })}>
 								<h3>Queue</h3>
-								<AnnPoolComp id="queue" pool={queue} contents={queueContents} preludeRefs={prelude.prelude} prelude={queuePreludeAnns} />
+								<AnnPoolComp id="queue" pool={queue} contents={queueContents} preludeInfo={prelude} prelude={queuePreludeAnns} />
 							</div>)}
 						</div>
 						<div className="vstack w-50">
