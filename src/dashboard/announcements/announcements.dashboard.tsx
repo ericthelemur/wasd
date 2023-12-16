@@ -37,17 +37,19 @@ export function AnnouncementsPanel() {
 	// console.log(pools);
 	if (!pools) return <h2>Not loaded announcements</h2>;
 
-	useEffect(() => {
-		if ((hv.dragging || hv.hoverQueue) && currentAnnouncement !== undefined && currentAnnouncement.text !== "") {
-			if (prelude.lastCA === null) {
-				setPrelude({ ...prelude, lastCA: { id: currentAnnouncement.annID!, time: currentAnnouncement.time } });
-			} else if (prelude.lastCA.id != currentAnnouncement.annID && prelude.lastCA.time != currentAnnouncement.time) {
-				const lca = { id: currentAnnouncement.annID!, time: currentAnnouncement.time };
-				setPrelude({ lastCA: lca, prelude: [...prelude.prelude, lca] });
-			}
+	// useEffect(() => {
+	if ((hv.dragging || hv.hoverQueue) && currentAnnouncement !== undefined && currentAnnouncement.text !== "") {
+		if (prelude.lastCA === null) {
+			setPrelude({ ...prelude, lastCA: { id: currentAnnouncement.annID!, time: currentAnnouncement.time } });
+		} else if (prelude.prelude.length > queue!.announcements.length / 2) {
+			setPrelude({ ...prelude, prelude: [] });
+		} else if (prelude.lastCA.id != currentAnnouncement.annID && prelude.lastCA.time != currentAnnouncement.time) {
+			const lca = { id: currentAnnouncement.annID!, time: currentAnnouncement.time };
+			setPrelude({ lastCA: lca, prelude: [...prelude.prelude, lca] });
 		}
-		if (!hv.dragging && !hv.hoverQueue && prelude.prelude.length > 0) setPrelude({ lastCA: null, prelude: [] });
-	}, [hv, prelude, currentAnnouncement, setPrelude]);
+	}
+	if (!hv.dragging && !hv.hoverQueue && prelude.prelude.length > 0) setPrelude({ lastCA: null, prelude: [] });
+	// }, [hv, prelude, currentAnnouncement, setPrelude]);
 
 	function onBeforeDragStart(start: DragStart) {
 		setHover({ ...hv, dragging: true, showBin: start.source.droppableId === "queue" });
