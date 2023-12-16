@@ -26,11 +26,11 @@ function AnnouncementBody(props: AnnouncementProps) {
         ? <span className='flex-grow-1 forbid input-group-text'><Link45deg /> {announcement.text}</span>
         : <>
             {queue && <Pen className="small" />}
-            <Editable className='flex-grow-1 input-group-text' text={announcement.text}
+            <Editable className='flex-grow-1' textClasses="input-group-text" text={announcement.text}
                 setText={v => announcement.text = v} />
         </>
     const priority = queue ? undefined :
-        <Editable type="number" className="priority input-group-text" text={announcement.priority.toString()}
+        <Editable type="number" className="priority" textClasses="input-group-text" text={announcement.priority.toString()}
             setText={v => announcement.priority = Number(v)} />
     return <>{text}{priority}</>
 }

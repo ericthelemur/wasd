@@ -82,7 +82,7 @@ input.editable {
     width: unset;
 
     & .input-group-text {
-        padding: 0.1em 0.25em;
+        padding: 0.1em 0.5em;
     }
 
     & .btn {
@@ -93,14 +93,12 @@ input.editable {
 .priority {
     flex-shrink: 0;
     flex-grow: 0;
-
-    & .input-group {
-        max-width: 8em;
-        flex-shrink: 0;
-        flex-grow: 0;
-    }
+    max-width: 8em;
 }
 
+input.priority {
+    width: 5em;
+}
 
 .addBtn {
     width: 100%;

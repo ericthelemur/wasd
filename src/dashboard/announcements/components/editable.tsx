@@ -11,6 +11,7 @@ export interface EditableProps {
     setText: (text: string) => void;
     type?: string;
     className?: string;
+    textClasses?: string;
     as?: ElementType;
 }
 
@@ -21,7 +22,7 @@ export default function Editable(props: EditableProps) {
     const resetEditVal = () => setEditVal(null);
 
     if (editVal === null) {
-        return <span className={"input-group-text editable " + (props.className || "")} onClick={() => setEditVal(text)}>{text} <PenFill /></span>
+        return <span className={`editable ${props.className || ""} ${props.textClasses || ""}`} onClick={() => setEditVal(text)}>{text} <PenFill /></span>
     } else {
         const submit = () => {
             setText(editBox.current!.value);
@@ -29,13 +30,14 @@ export default function Editable(props: EditableProps) {
         };
         const keyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
             if (e.key === "Escape") resetEditVal();
+            if (e.key === "Enter") submit();
             // else if (["Enter", "Backspace", "Control", "Shift"].includes(e.key)) return;
             // else if (type === "number" && !/[0-9\.]/.test(e.key)) e.preventDefault();
         };
 
         return (
             <>
-                <Form.Control ref={editBox} className="editable" autoFocus
+                <Form.Control ref={editBox} className={"editable " + (props.className || "")} autoFocus
                     defaultValue={editVal} type={type ? type : "text"}
                     onKeyDown={keyPress} as={props.as || undefined} onFocus={e => e.target.select()}
                 />
