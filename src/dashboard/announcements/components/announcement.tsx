@@ -23,9 +23,9 @@ function AnnouncementBody(props: AnnouncementProps) {
     const { announcement, queue } = props;
     const temp = announcement.type === "temp";
     const text = queue && !temp
-        ? <span className='flex-grow-1 input-group-text'><Link45deg /> {announcement.text}</span>
+        ? <span className='ann-text input-group-text'><Link45deg /> {announcement.text}</span>
         : <>
-            <Editable className='flex-grow-1' textClasses="input-group-text"
+            <Editable className='ann-text' textClasses="input-group-text"
                 prefix={queue ? <Pen className="small me-1" /> : ""}
                 text={announcement.text} setText={v => announcement.text = v} />
         </>

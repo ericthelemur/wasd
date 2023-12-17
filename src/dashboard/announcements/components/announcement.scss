@@ -47,15 +47,23 @@ svg {
     border: var(--bs-border-color) var(--bs-border-width);
 }
 
+.input-group-text {
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: hidden;
+    text-wrap: wrap;
+    text-wrap: stable;
+    text-align: left;
+    display: inline;
+}
 
-span.editable {
+div.editable:not(.input) {
     cursor: pointer !important;
     min-width: 3em;
-    align-self: baseline;
 
     &:hover {
         border-bottom: var(--bs-border-color) var(--bs-border-width) dotted;
-        margin-bottom: calc(-1 * var(--bs-border-width));
+        // margin-bottom: calc(-1 * var(--bs-border-width));
     }
 
     &>svg.icon {
@@ -71,7 +79,8 @@ span.editable {
     }
 }
 
-input.editable {
+input.editable,
+.input.editable {
     font-size: inherit;
     font-weight: inherit;
     padding-top: 0;
@@ -80,6 +89,7 @@ input.editable {
 
 .input-group {
     width: unset;
+    flex-wrap: nowrap;
 
     & .input-group-text {
         padding: 0.1em 0.5em;
@@ -96,7 +106,7 @@ input.editable {
     max-width: 8em;
 }
 
-input.priority {
+.input.priority {
     width: 5em;
 }
 
