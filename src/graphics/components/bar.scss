@@ -1,3 +1,10 @@
+.tabnum {
+    font-variant: tabular-nums;
+    -moz-font-feature-settings: "tnum";
+    -webkit-font-feature-settings: "tnum";
+    font-feature-settings: "tnum"
+}
+
 .bar {
     width: 1920px;
     height: 70px;

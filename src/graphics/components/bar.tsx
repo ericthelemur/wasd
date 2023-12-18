@@ -31,11 +31,11 @@ export function Bar() {
             <h2>WASD 2024</h2>
             <VR />
             <img className="logo" src={specialeffect} />
-            <h2>{total && formatAmount(total)}</h2>
+            <h2 className="tabnum">{total && formatAmount(total)}</h2>
             <VR />
             <BarAnnouncement />
             <VR />
-            <h2>{time}</h2>
+            <h2 className="tabnum">{time}</h2>
         </div >
     )
 }
