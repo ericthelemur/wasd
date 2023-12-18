@@ -62,8 +62,6 @@
     "dev": "concurrently --kill-others \"npm run watch:schemas\" \"npm run watch:browser\" \"nodemon\""
   },
   "dependencies": {
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
     "react": "^18.0.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-bootstrap": "^2.9.1",
@@ -72,6 +70,7 @@
     "react-css-transition-replace": "^5.0.1",
     "react-dom": "^18.0.0",
     "react-fitty": "^1.0.1",
+    "react-textfit": "github:ericthelemur/react-textfit",
     "react-transition-group": "^4.4.5",
     "ts-node": "^10.9.1",
     "use-nodecg": "github:ericthelemur/use-nodecg"
@@ -85,8 +84,11 @@
     "@parcel/validator-typescript": "*",
     "@types/node": "^18",
     "@types/obs-studio": "^2.17.2",
+    "@types/react": "^18.2.45",
     "@types/react-beautiful-dnd": "^13.1.7",
     "@types/react-css-transition-replace": "^2.1.7",
+    "@types/react-dom": "^18.2.18",
+    "@types/react-textfit": "^1.1.4",
     "concurrently": "*",
     "glob": "^10.2.7",
     "nodemon": "*",

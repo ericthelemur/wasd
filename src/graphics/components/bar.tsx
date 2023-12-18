@@ -2,7 +2,6 @@ import './bar.scss';
 
 import { Total } from 'nodecg-tiltify/src/types/schemas';
 import { CSSProperties, useEffect, useState } from 'react';
-import { ReactFitty } from 'react-fitty';
 import { Announcement, CurrentAnnouncement } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 import ReactCSSTransitionReplace from 'react-css-transition-replace';
@@ -10,6 +9,7 @@ import ReactCSSTransitionReplace from 'react-css-transition-replace';
 import specialeffect from '../assets/specialeffect-small.png';
 import logo from '../assets/wasd-w.svg';
 import { formatAmount, timeFormat } from '../utils';
+import { Textfit } from 'react-textfit';
 
 function VR() {
     return <div className="vr" />;
@@ -41,12 +41,13 @@ export function Bar() {
 }
 
 export function BarAnnouncement() {
-    const [currentAnnouncement, setAnnouncement] = useReplicant<CurrentAnnouncement>("currentAnnouncement", { "text": "", "annID": null, "endTime": 0 });
-    return <h2 className="announcement">
-        <ReactCSSTransitionReplace transitionName="fade-wait" transitionEnterTimeout={1000} transitionLeaveTimeout={400}>
-            <ReactFitty key={currentAnnouncement?.annID} minSize={18} maxSize={36} wrapText={true} className='text' style={{ height: "60px" }}>
+    const [currentAnnouncement, _] = useReplicant<CurrentAnnouncement>("currentAnnouncement", { "text": "", "annID": null, "endTime": 0 });
+
+    return <ReactCSSTransitionReplace transitionName="fade-wait" transitionEnterTimeout={1000} transitionLeaveTimeout={400} className="announcement">
+        <h2 key={currentAnnouncement?.annID || ""}>
+            <Textfit mode="multi" style={{ height: "60px" }} className='text' max={32}>
                 {currentAnnouncement?.text || ""}
-            </ReactFitty>
-        </ReactCSSTransitionReplace>
-    </h2>
+            </Textfit>
+        </h2>
+    </ReactCSSTransitionReplace >
 }
