@@ -1,5 +1,5 @@
 {
-  "name": "tiltify-dono",
+  "name": "nodecg-dono-control",
   "version": "1.0.0",
   "description": "",
   "homepage": "",
@@ -20,6 +20,9 @@
   ],
   "nodecg": {
     "compatibleRange": "^2.0.0",
+    "bundleDependencies": {
+      "nodecg-tiltify": "*"
+    },
     "dashboardPanels": [
       {
         "name": "panel",
