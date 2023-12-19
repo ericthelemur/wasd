@@ -20,6 +20,11 @@
   ],
   "nodecg": {
     "compatibleRange": "^2.0.0",
+    "bundleDependencies": {
+      "nodecg-tiltify": "*",
+      "nodecg-ticker-control": "*",
+      "nodecg-dono-control": "*"
+    },
     "graphics": [
       {
         "file": "bar.graphic.html",
