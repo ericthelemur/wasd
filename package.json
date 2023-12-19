@@ -20,15 +20,6 @@
   ],
   "nodecg": {
     "compatibleRange": "^2.0.0",
-    "dashboardPanels": [
-      {
-        "name": "announcements",
-        "title": "Announcements",
-        "fullbleed": true,
-        "file": "announcements.dashboard.html",
-        "headerColor": "#525F78"
-      }
-    ],
     "graphics": [
       {
         "file": "bar.graphic.html",

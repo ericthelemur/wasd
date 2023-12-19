@@ -1,5 +1,5 @@
 import type NodeCG from '@nodecg/types';
-import type { Configschema } from '../types/schemas';
+import type { Configschema } from 'nodecg-ticker-control/types/schemas';
 
 let nodecg: NodeCG.ServerAPI<Configschema>;
 

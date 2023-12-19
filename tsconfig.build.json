@@ -23,6 +23,9 @@
 		"paths": {
 			"nodecg-tiltify/*": [
 				"../../nodecg-tiltify/*"
+			],
+			"nodecg-ticker-control/*": [
+				"../../nodecg-ticker-control/*"
 			]
 		}
 	},
