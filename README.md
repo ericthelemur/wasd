@@ -1,17 +1,21 @@
-# react-test
+# NodeCG Tiltify Donation Controller
 
-react-test is a [NodeCG](http://github.com/nodecg/nodecg) bundle.
-It works with NodeCG versions which satisfy this [semver](https://docs.npmjs.com/getting-started/semantic-versioning) range: `^2.0.0`
-You will need to have an appropriate version of NodeCG installed to use it.
+Tiltify Control provides a donation reader and moderation interface for Tiltify Donations, using NodeCG & React. It is both a reliable donation reader, and a donation moderation tool -- allowing approval/censorship of donation messages before they are shown on stream. This project depends on my TypeScript rewrite of [`nodecg-tiltify`](https://github.com/ericthelemur/nodecg-tiltify), originally based on [`daniellockard/nodecg-tiltify`](https://github.com/daniellockard/nodecg-tiltify).
 
+By default, it requires manual approval of each message before it is displayed, however if the auto approval setting is on, messages are automatically approved if not censored within the time window configured (default: 15s).
 
-## Developing
+There are fairly extensive filtering options too: options to allow any of read & unread, approved, censored, unmoderated, and sort by time or money ascending or descending. Viewing the `allDonations` list (no moderation) or donations by top donors are options too.
 
-Use the following commands:
+If you want donation amounts in a different currency to what Tiltify provides, set `displayCurrency` to the currency code e.g. `GBP` and `conversionRateKey` to a key for [freecurrencyapi.com](https://freecurrencyapi.com) in the config of `nodecg-tiltify`.
 
--   `npm run build`: Build the project once.
--   `npm run watch`: Build the project and automatically rebuild on changes.
--   `npm run dev`: Build the project, automatically rebuild on changes, launch the NodeCG server, and automatically restart the NodeCG server on changes.
-    -   Only restarts the NodeCG server when server-side (i.e. extension) code changes. Changes to client-side code (i.e. dashboard panels and graphics) will not cause the server to restart, nor will they cause browser tabs to automatically refresh.
+![example.png](https://github.com/ericthelemur/tiltify-control/blob/master/example.png)
 
+## Installation
 
+1. Install [ericthelemur/nodecg-tiltify](https://github.com/ericthelemur/nodecg-tiltify) (replace daniellockard/nodecg-tiltify) with `nodecg install ericthelemur/nodecg-tiltify`
+    - I highly recommend setting up a webhook, but this does require an exposed HTTPS server, which is a bit of a faff for dev
+2. Run `nodecg defaultconfig nodecg-dono-control` to generate a blank config
+3. Run NodeCG
+4. Open the graphic `nodecg-dono-control/reader.graphic.html`
+    - If you have authentication on (you should if you have it exposed for the webhook), sharing the link with the `key` param is sufficient if you want to give people access without logging in
+5. `nodecg-dono-control/alerts.graphic.html` provides a donation notification example, using `react-toastify`
