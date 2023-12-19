@@ -1,15 +1,15 @@
-import '../../graphics/uwcs-bootstrap.css';
+import '../uwcs-bootstrap.css';
 
-import { Announce, DragDropContext, DragStart, DraggableLocation, DropResult } from 'react-beautiful-dnd';
+import { DragDropContext, DragStart, DraggableLocation, DropResult } from 'react-beautiful-dnd';
 import { Pause, Play, PlusLg, Trash } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
 import { createRoot } from 'react-dom/client';
 import { useReplicant } from 'use-nodecg';
-import { AnnBank, AnnPool, AnnPools, AnnQueue, AnnRef, Announcement, CurrentAnnouncement } from '../../types/schemas';
+import { Bank, Pool, Pools, Queue, MsgRef, Message, Current } from '../../types/schemas';
 
 import { createRef, useEffect, useState } from 'react';
 import InputGroup from 'react-bootstrap/InputGroup';
-import { AnnPoolComp } from './components/annpool';
+import { PoolComp } from './components/msgpool';
 import { sendTo, sendToF } from 'common/listeners';
 import { klona } from "klona";
 
@@ -22,65 +22,65 @@ interface HoverStates {
 }
 
 export interface PreludeInfo {
-	lastCA: AnnRef | null;
-	prelude: AnnRef[];
+	lastCA: MsgRef | null;
+	prelude: MsgRef[];
 	length: number;
 }
 
-function sendDragAndDropMove(source: DraggableLocation, destination: DraggableLocation, queue: AnnQueue, pools: AnnPools, preludeLength: number) {
+function sendDragAndDropMove(source: DraggableLocation, destination: DraggableLocation, queue: Queue, pools: Pools, preludeLength: number) {
 	if (source.droppableId !== "queue" && destination.droppableId !== "queue") {
 		// Moving pools (pool to pool)
 		if (source.index === destination.index) return;
-		const da = pools![destination.droppableId].announcements;
+		const da = pools![destination.droppableId].msgs;
 		// Adjust for removal of old changing index of drop location
 		const ind = source.droppableId === destination.droppableId && source.index < destination.index ? destination.index + 1 : destination.index;
 		sendTo("movePool", {
-			aref: klona(pools![source.droppableId].announcements[source.index]),
+			aref: klona(pools![source.droppableId].msgs[source.index]),
 			oldpid: source.droppableId,
 			newpid: destination.droppableId,
 			before: klona(destination.index === da.length ? null : da[ind])
 		})
 	} else if (source.droppableId === "queue" && destination.droppableId === "queue") {
 		sendTo("reorderQueue", { // Reordering queue elements (queue to queue)
-			aref: queue!.announcements[source.index - preludeLength],
-			before: queue!.announcements[destination.index - preludeLength]
+			aref: queue!.msgs[source.index - preludeLength],
+			before: queue!.msgs[destination.index - preludeLength]
 		});
 	} else if (source.droppableId !== "queue" && destination.droppableId === "queue") {
 		sendTo("enqueue", { // Adding to queue (pool to queue)
-			aid: pools![source.droppableId].announcements[source.index].id,
-			before: queue!.announcements[destination.index - preludeLength]
+			mid: pools![source.droppableId].msgs[source.index].id,
+			before: queue!.msgs[destination.index - preludeLength]
 		})
 	} else { // (source.droppableId === "queue" && destination.droppableId !== "queue")
 		// Removing from queue (queue to pool)
-		sendTo("dequeue", { aref: queue!.announcements[source.index - preludeLength] })
+		sendTo("dequeue", { aref: queue!.msgs[source.index - preludeLength] })
 	}
 }
 
-function CurrentRun({ currentAnnouncement }: { currentAnnouncement: CurrentAnnouncement }) {
+function CurrentMsg({ current }: { current: Current }) {
 	return <>
 		<h3>Current</h3>
-		<div className="card announcement m-1">
+		<div className="card message m-1">
 			<div className="card-body hstack gap-2">
 				<span className="flex-grow-1 line-clamp-1">
-					{currentAnnouncement.text}
+					{current.text}
 				</span>
 				<span className="flex-shrink-0">
-					{currentAnnouncement.pause ? "paused" : `until ${timeFormat.format(currentAnnouncement.endTime)}`}
+					{current.pause ? "paused" : `until ${timeFormat.format(current.endTime)}`}
 				</span>
 			</div>
 		</div>
 	</>
 }
 
-function Pools({ pools, bank, showBin }: { pools: AnnPools, bank: AnnBank, showBin: boolean }) {
+function Pools({ pools, bank, showBin }: { pools: Pools, bank: Bank, showBin: boolean }) {
 	return <div className="vstack w-50">
-		<h2>Announcement Pools</h2>
+		<h2>Messages Pools</h2>
 		<Button className="d-inline" onClick={sendToF("addPool", {})}><PlusLg /> Add Pool</Button>
 		<div className="pools overflow-auto vstack gap-3 p-2">
 			{Object.entries(pools).map(([pid, pool]) => {
 				if (pool === undefined) return <h3 key={pid}>Error: Corresponding Pool does not exist for pool id {pid}</h3>
-				const contents = pool.announcements.map(aid => bank![aid.id]);
-				return <AnnPoolComp id={pid} key={pid} pool={pool} contents={contents} />
+				const contents = pool.msgs.map(mid => bank![mid.id]);
+				return <PoolComp id={pid} key={pid} pool={pool} contents={contents} />
 			})}
 			{showBin && <div className="trash"><Trash className="queue-trash" /></div>}
 		</div>
@@ -105,30 +105,30 @@ function BarIframe() {
 }
 
 const defaultPrelude = () => ({ lastCA: null, prelude: [], length: 0 });
-export function AnnouncementsPanel() {
+export function MsgControlPanel() {
 	const [hv, setHover] = useState<HoverStates>({ dragging: false, hoverQueue: false, showBin: false });
 	const [prelude, setPrelude] = useState<PreludeInfo>(defaultPrelude());
 
-	const [pools,] = useReplicant<AnnPools>("annPools", {});
-	const [bank,] = useReplicant<AnnBank>("annBank", {});
-	const [queue,] = useReplicant<AnnQueue>("annQueue", { "name": "Queue", "priority": 0, "announcements": [] });
-	const [currentAnnouncement,] = useReplicant<CurrentAnnouncement>("currentAnnouncement", { "text": "", "annID": null, "endTime": 0 });
+	const [pools,] = useReplicant<Pools>("pools", {});
+	const [bank,] = useReplicant<Bank>("bank", {});
+	const [queue,] = useReplicant<Queue>("queue", { "name": "Queue", "priority": 0, "msgs": [] });
+	const [current,] = useReplicant<Current>("current", { "text": "", "msgID": null, "endTime": 0 });
 	// console.log(pools);
-	if (!pools) return <h2>Not loaded announcements</h2>;
+	if (!pools) return <h2>Not loaded messages</h2>;
 
 	// Maintain prelude list
-	if ((hv.dragging || hv.hoverQueue) && currentAnnouncement !== undefined && currentAnnouncement.text !== "") {
+	if ((hv.dragging || hv.hoverQueue) && current !== undefined && current.text !== "") {
 		if (prelude.length === 0) {
-			console.log("Setting length", queue!.announcements.length);
-			setPrelude({ ...prelude, length: queue!.announcements.length });
+			console.log("Setting length", queue!.msgs.length);
+			setPrelude({ ...prelude, length: queue!.msgs.length });
 		}
-		if (prelude.lastCA === null) {	// Record current announcement as last if just started
-			setPrelude({ ...prelude, lastCA: { id: currentAnnouncement.annID!, time: currentAnnouncement.time } });
-		} else if (prelude.prelude.length > queue!.announcements.length / 2) {
+		if (prelude.lastCA === null) {	// Record current message as last if just started
+			setPrelude({ ...prelude, lastCA: { id: current.msgID!, time: current.time } });
+		} else if (prelude.prelude.length > queue!.msgs.length / 2) {
 			setPrelude({ ...prelude, prelude: [] });	// Clear prelude if half of queue
-		} else if (prelude.lastCA.id != currentAnnouncement.annID && prelude.lastCA.time != currentAnnouncement.time) {
-			// Add new announcement to prelude
-			const lca = { id: currentAnnouncement.annID!, time: currentAnnouncement.time };
+		} else if (prelude.lastCA.id != current.msgID && prelude.lastCA.time != current.time) {
+			// Add new message to prelude
+			const lca = { id: current.msgID!, time: current.time };
 			setPrelude({ ...prelude, lastCA: lca, prelude: [...prelude.prelude, lca] });
 		}
 	}
@@ -152,11 +152,11 @@ export function AnnouncementsPanel() {
 		sendDragAndDropMove(source, destination, queue!, pools!, prelude.prelude.length);
 	}
 
-	// Fetch current announcement object from announcement bank
-	const currentAnn = bank && currentAnnouncement && currentAnnouncement.annID ? bank[currentAnnouncement.annID] : undefined;
+	// Fetch current message object from message bank
+	const currentMsg = bank && current && current.msgID ? bank[current.msgID] : undefined;
 
-	const queueContents = queue!.announcements.map(aid => bank![aid.id]);
-	const queuePreludeAnns = prelude.prelude.map(aid => bank![aid.id]);
+	const queueContents = queue!.msgs.map(mid => bank![mid.id]);
+	const queuePreludeMsgs = prelude.prelude.map(mid => bank![mid.id]);
 	return (
 		<div className="vstack" style={{ height: "100vh" }}>
 			<div className='container-xxl h-0 flex-grow-1'>
@@ -164,15 +164,15 @@ export function AnnouncementsPanel() {
 				<DragDropContext onDragEnd={onDragEnd} onBeforeDragStart={onBeforeDragStart}>
 					<div className='d-flex gap-3 h-100'>
 						<div className="w-50 overflow-auto sticky-top">
-							{currentAnnouncement && currentAnn && (<div className="p-2">
-								<InputGroup className="card-ctrls announcement float-end">
-									<Button variant="outline-primary" onClick={() => currentAnnouncement.pause = !currentAnnouncement.pause}>{currentAnnouncement.pause ? <Play /> : <Pause />}</Button>
+							{current && currentMsg && (<div className="p-2">
+								<InputGroup className="card-ctrls message float-end">
+									<Button variant="outline-primary" onClick={() => current.pause = !current.pause}>{current.pause ? <Play /> : <Pause />}</Button>
 								</InputGroup>
-								<CurrentRun currentAnnouncement={currentAnnouncement} />
+								<CurrentMsg current={current} />
 							</div>)}
 							{queue && (<div className="p-2" onMouseEnter={() => setHover({ ...hv, hoverQueue: true })} onMouseLeave={() => setHover({ ...hv, hoverQueue: false })}>
 								<h3>Queue</h3>
-								<AnnPoolComp id="queue" pool={queue} contents={queueContents} preludeInfo={prelude} prelude={queuePreludeAnns} />
+								<PoolComp id="queue" pool={queue} contents={queueContents} preludeInfo={prelude} prelude={queuePreludeMsgs} />
 							</div>)}
 						</div>
 						<Pools pools={pools} bank={bank!} showBin={hv.showBin} />
@@ -184,4 +184,4 @@ export function AnnouncementsPanel() {
 }
 
 const root = createRoot(document.getElementById('root')!);
-root.render(<AnnouncementsPanel />);
+root.render(<MsgControlPanel />);

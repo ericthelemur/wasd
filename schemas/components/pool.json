@@ -8,21 +8,21 @@
         "priority": {
             "type": "number"
         },
-        "announcements": {
+        "msgs": {
             "type": "array",
             "items": {
-                "$ref": "annRef.json"
+                "$ref": "msgRef.json"
             }
         }
     },
     "required": [
         "name",
         "priority",
-        "announcements"
+        "msgs"
     ],
     "default": {
         "name": "New",
         "priority": 0,
-        "announcements": []
+        "msgs": []
     }
 }

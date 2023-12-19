@@ -3,7 +3,7 @@
     "type": "object",
     "properties": {
         "id": {
-            "$ref": "annID.json"
+            "$ref": "msgID.json"
         },
         "time": {
             "type": "number"

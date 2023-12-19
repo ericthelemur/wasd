@@ -5,13 +5,11 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface AnnBank {
-	[k: string]: Announcement;
-}
-export interface Announcement {
-	type?: string;
-	priority: number;
-	text: string;
-	lastShown?: number;
+export interface Current {
+	text: string | null;
+	msgID: string | null;
+	endTime: number;
+	time?: number;
+	pause?: boolean;
 	[k: string]: unknown;
 }

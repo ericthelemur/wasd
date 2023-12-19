@@ -2,10 +2,10 @@
 // @ts-ignore
 export * from './configschema';
 // @ts-ignore
-export * from './annBank';
+export * from './bank';
 // @ts-ignore
-export * from './annPools';
+export * from './current';
 // @ts-ignore
-export * from './annQueue';
+export * from './pools';
 // @ts-ignore
-export * from './currentAnnouncement';
+export * from './queue';

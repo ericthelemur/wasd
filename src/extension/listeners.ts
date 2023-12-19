@@ -1,7 +1,7 @@
 import { getNodeCG } from "./utils";
 import { current, pools, bank, queue } from "./replicants";
 
-import { AnnPool, AnnQueue, AnnRef, Announcement } from "types/schemas";
+import { Pool, Queue, MsgRef, Message } from "types/schemas";
 import NodeCG from "@nodecg/types";
 import { listenTo, sendError } from "../common/listeners";
 import type * as LT from "../common/listenerTypes";
@@ -16,105 +16,105 @@ function genID(prefix: string, exclusions: string[]) {
     return id;
 }
 
-function findAnnIDIndex(pool: AnnPool, id: string | null | undefined) {
+function findMsgIDIndex(pool: Pool, id: string | null | undefined) {
     if (!id) return -1;
-    return pool.announcements.findIndex(a => a.id === id);
+    return pool.msgs.findIndex(m => m.id === id);
 }
 
-function findAnnRefIndex(pool: AnnPool, ref: AnnRef | null | undefined) {
+function findMsgRefIndex(pool: Pool, ref: MsgRef | null | undefined) {
     if (!ref) return -1;
-    return pool.announcements.findIndex(a => a.id === ref.id && a.time === ref.time);
+    return pool.msgs.findIndex(m => m.id === ref.id && m.time === ref.time);
 }
 
-function findQueueAnnIDIndexes(queue: AnnQueue, id: string | null | undefined) {
+function findQueueMsgIDIndexes(queue: Queue, id: string | null | undefined) {
     if (!id) return [];
-    const pred = (a: AnnRef) => a.id === id;
-    return queue.announcements.reduce<number[]>((a, e, i) => pred(e) ? [...a, i] : a, []);
+    const pred = (m: MsgRef) => m.id === id;
+    return queue.msgs.reduce<number[]>((m, e, i) => pred(e) ? [...m, i] : m, []);
 }
-const findQueueAnnRefIndex = findAnnRefIndex;
+const findQueueMsgRefIndex = findMsgRefIndex;
 
 
 // Pools
-const defaultPool: () => AnnPool = () => { return { name: "New Pool", priority: 0, announcements: [] } }
+const defaultPool: () => Pool = () => { return { name: "New Pool", priority: 0, msgs: [] } }
 listenTo("addPool", () => {
     const id = genID("pool", Object.keys(pools.value));
     pools.value[id] = defaultPool();
 })
 listenTo("removePool", ({ pid }, ack) => {
-    const pool: AnnPool = pools.value[pid];
+    const pool: Pool = pools.value[pid];
     if (!pool) return sendError(ack, "Pool does not exist");
-    if (!pool.announcements) return sendError(ack, "Empty pool before deleting");
+    if (!pool.msgs) return sendError(ack, "Empty pool before deleting");
     delete pools.value[pid];
 })
 
-function removeFromPool(ref: AnnRef | string, pool: AnnPool) {
-    const ind = typeof ref === "string" ? findAnnIDIndex(pool, ref) : findAnnRefIndex(pool, ref);
+function removeFromPool(ref: MsgRef | string, pool: Pool) {
+    const ind = typeof ref === "string" ? findMsgIDIndex(pool, ref) : findMsgRefIndex(pool, ref);
     if (ind === -1) return null;
-    const [rem] = pool.announcements.splice(ind, 1);
+    const [rem] = pool.msgs.splice(ind, 1);
     return rem;
 }
 
-function addToPool(ref: AnnRef, pool: AnnPool, before: AnnRef | null) {
-    if (before === null) pool.announcements.push(ref);
+function addToPool(ref: MsgRef, pool: Pool, before: MsgRef | null) {
+    if (before === null) pool.msgs.push(ref);
     else {
-        const dstIndex = findQueueAnnRefIndex(pool, before);
+        const dstIndex = findQueueMsgRefIndex(pool, before);
         // Fallback to add to end
         if (dstIndex === -1) return addToPool(ref, pool, null);
-        pool.announcements.splice(dstIndex, 0, ref);
+        pool.msgs.splice(dstIndex, 0, ref);
     }
     return true;
 }
 
-function movePool(source: AnnPool, dest: AnnPool, aid: AnnRef, before: AnnRef | null) {
-    const elem = removeFromPool(aid, source);
+function movePool(source: Pool, dest: Pool, mid: MsgRef, before: MsgRef | null) {
+    const elem = removeFromPool(mid, source);
     if (!elem) return false;
     return addToPool(elem, dest, before);
 };
 
-// Announcements
-const defaultAnn: () => Announcement = () => { return { text: "New Announcement", priority: 0 } }
+// Messages
+const defaultMsg: () => Message = () => { return { text: "New Message", priority: 0 } }
 
-listenTo("addAnnouncement", ({ pid, before }, ack) => {
-    const pool: AnnPool = pid === "queue" ? queue.value : pools.value[pid];
+listenTo("addMessage", ({ pid, before }, ack) => {
+    const pool: Pool = pid === "queue" ? queue.value : pools.value[pid];
     if (!pool) return sendError(ack, "Pool does not exist");
 
     const temp = pid === "queue";
-    const id = genID(temp ? "temp" : "ann", Object.keys(bank));
-    const ann: Announcement = defaultAnn();
-    if (temp) ann.type = "temp";
+    const id = genID(temp ? "temp" : "msg", Object.keys(bank));
+    const msg: Message = defaultMsg();
+    if (temp) msg.type = "temp";
 
-    bank.value[id] = ann;
+    bank.value[id] = msg;
     addToPool({ id: id }, pool, before);
 })
 
-listenTo("removeAnnouncement", ({ aid }, ack) => {
-    if (!(aid in bank.value)) return sendError(ack, "Announcement does not exist");
-    Object.values(pools.value).forEach(pool => removeFromPool(aid, pool));
-    queue.value.announcements = queue.value.announcements.filter(a => a.id !== aid);
-    delete bank.value[aid];
+listenTo("removeMessage", ({ mid }, ack) => {
+    if (!(mid in bank.value)) return sendError(ack, "Message does not exist");
+    Object.values(pools.value).forEach(pool => removeFromPool(mid, pool));
+    queue.value.msgs = queue.value.msgs.filter(m => m.id !== mid);
+    delete bank.value[mid];
 })
 
-listenTo("movePool", ({ aref: aid, oldpid, newpid, before }) => {
-    movePool(pools.value[oldpid], pools.value[newpid], aid, before);
+listenTo("movePool", ({ aref: mid, oldpid, newpid, before }) => {
+    movePool(pools.value[oldpid], pools.value[newpid], mid, before);
 });
 
 // Queue
-listenTo("reorderQueue", ({ aref: aid, before }) => movePool(queue.value, queue.value, aid, before));
-listenTo("enqueue", ({ aid, before }) => (addToPool({ id: aid, time: Date.now() }, queue.value, before)));
+listenTo("reorderQueue", ({ aref: mid, before }) => movePool(queue.value, queue.value, mid, before));
+listenTo("enqueue", ({ mid, before }) => (addToPool({ id: mid, time: Date.now() }, queue.value, before)));
 listenTo("dequeue", ({ aref }) => removeFromPool(aref, queue.value));
 listenTo("skipTo", ({ aref }) => {
-    const index = findQueueAnnRefIndex(queue.value, aref);
+    const index = findQueueMsgRefIndex(queue.value, aref);
     if (index === -1) return;
-    queue.value.announcements.splice(0, index);
+    queue.value.msgs.splice(0, index);
 })
 listenTo("unlink", ({ aref }) => {
-    const oldAnn = bank.value[aref.id];
+    const oldMsg = bank.value[aref.id];
     const newID = genID("temp", Object.keys(bank.value));
     bank.value[newID] = {
-        "text": oldAnn.text,
-        "priority": oldAnn.priority,
+        "text": oldMsg.text,
+        "priority": oldMsg.priority,
         "type": "temp"
     }
-    const index = findQueueAnnRefIndex(queue.value, aref);
-    queue.value.announcements[index] = { id: newID, time: Date.now() };
+    const index = findQueueMsgRefIndex(queue.value, aref);
+    queue.value.msgs[index] = { id: newID, time: Date.now() };
 })

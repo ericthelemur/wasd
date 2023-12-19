@@ -5,11 +5,17 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface CurrentAnnouncement {
-	text: string | null;
-	annID: string | null;
-	endTime: number;
+export interface Pools {
+	[k: string]: Pool;
+}
+export interface Pool {
+	name: string;
+	priority: number;
+	msgs: MsgRef[];
+	[k: string]: unknown;
+}
+export interface MsgRef {
+	id: string;
 	time?: number;
-	pause?: boolean;
 	[k: string]: unknown;
 }

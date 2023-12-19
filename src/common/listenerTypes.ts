@@ -1,4 +1,4 @@
-import { AnnRef } from "types/schemas";
+import { MsgRef } from "types/schemas";
 
 export type LTs = {
     addPool: {}
@@ -7,41 +7,41 @@ export type LTs = {
         pid: string
     }
 
-    addAnnouncement: {
+    addMessage: {
         pid: string;
-        before: AnnRef | null;
+        before: MsgRef | null;
     }
 
-    removeAnnouncement: {
-        aid: string;
+    removeMessage: {
+        mid: string;
     }
 
     reorderQueue: {
-        aref: AnnRef;
-        before: AnnRef | null;
+        aref: MsgRef;
+        before: MsgRef | null;
     }
 
     movePool: {
-        aref: AnnRef,
+        aref: MsgRef,
         oldpid: string;
         newpid: string;
-        before: AnnRef | null;
+        before: MsgRef | null;
     }
 
     enqueue: {
-        aid: string;
-        before: AnnRef | null;
+        mid: string;
+        before: MsgRef | null;
     }
 
     dequeue: {
-        aref: AnnRef;
+        aref: MsgRef;
     }
 
     skipTo: {
-        aref: AnnRef;
+        aref: MsgRef;
     }
 
     unlink: {
-        aref: AnnRef;
+        aref: MsgRef;
     }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "wasd",
+  "name": "nodecg-ticker-control",
   "version": "1.0.0",
   "description": "",
   "homepage": "",
@@ -10,7 +10,6 @@
   },
   "files": [
     "dashboard",
-    "graphics",
     "extension.js",
     "extension"
   ],
@@ -22,19 +21,11 @@
     "compatibleRange": "^2.0.0",
     "dashboardPanels": [
       {
-        "name": "announcements",
-        "title": "Announcements",
+        "name": "ticker-control",
+        "title": "Ticker Control",
         "fullbleed": true,
-        "file": "announcements.dashboard.html",
+        "file": "tickercontrol.dashboard.html",
         "headerColor": "#525F78"
-      }
-    ],
-    "graphics": [
-      {
-        "file": "bar.graphic.html",
-        "width": 1920,
-        "height": 1080,
-        "singleInstance": false
       }
     ]
   },

@@ -1,22 +1,22 @@
-import './announcement.scss';
+import './message.scss';
 
-import { AnnPool, AnnRef, Announcement } from 'types/schemas';
+import { Pool, MsgRef, Message } from 'types/schemas';
 
 import { ThreeDots } from 'react-bootstrap-icons';
-import type { PreludeInfo } from '../announcements.dashboard';
-import { AnnouncementComp, InsertHandle } from './announcement';
+import type { PreludeInfo } from '../tickercontrol.dashboard';
+import { QueueMsg, InsertHandle } from './msgqueue';
 import { DnDTransitionsList } from './dndlist';
 import Editable from "./editable";
 
-export interface AnnPoolProps {
+export interface PoolProps {
     id: string;
-    pool: AnnPool;
-    contents: Announcement[];
-    prelude?: Announcement[];
+    pool: Pool;
+    contents: Message[];
+    prelude?: Message[];
     preludeInfo?: PreludeInfo;
 }
 
-function PoolTitle(props: AnnPoolProps) {
+function PoolTitle(props: PoolProps) {
     const { pool } = props;
     return (<h3 className="m-1 d-flex gap-2">
         <Editable text={pool.name} className="flex-grow-1"
@@ -27,10 +27,10 @@ function PoolTitle(props: AnnPoolProps) {
 }
 
 function makeID(queue: boolean) {
-    return (r: AnnRef) => `${queue ? "queue-" : ""}${r.id}${r.time ? `-${r.time}` : ""}`
+    return (r: MsgRef) => `${queue ? "queue-" : ""}${r.id}${r.time ? `-${r.time}` : ""}`
 }
 
-export function AnnPoolComp(props: AnnPoolProps) {
+export function PoolComp(props: PoolProps) {
     const { id: pid, pool, prelude, preludeInfo } = props;
     const queue = pid === "queue";
 
@@ -42,15 +42,15 @@ export function AnnPoolComp(props: AnnPoolProps) {
         const n = preludeInfo.length;
 
         const lastPrelude = preludeInfo.prelude[preludeInfo.prelude.length - 1];
-        const dup = lastPrelude.id === pool.announcements[0].id && lastPrelude.time === pool.announcements[0].time;
+        const dup = lastPrelude.id === pool.msgs[0].id && lastPrelude.time === pool.msgs[0].time;
         const pl = dup ? preludeInfo.prelude.slice(0, -1) : preludeInfo.prelude;
         const dl = dup ? preludeList.slice(0, -1) : preludeList;
 
-        refs = [...pl, ...pool.announcements].slice(0, n);
+        refs = [...pl, ...pool.msgs].slice(0, n);
         data = [...dl, ...props.contents].slice(0, n);
         console.log(n, refs.map(makeID(true)).join(", "));
     } else {
-        refs = pool.announcements;
+        refs = pool.msgs;
         data = props.contents;
     }
 
@@ -61,9 +61,9 @@ export function AnnPoolComp(props: AnnPoolProps) {
                 <DnDTransitionsList id={pid}
                     ids={refs.map(makeID(queue))}
                     data={data}
-                    content={(id, index, ann, provided) => {
-                        const ref = pool.announcements[index - prel];
-                        return <AnnouncementComp id={ref} pid={pid} announcement={ann} provided={provided}
+                    content={(id, index, msg, provided) => {
+                        const ref = pool.msgs[index - prel];
+                        return <QueueMsg id={ref} pid={pid} message={msg} provided={provided}
                             queue={queue} strike={index < prel} />
                     }} />
                 <div className="position-relative mt-2">

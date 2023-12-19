@@ -1,5 +1,5 @@
 import NodeCG from "@nodecg/types";
-import { AnnRef } from "types/schemas";
+import { MsgRef } from "types/schemas";
 import { LTs } from "./listenerTypes";
 import { getNodeCG } from "../extension/utils";
 import { NodeCGAPIClient } from "@nodecg/types/client/api/api.client";

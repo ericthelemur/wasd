@@ -2,13 +2,13 @@
     "$schema": "http://json-schema.org/draft-07/schema",
     "type": "object",
     "additionalProperties": {
-        "$ref": "components/annPool.json"
+        "$ref": "components/pool.json"
     },
     "default": {
         "base": {
             "name": "Base",
             "priority": 1,
-            "announcements": [
+            "msgs": [
                 {
                     "id": "wasd"
                 },
@@ -26,7 +26,7 @@
         "archive": {
             "name": "Archive",
             "priority": 0,
-            "announcements": []
+            "msgs": []
         }
     }
 }

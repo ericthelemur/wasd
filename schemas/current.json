@@ -8,10 +8,10 @@
                 "null"
             ]
         },
-        "annID": {
+        "msgID": {
             "oneOf": [
                 {
-                    "$ref": "components/annID.json"
+                    "$ref": "components/msgID.json"
                 },
                 {
                     "type": "null"
@@ -30,12 +30,12 @@
     },
     "required": [
         "text",
-        "annID",
+        "msgID",
         "endTime"
     ],
     "default": {
         "text": null,
-        "annID": null,
+        "msgID": null,
         "endTime": 0
     }
 }
