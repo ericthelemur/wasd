@@ -6,6 +6,9 @@ import { useReplicant } from 'use-nodecg';
 
 import { DonoProp } from '../utils';
 import * as icons from './icons';
+import { NodeCGAPIClient } from '@nodecg/types/client/api/api.client';
+
+declare var nodecg: NodeCGAPIClient;
 
 function changeModStatus(dono: Donation, to: ModStatus, property = "modstatus") {
     return () => {

@@ -72,7 +72,7 @@ jobs:
     - name: Build
       run: |
         npm run clean
-        npm run build
+        npm run build:ci
 
     # Commit newly built files
     # This can "fail" if there are no newly changed/built files, but we should continue anyway
@@ -80,7 +80,9 @@ jobs:
       id: commit
       continue-on-error: true
       run: |
-        git add -f dashboard extension
+        git add -f dashboard
+        git add -f extension
+        git add -f graphics
         git commit -m "Built files" -a
 
     # Pushes the built files to a specific branch

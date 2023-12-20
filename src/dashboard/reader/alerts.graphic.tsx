@@ -6,6 +6,9 @@ import { createRoot } from 'react-dom/client';
 import { ToastContainer, toast } from 'react-toastify';
 
 import { Notification } from './components/notification';
+import { NodeCGAPIClient } from '@nodecg/types/client/api/api.client';
+
+declare var nodecg: NodeCGAPIClient;
 
 nodecg.listenFor("show-dono", "nodecg-tiltify", (dono) => {
     toast(<Notification dono={dono} />, {
