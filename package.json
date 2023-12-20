@@ -25,20 +25,14 @@
     },
     "dashboardPanels": [
       {
-        "name": "panel",
-        "title": "Panel",
-        "width": 2,
-        "file": "panel.dashboard.html",
+        "name": "dono-reader",
+        "title": "Donation Reader",
+        "file": "reader.graphic.html",
+        "fullbleed": true,
         "headerColor": "#525F78"
       }
     ],
     "graphics": [
-      {
-        "file": "reader.graphic.html",
-        "width": 1920,
-        "height": 1080,
-        "singleInstance": false
-      },
       {
         "file": "alerts.graphic.html",
         "width": 1920,
