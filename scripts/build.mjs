@@ -18,9 +18,10 @@ import pjson from '../package.json' assert { type: 'json' };
 import debounce from './debounce.mjs';
 
 const buildAll = argv.includes('--all');
-const buildExtension = argv.includes('--extension') || buildAll;
-const buildDashboard = argv.includes('--dashboard') || buildAll;
-const buildGraphics = argv.includes('--graphics') || buildAll;
+const buildCI = argv.includes('--ci');
+const buildExtension = argv.includes('--extension') || buildAll || buildCI;
+const buildDashboard = argv.includes('--dashboard') || buildAll || buildCI;
+const buildGraphics = argv.includes('--graphics') || buildAll || buildCI;
 const buildSchemas = argv.includes('--schemas') || buildAll;
 
 const bundlers = new Set();
