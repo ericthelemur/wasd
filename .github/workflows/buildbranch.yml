@@ -21,6 +21,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: ${{ github.repository }}
     steps:
     # Checkout the base branch of this repository with full depth
     - name: Checkout this repository
@@ -37,7 +40,7 @@ jobs:
         token: ${{ secrets['GITHUB_TOKEN'] }}
         repository: 'ericthelemur/nodecg-tiltify'
         ref: 'master'
-        path: '..'
+        path: '../nodecg-tiltify'
         fetch-depth: 0
 
     # Set the local git user config to use the GitHub Actions bot account
