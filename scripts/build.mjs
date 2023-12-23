@@ -79,7 +79,7 @@ if (buildGraphics) {
 if (buildExtension) {
   bundlers.add(
     new Parcel({
-      entries: 'src/extension/index.ts',
+      entries: 'src/extension/index.extension.ts',
       targets: {
         default: {
           context: 'node',
