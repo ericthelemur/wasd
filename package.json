@@ -61,7 +61,6 @@
     "react-contenteditable": "^3.3.7",
     "react-css-transition-replace": "^5.0.1",
     "react-dom": "^18.0.0",
-    "react-fitty": "^1.0.1",
     "react-textfit": "github:ericthelemur/react-textfit",
     "react-transition-group": "^4.4.5",
     "ts-node": "^10.9.1",
