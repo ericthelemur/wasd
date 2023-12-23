@@ -84,6 +84,7 @@ if (buildExtension) {
         default: {
           context: 'node',
           distDir: 'extension',
+          distEntry: "index.js"
         },
       },
       defaultConfig: '@parcel/config-default',
