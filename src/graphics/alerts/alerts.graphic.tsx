@@ -1,11 +1,11 @@
-import '../uwcs-bootstrap.css';
+import '../../dashboard/uwcs-bootstrap.css';
 import 'react-toastify/dist/ReactToastify.css';
 import './alerts.graphic.css';
 
 import { createRoot } from 'react-dom/client';
 import { ToastContainer, toast } from 'react-toastify';
 
-import { Notification } from './components/notification';
+import { Notification } from './notification';
 import { NodeCGAPIClient } from '@nodecg/types/client/api/api.client';
 
 declare var nodecg: NodeCGAPIClient;

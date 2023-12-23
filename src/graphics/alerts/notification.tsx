@@ -1,6 +1,6 @@
 import { Donation } from 'nodecg-tiltify/src/types/schemas/donations';
 
-import { formatAmounts } from '../utils';
+import { formatAmounts } from '../../dashboard/reader/utils';
 
 export function Notification({ dono }: { dono: Donation }) {
     return (
