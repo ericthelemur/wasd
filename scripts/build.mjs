@@ -18,9 +18,10 @@ import pjson from '../package.json' assert { type: 'json' };
 import debounce from './debounce.mjs';
 
 const buildAll = argv.includes('--all');
-const buildExtension = argv.includes('--extension') || buildAll;
-const buildDashboard = argv.includes('--dashboard') || buildAll;
-const buildGraphics = argv.includes('--graphics') || buildAll;
+const buildCI = argv.includes('--ci');
+const buildExtension = argv.includes('--extension') || buildAll || buildCI;
+const buildDashboard = argv.includes('--dashboard') || buildAll || buildCI;
+const buildGraphics = argv.includes('--graphics') || buildAll || buildCI;
 const buildSchemas = argv.includes('--schemas') || buildAll;
 
 const bundlers = new Set();
@@ -78,12 +79,11 @@ if (buildGraphics) {
 if (buildExtension) {
   bundlers.add(
     new Parcel({
-      entries: 'src/extension/index.extension.ts',
+      entries: 'src/extension/index.ts',
       targets: {
         default: {
           context: 'node',
           distDir: 'extension',
-          distEntry: "index.js"
         },
       },
       defaultConfig: '@parcel/config-default',

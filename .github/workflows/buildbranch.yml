@@ -30,6 +30,16 @@ jobs:
         ref: ${{ inputs.base_branch || 'master' }}
         fetch-depth: 0
 
+    # Checkout the dependency of nodecg-tiltify
+    - name: Checkout nodecg-tiltify repository
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets['GITHUB_TOKEN'] }}
+        repository: 'ericthelemur/nodecg-tiltify'
+        ref: 'master'
+        path: '..'
+        fetch-depth: 0
+
     # Set the local git user config to use the GitHub Actions bot account
     - name: Set local git config user details
       run: |
@@ -80,9 +90,9 @@ jobs:
       id: commit
       continue-on-error: true
       run: |
-        git add -f dashboard
-        git add -f extension
-        git add -f graphics
+        git add -f dashboard || true
+        git add -f extension || true
+        git add -f graphics || true
         git commit -m "Built files" -a
 
     # Pushes the built files to a specific branch
