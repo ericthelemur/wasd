@@ -82,6 +82,11 @@ jobs:
       working-directory: "./nodecg-dono-control"
       run: npm ci
 
+    # Install NPM dependencies
+    - name: Install NPM dependencies for nodecg-tiltify
+      working-directory: "./nodecg-tiltify"
+      run: npm ci
+
     # Actually build everything
     - name: Build
       working-directory: "./nodecg-dono-control"
