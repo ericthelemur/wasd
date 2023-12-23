@@ -28,7 +28,7 @@ jobs:
       with:
         token: ${{ secrets['GITHUB_TOKEN'] }}
         ref: ${{ inputs.base_branch || 'master' }}
-        path: "./${{ github.repository }}"
+        path: "./nodecg-dono-control"
         fetch-depth: 0
 
     # Checkout the dependency of nodecg-tiltify
@@ -43,7 +43,7 @@ jobs:
 
     # Set the local git user config to use the GitHub Actions bot account
     - name: Set local git config user details
-      working-directory: "./${{ github.repository }}"
+      working-directory: "./nodecg-dono-control"
       run: |
         git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
@@ -51,7 +51,7 @@ jobs:
     # Recheckout both the base and build branches and merge the base into build
     # This can "fail" if the build branch doesn't exist, but we should continue anyway
     - name: (Re)checkout both branches and merge main into build
-      working-directory: "./${{ github.repository }}"
+      working-directory: "./nodecg-dono-control"
       continue-on-error: true
       run: |
         git checkout ${{ inputs.base_branch || 'master' }}
@@ -79,12 +79,12 @@ jobs:
 
     # Install NPM dependencies
     - name: Install NPM dependencies
-      working-directory: "./${{ github.repository }}"
+      working-directory: "./nodecg-dono-control"
       run: npm ci
 
     # Actually build everything
     - name: Build
-      working-directory: "./${{ github.repository }}"
+      working-directory: "./nodecg-dono-control"
       run: |
         npm run clean
         npm run build:ci
@@ -93,7 +93,7 @@ jobs:
     # This can "fail" if there are no newly changed/built files, but we should continue anyway
     - name: Commit built files
       id: commit
-      working-directory: "./${{ github.repository }}"
+      working-directory: "./nodecg-dono-control"
       continue-on-error: true
       run: |
         git add -f dashboard || true
@@ -107,4 +107,4 @@ jobs:
       with:
         github_token: ${{ secrets['GITHUB_TOKEN'] }}
         branch: ${{ inputs.build_branch || 'build' }}
-        directory: "./${{ github.repository }}"
+        directory: "./nodecg-dono-control"
