@@ -51,7 +51,8 @@
     "watch": "node scripts/build.mjs --all --watch",
     "watch:browser": "node scripts/build.mjs --dashboard --graphics --watch",
     "watch:schemas": "node scripts/build.mjs --schemas --watch",
-    "dev": "concurrently --kill-others \"npm run watch:schemas\" \"npm run watch:browser\" \"nodemon\""
+    "dev": "concurrently --kill-others \"npm run watch:schemas\" \"npm run watch:browser\" \"nodemon\"",
+    "clean": "trash .parcel-cache dashboard extension graphics"
   },
   "dependencies": {
     "react": "^18.0.0",
