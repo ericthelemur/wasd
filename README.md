@@ -5,13 +5,50 @@ It works with NodeCG versions which satisfy this [semver](https://docs.npmjs.com
 You will need to have an appropriate version of NodeCG installed to use it.
 
 
-## Developing
+## Installation
 
-Use the following commands:
+1. Install NodeCG
+```sh
+# Install NodeCG CLI tools for ease of use
+npm install -g nodecg-cli
+# Install nodecg, default settings are fine, you may need npx nodecg setup
+nodecg setup
+```
 
--   `npm run build`: Build the project once.
--   `npm run watch`: Build the project and automatically rebuild on changes.
--   `npm run dev`: Build the project, automatically rebuild on changes, launch the NodeCG server, and automatically restart the NodeCG server on changes.
-    -   Only restarts the NodeCG server when server-side (i.e. extension) code changes. Changes to client-side code (i.e. dashboard panels and graphics) will not cause the server to restart, nor will they cause browser tabs to automatically refresh.
+2. Install Dependent Bundles
+  - If installing for dev, omit `-b build --single-branch`, then `npm i` and `npm run build` in each
+```sh
+cd bundles
 
+# Use build branch content
+git clone -b build --single-branch https://github.com/ericthelemur/nodecg-tiltify 
+git clone -b build --single-branch https://github.com/ericthelemur/nodecg-dono-control
+git clone -b build --single-branch https://github.com/ericthelemur/nodecg-ticker-control   
 
+# speedcontrol needs npm deps installing
+git clone -b build https://github.com/speedcontrol/nodecg-speedcontrol.git
+cd nodecg-speedcontrol
+npm install --production
+```
+
+3. Install WASD Bundle
+```sh
+git clone https://github.com/ericthelemur/wasd
+
+cd wasd
+npm i
+npm run build
+```
+
+4. Setup config files
+```sh
+nodecg defaultconfig nodecg-tiltify
+# Fill out nodecg-tiltify's config with Tiltify keys
+# TODO: Default speedcontrol config
+```
+
+5. Run NodeCG
+```sh
+# In the NodeCG root
+nodecg start
+```
