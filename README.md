@@ -1,9 +1,6 @@
-# react-test
+# WASD 2024 Livestream Graphics
 
-react-test is a [NodeCG](http://github.com/nodecg/nodecg) bundle.
-It works with NodeCG versions which satisfy this [semver](https://docs.npmjs.com/getting-started/semantic-versioning) range: `^2.0.0`
-You will need to have an appropriate version of NodeCG installed to use it.
-
+The main repository for the graphics for WASD 2024. This has been completely rewritten to use Typescript, React and NodeCG 2.
 
 ## Installation
 
@@ -23,7 +20,8 @@ cd bundles
 # Use build branch content
 git clone -b build --single-branch https://github.com/ericthelemur/nodecg-tiltify 
 git clone -b build --single-branch https://github.com/ericthelemur/nodecg-dono-control
-git clone -b build --single-branch https://github.com/ericthelemur/nodecg-ticker-control   
+git clone -b build --single-branch https://github.com/ericthelemur/nodecg-ticker-control
+git clone -b build --single-branch https://github.com/ericthelemur/nodecg-obs-control
 
 # speedcontrol needs npm deps installing
 git clone -b build https://github.com/speedcontrol/nodecg-speedcontrol.git
@@ -33,6 +31,7 @@ npm install --production
 
 3. Install WASD Bundle
 ```sh
+# Still in /bundles
 git clone https://github.com/ericthelemur/wasd
 
 cd wasd
