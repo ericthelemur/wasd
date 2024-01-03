@@ -1,0 +1,28 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "socials": {
+            "type": "array",
+            "items": {
+                "$ref": "social.json"
+            }
+        }
+    },
+    "required": [
+        "name",
+        "social"
+    ],
+    "default": {
+        "name": "Owen",
+        "socials": [
+            {
+                "social": "discord",
+                "name": "ericthelemur"
+            }
+        ]
+    }
+}

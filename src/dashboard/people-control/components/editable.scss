@@ -1,0 +1,117 @@
+:root {
+    --bs-btn-font-size: 1em !important;
+}
+
+.btn-primary {
+    --bs-btn-disabled-border-color: gray !important;
+    --bs-btn-disabled-bg: gray !important;
+}
+
+.btn-outline-primary {
+    --bs-btn-disabled-border-color: gray !important;
+    --bs-btn-disabled-color: gray !important;
+
+    --bs-btn-hover-bg: var(--bs-primary-border-subtle);
+    --bs-btn-hover-color: var(--bs-primary);
+}
+
+.btn.disabled {
+    color: var(--bs-btn-disabled-color) !important;
+    pointer-events: none !important;
+    background-color: var(--bs-btn-disabled-bg) !important;
+    border-color: var(--bs-btn-disabled-border-color) !important;
+    opacity: var(--bs-btn-disabled-opacity) !important;
+}
+
+
+div.editable:not(.input) {
+    cursor: pointer !important;
+    min-width: 3em;
+
+    &:hover {
+        border-bottom: var(--bs-border-color) var(--bs-border-width) dotted;
+        // margin-bottom: calc(-1 * var(--bs-border-width));
+    }
+
+    &>svg.icon {
+        visibility: hidden;
+        color: var(--bs-border-color);
+        width: 0.7em;
+        height: 0.7em;
+        margin-left: 0.25em;
+    }
+
+    &:hover>svg.icon {
+        visibility: visible;
+    }
+}
+
+input.editable,
+.input.editable {
+    font-size: inherit;
+    font-weight: inherit;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.addBtn {
+    width: 100%;
+    height: 0.5em;
+
+    position: absolute;
+    top: -0.5em;
+    left: 0;
+    z-index: 1000;
+
+    cursor: pointer;
+
+    & .addIcon {
+        visibility: hidden;
+        position: absolute;
+        height: 4em;
+        max-width: 100%;
+        object-fit: contain;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+    }
+
+    &:hover .addIcon {
+        visibility: visible;
+    }
+}
+
+.line-clamp-1 {
+    display: -webkit-box !important;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.h-0 {
+    height: 0;
+}
+
+
+.item-enter {
+    opacity: 0;
+    max-height: 0;
+}
+
+.item-enter-active {
+    opacity: 1;
+    max-height: 100px;
+    transition: opacity 250ms ease-in, max-height 250ms ease-in;
+}
+
+.item-exit {
+    opacity: 1;
+    max-height: 100px;
+}
+
+.item-exit-active {
+    opacity: 0;
+    max-height: 0;
+    transition: opacity 500ms ease-in, max-height 500ms ease-in;
+}
