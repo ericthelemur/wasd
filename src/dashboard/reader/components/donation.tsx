@@ -2,7 +2,7 @@ import { tripleState } from 'nodecg-tiltify/src/extension/utils/mod';
 import { Donation } from 'nodecg-tiltify/src/types/schemas/donations';
 import Card from 'react-bootstrap/Card';
 
-import { DonoProp, dateFormat, formatAmounts, timeFormat } from '../utils';
+import { dateFormat, DonoProp, formatAmounts, timeFormat } from '../utils';
 import { Buttons } from './buttons';
 import { Incentives } from './dono_incentives';
 import { approved, censored, read, shown, undecided, unread, unshown } from './icons';

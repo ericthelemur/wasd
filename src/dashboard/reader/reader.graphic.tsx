@@ -1,4 +1,4 @@
-import '../uwcs-bootstrap.css';
+import 'wasd-common/shared/uwcs-bootstrap.css';
 import './reader.graphic.css';
 
 import { useState } from 'react';
