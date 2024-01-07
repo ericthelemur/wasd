@@ -6,5 +6,6 @@
  */
 
 export interface Configschema {
+	barURL: string;
 	[k: string]: unknown;
 }

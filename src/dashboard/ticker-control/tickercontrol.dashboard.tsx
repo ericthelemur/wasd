@@ -9,9 +9,15 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import { createRoot } from 'react-dom/client';
 import { useReplicant } from 'use-nodecg';
 
+import NodeCG from '@nodecg/types';
+
 import { sendTo, sendToF } from '../../common/listeners';
-import { Bank, Current, Message, MsgRef, Pool, Pools, Queue } from '../../types/schemas';
+import {
+    Bank, Configschema, Current, Message, MsgRef, Pool, Pools, Queue
+} from '../../types/schemas';
 import { PoolComp } from './components/msgpool';
+
+declare const nodecg: NodeCG.ClientAPI<Configschema>;
 
 const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "numeric", second: "numeric" });
 
@@ -100,7 +106,7 @@ function BarIframe() {
 		return () => clearInterval(interval);
 	})
 	return <div ref={parRef} style={{ transform: `scale(${scale})`, transformOrigin: "top left" }} className='w-100 overflow-none'>
-		<iframe ref={iframeRef} src="/bundles/wasd/graphics/bar.graphic.html" height="70" width="1920" className="sticky-top" />
+		<iframe ref={iframeRef} src={nodecg.bundleConfig.barURL} height="70" width="1920" className="sticky-top" />
 	</div>
 }
 
