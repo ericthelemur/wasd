@@ -6,10 +6,11 @@
  */
 
 export interface Socials {
-	[k: string]: {
-		iconType: 'svg';
-		name: string;
-		icon: string;
-		[k: string]: unknown;
-	};
+	[k: string]: Icon;
+}
+export interface Icon {
+	iconType: 'svg';
+	name: string;
+	icon: string;
+	[k: string]: unknown;
 }

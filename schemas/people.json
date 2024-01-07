@@ -4,5 +4,23 @@
     "items": {
         "$ref": "types/person.json"
     },
-    "default": []
+    "default": [
+        {
+            "name": "Owen",
+            "socials": [
+                {
+                    "social": "discord",
+                    "name": "ericthelemur"
+                },
+                {
+                    "social": "website",
+                    "name": "warwickspeed.run"
+                },
+                {
+                    "social": "unknown",
+                    "name": "test"
+                }
+            ]
+        }
+    ]
 }

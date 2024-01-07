@@ -9,7 +9,7 @@ export type People = Person[];
 
 export interface Person {
 	name: string;
-	socials?: Social[];
+	socials: Social[];
 	[k: string]: unknown;
 }
 export interface Social {

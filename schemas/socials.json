@@ -1,27 +1,32 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
+    "definitions": {
+        "icon": {
+            "properties": {
+                "iconType": {
+                    "const": "svg"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string",
+                    "contentMediaType": "text/html"
+                }
+            },
+            "required": [
+                "iconType",
+                "name",
+                "icon"
+            ]
+        }
+    },
     "type": "object",
     "additionalProperties": {
         "type": "object",
         "oneOf": [
             {
-                "properties": {
-                    "iconType": {
-                        "const": "svg"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "icon": {
-                        "type": "string",
-                        "contentMediaType": "text/html"
-                    }
-                },
-                "required": [
-                    "iconType",
-                    "name",
-                    "icon"
-                ]
+                "$ref": "#/definitions/icon"
             }
         ]
     },

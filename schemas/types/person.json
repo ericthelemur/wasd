@@ -14,7 +14,7 @@
     },
     "required": [
         "name",
-        "social"
+        "socials"
     ],
     "default": {
         "name": "Owen",
