@@ -33,10 +33,10 @@
   },
   "scripts": {
     "start": "cd ../.. && node -r source-map-support/register index.js",
-    "build": "node ../wasd-common/shared/scripts/build.mjs nodecg-dono-control",
-    "watch": "node ../wasd-common/shared/scripts/build.mjs nodecg-dono-control --watch",
-    "clean": "node ../wasd-common/shared/scripts/build.mjs nodecg-dono-control --clean-only",
-    "types": "nodecg schema-types",
+    "build": "cross-env-shell node ../wasd-common/shared/scripts/build.mjs $npm_package_name",
+    "watch": "npm run build -- --watch",
+    "clean": "npm run build -- --clean-only",
+    "types": "nodecg schema-types --o ../wasd-common/shared/types/$npm_package_name",
     "nodemon": "nodemon --config ../wasd-common/shared/nodemon.json",
     "dev": "concurrently --kill-others \"npm run watch -- --types\" \"npm run watch -- --browser\" \"npm run nodemon\""
   },
@@ -48,7 +48,8 @@
     "react-toastify": "^9.1.3",
     "ts-node": "^10.9.1",
     "use-nodecg": "github:vmichalak/use-nodecg",
-    "wasd-common": "1.0.0"
+    "wasd-common": "1.0.0",
+    "nodecg-tiltify": "1.0.0"
   },
   "devDependencies": {
     "@nodecg/types": "^2.0.0",
@@ -60,7 +61,8 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "trash-cli": "*",
-    "typescript": "^5.1.3"
+    "typescript": "^5.1.3",
+    "cross-env": "*"
   },
   "license": "MIT"
 }
