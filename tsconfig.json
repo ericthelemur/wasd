@@ -1,3 +1,6 @@
 {
 	"extends": "../wasd-common/shared/tsconfig.build.json",
+	"compilerOptions": {
+		"baseUrl": "src"
+	}
 }
