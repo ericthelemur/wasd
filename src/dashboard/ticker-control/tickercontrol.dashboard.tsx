@@ -1,17 +1,17 @@
-import '../uwcs-bootstrap.css';
+import 'wasd-common/shared/uwcs-bootstrap.css';
 
-import { DragDropContext, DragStart, DraggableLocation, DropResult } from 'react-beautiful-dnd';
+import { klona } from 'klona';
+import { createRef, useEffect, useState } from 'react';
+import { DragDropContext, DraggableLocation, DragStart, DropResult } from 'react-beautiful-dnd';
 import { Pause, Play, PlusLg, Trash } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
+import InputGroup from 'react-bootstrap/InputGroup';
 import { createRoot } from 'react-dom/client';
 import { useReplicant } from 'use-nodecg';
-import { Bank, Pool, Pools, Queue, MsgRef, Message, Current } from '../../types/schemas';
 
-import { createRef, useEffect, useState } from 'react';
-import InputGroup from 'react-bootstrap/InputGroup';
+import { sendTo, sendToF } from '../../common/listeners';
+import { Bank, Current, Message, MsgRef, Pool, Pools, Queue } from '../../types/schemas';
 import { PoolComp } from './components/msgpool';
-import { sendTo, sendToF } from 'common/listeners';
-import { klona } from "klona";
 
 const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "numeric", second: "numeric" });
 
