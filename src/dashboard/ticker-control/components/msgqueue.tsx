@@ -1,14 +1,14 @@
-import './message.scss';
+import './pool.scss';
 
+import { sendTo, sendToF } from 'common/listeners';
 import { DraggableProvided } from 'react-beautiful-dnd';
 import { FastForward, GripVertical, Link45deg, Pen, XLg } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
-import { MsgRef, Message } from 'types/schemas';
+import { Message, MsgRef } from 'types/schemas';
+import Editable from 'wasd-common/shared/components/editable';
 
 import add from '../../assets/add.svg';
-import Editable from "./editable";
-import { sendTo, sendToF } from 'common/listeners';
 
 interface MessageProps {
     id: MsgRef;

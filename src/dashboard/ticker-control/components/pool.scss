@@ -1,0 +1,103 @@
+.form-control {
+    padding: 0.25em 0.5em;
+}
+
+.message .btn {
+    padding: 0em 0.25em;
+}
+
+svg {
+    margin-bottom: 0.15em;
+}
+
+.card-body {
+    padding: 0.25em 0.5em;
+}
+
+.pool {
+    min-height: 1em;
+}
+
+.pool:empty {
+    border: var(--bs-border-color) var(--bs-border-width);
+}
+
+.input-group-text {
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: hidden;
+    text-wrap: wrap;
+    text-wrap: stable;
+    text-align: left;
+    display: inline;
+}
+
+.input-group {
+    width: unset;
+    flex-wrap: nowrap;
+
+    & .input-group-text {
+        padding: 0.1em 0.5em;
+    }
+
+    & .btn {
+        padding: 0.1em 0.25em !important;
+    }
+}
+
+.priority {
+    flex-shrink: 0;
+    flex-grow: 0;
+    max-width: 8em;
+}
+
+.input.priority {
+    width: 5em;
+}
+
+.pools {
+    position: relative;
+
+    & .trash {
+        position: absolute;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #f008;
+
+        pointer-events: none;
+
+        & .queue-trash {
+            font-size: 3em;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+    }
+}
+
+
+.forbid {
+    cursor: not-allowed;
+}
+
+.card-ctrls {
+    width: unset;
+    height: fit-content;
+    flex-shrink: 0;
+    font-size: 0.8em;
+}
+
+.line-clamp-1 {
+    display: -webkit-box !important;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.h-0 {
+    height: 0;
+}

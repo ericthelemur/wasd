@@ -1,7 +1,7 @@
 import 'wasd-common/shared/uwcs-bootstrap.css';
 
 import { klona } from 'klona';
-import { createRef, useEffect, useState } from 'react';
+import { createRef, ReactElement, ReactNode, useEffect, useState } from 'react';
 import { DragDropContext, DraggableLocation, DragStart, DropResult } from 'react-beautiful-dnd';
 import { Pause, Play, PlusLg, Trash } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';

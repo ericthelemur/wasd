@@ -1,13 +1,13 @@
-import './message.scss';
-
-import { Pool, MsgRef, Message } from 'types/schemas';
+import './pool.scss';
 
 import { ThreeDots } from 'react-bootstrap-icons';
-import type { PreludeInfo } from '../tickercontrol.dashboard';
-import { QueueMsg, InsertHandle } from './msgqueue';
-import { DnDTransitionsList } from './dndlist';
-import Editable from "./editable";
+import { Message, MsgRef, Pool } from 'types/schemas';
+import { DnDTransitionsList } from 'wasd-common/shared/components/dndlist';
+import Editable from 'wasd-common/shared/components/editable';
 
+import { InsertHandle, QueueMsg } from './msgqueue';
+
+import type { PreludeInfo } from '../tickercontrol.dashboard';
 export interface PoolProps {
     id: string;
     pool: Pool;
