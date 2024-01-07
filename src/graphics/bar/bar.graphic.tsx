@@ -1,11 +1,12 @@
-import '../uwcs-bootstrap.css';
+import 'wasd-common/shared/uwcs-bootstrap.css';
 import './bar.scss';
+import 'wasd-common/shared/browser.d';
 
 import { Current } from 'nodecg-ticker-control/src/types/schemas';
 import { Total } from 'nodecg-tiltify/src/types/schemas';
 import { useEffect, useState } from 'react';
 import ReactCSSTransitionReplace from 'react-css-transition-replace';
-import { createRoot } from "react-dom/client";
+import { createRoot } from 'react-dom/client';
 import { Textfit } from 'react-textfit';
 import { useReplicant } from 'use-nodecg';
 
