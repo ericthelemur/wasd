@@ -3,7 +3,7 @@ import './people.scss';
 
 import { At, RecordFill, Wifi } from 'react-bootstrap-icons';
 import Badge from 'react-bootstrap/Badge';
-import Button from 'react-bootstrap/Button';
+import Card from 'react-bootstrap/Card';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
@@ -22,7 +22,7 @@ function SocialIcon({ icon }: { icon: Icon }) {
 			}
 		} catch { }
 	}
-	return <At size="1em" />
+	return <At size="16px" />
 }
 
 function SocialComp({ soc }: { soc: Social }) {
@@ -30,20 +30,20 @@ function SocialComp({ soc }: { soc: Social }) {
 	const [socials,] = useReplicant<Socials>("socials", {});
 	const icon = socials![social];
 
-	return <Stack gap={3} direction="horizontal">
+	return <Stack gap={2} direction="horizontal">
 		<SocialIcon icon={icon} />
-		<Editable text={name} setText={(v) => soc.name = v} />
+		<InputGroup><Editable text={name} setText={(v) => soc.name = v} /></InputGroup>
 	</Stack>
 }
 
 function PersonComp({ person }: { person: Person }) {
 	const { name, socials } = person;
-	return <div>
-		<Editable text={name} setText={(v) => person.name = v} />
-		{<Stack gap={3}>
+	return <Card className="m-2 p-2">
+		<h4><InputGroup><Editable text={name} setText={(v) => person.name = v} /></InputGroup></h4>
+		{<Stack gap={1} className="mx-2">
 			{socials?.map(s => <SocialComp soc={s} />)}
 		</Stack>}
-	</div>
+	</Card>
 }
 
 export function PeoplePanel() {
