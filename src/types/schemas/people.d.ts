@@ -8,11 +8,13 @@
 export type People = Person[];
 
 export interface Person {
+	id: string;
 	name: string;
 	socials: Social[];
 	[k: string]: unknown;
 }
 export interface Social {
+	id: string;
 	social: string;
 	name: string;
 	[k: string]: unknown;

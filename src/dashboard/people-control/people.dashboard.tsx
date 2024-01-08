@@ -2,9 +2,11 @@ import 'wasd-common/shared/uwcs-bootstrap.css';
 import './people.scss';
 
 import { useState } from 'react';
-import { DragDropContext, DraggableProvided, DroppableProvided } from 'react-beautiful-dnd';
 import {
-    At, DistributeVertical, GripVertical, PenFill, RecordFill, Wifi
+    DragDropContext, DraggableProvided, DroppableProvided, DropResult
+} from 'react-beautiful-dnd';
+import {
+    At, DistributeVertical, GripVertical, PenFill, RecordFill, Wifi, X, XLg
 } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
@@ -21,11 +23,9 @@ import Editable from 'wasd-common/shared/components/editable';
 import add from '../assets/add.svg';
 
 function reorder<T>(list: T[], startIndex: number, endIndex: number) {
-	const result = Array.from(list);
-	const [removed] = result.splice(startIndex, 1);
-	result.splice(endIndex, 0, removed);
-
-	return result;
+	const [removed] = list.splice(startIndex, 1);
+	list.splice(endIndex, 0, removed);
+	return list;
 };
 
 function SocialIcon({ icon }: { icon: Icon }) {
@@ -40,7 +40,8 @@ function SocialIcon({ icon }: { icon: Icon }) {
 	return <span><At size="16px" /></span>
 }
 
-function SocialComp({ soc, provided }: { soc: Social, provided: DraggableProvided }) {
+const defaultSocial = () => ({ id: `social-${Date.now()}`, social: "unknown", name: "" })
+function SocialComp({ soc, provided, onHandle, onRemove }: { soc: Social, provided: DraggableProvided, onHandle: () => void, onRemove: () => void }) {
 	const { social, name } = soc;
 	const [socials,] = useReplicant<Socials>("socials", {});
 	const icon = socials![social];
@@ -49,19 +50,21 @@ function SocialComp({ soc, provided }: { soc: Social, provided: DraggableProvide
 		<div className="btn btn-outline-secondary" {...provided.dragHandleProps}>
 			<GripVertical />
 		</div>
+		<InsertHandle onClick={onHandle} />
 
 		<div className="btn btn-outline-secondary" >
 			<SocialIcon icon={icon} />
 		</div>
 		<Editable className='msg-text' textClasses="input-group-text" text={name} setText={(v) => soc.name = v} type="multi" container={false} />
+		<Button variant="outline-secondary" onClick={onRemove}><XLg /></Button>
 	</InputGroup>
 }
 
 interface PersonProps {
 	person: Person;
 	provided: DraggableProvided;
-	onHandle: () => {};
-	setEditPerson: (p: Person) => {};
+	onHandle: () => void;
+	setEditPerson: (p: Person) => void;
 }
 
 function PersonComp({ person, provided, onHandle, setEditPerson }: PersonProps) {
@@ -79,7 +82,7 @@ function PersonComp({ person, provided, onHandle, setEditPerson }: PersonProps) 
 	</Card>
 }
 
-function EditModal({ person, setEditPerson }: { person: Person, setEditPerson: (p: Person | null) => {} }) {
+function EditModal({ person, setEditPerson }: { person: Person, setEditPerson: (p: Person | null) => void }) {
 	return <Modal show={true} fullscreen="md-down" onHide={() => setEditPerson(null)}>
 		<Modal.Header closeButton className="h4">Edit {person.name}</Modal.Header>
 		<Modal.Body>
@@ -93,12 +96,17 @@ function EditModal({ person, setEditPerson }: { person: Person, setEditPerson: (
 				<hr className="my-2" />
 				<Form.Group>
 					<Form.Label className="h4 m-0">Socials:</Form.Label>
-					<DnDTransitionsList id={"socials::" + name} type={"socials::" + name}
-						ids={(person.socials ?? []).map(s => name + "::" + s.name)}
+					<DnDTransitionsList id={"socials::" + person.id} type={"socials::" + person.id}
+						ids={(person.socials ?? []).map(s => person.id + "::" + s.id)}
 						data={person.socials ?? []}
 						content={(id, index, s, provided) => {
-							return <SocialComp soc={s} provided={provided} />
+							return <SocialComp soc={s} provided={provided}
+								onHandle={() => person.socials.splice(index, 0, defaultSocial())}
+								onRemove={() => person.socials.splice(index, 1)} />
 						}} />
+					<div className="position-relative mt-2">
+						<InsertHandle onClick={() => person.socials.push(defaultSocial())} />
+					</div>
 				</Form.Group>
 			</Form>
 		</Modal.Body>
@@ -113,21 +121,35 @@ function InsertHandle(props: { onClick: () => void }) {
 	)
 }
 
+const defaultPerson = () => { return { id: `person-${Date.now()}`, name: "New", socials: [] } };
 export function PeoplePanel() {
 	const [people,] = useReplicant<People>("people", []);
 	const [editPerson, setEditPerson] = useState<Person | null>(null);
-	return <DragDropContext onDragEnd={() => { }}>
+
+	function onDragEnd(result: DropResult) {
+		if (!result.destination) return;
+		if (result.type === "people") {
+			reorder(people!, result.source.index, result.destination.index);
+		} else if (editPerson && result.type.startsWith("socials::")) {
+			reorder(editPerson.socials, result.source.index, result.destination.index);
+		}
+	}
+
+	return <DragDropContext onDragEnd={onDragEnd}>
 		<Stack className="m-2">
 			<DnDTransitionsList id={"people"} type="people"
-				ids={(people ?? []).map(p => p.name)}
+				ids={(people ?? []).map(p => p.id)}
 				data={people ?? []}
 				content={(id, index, p, provided) => {
 					return <PersonComp person={p} provided={provided}
-						setEditPerson={setEditPerson}
-						onHandle={() => people?.splice(index, 0, { name: "New", socials: [] })} />
+						setEditPerson={(p) => setEditPerson(p)}
+						onHandle={() => people!.splice(index, 0, defaultPerson())} />
 				}} />
+			<div className="position-relative mt-2">
+				<InsertHandle onClick={() => people!.push(defaultPerson())} />
+			</div>
 		</Stack>
-		{editPerson && <EditModal person={editPerson} setEditPerson={setEditPerson} />}
+		{editPerson && <EditModal person={editPerson} setEditPerson={(p) => setEditPerson(p)} />}
 	</DragDropContext>
 }
 

@@ -6,17 +6,21 @@
     },
     "default": [
         {
+            "id": "owen",
             "name": "Owen",
             "socials": [
                 {
+                    "id": "discord-1",
                     "social": "discord",
                     "name": "ericthelemur"
                 },
                 {
+                    "id": "website-1",
                     "social": "website",
                     "name": "warwickspeed.run"
                 },
                 {
+                    "id": "test-1",
                     "social": "unknown",
                     "name": "test"
                 }
