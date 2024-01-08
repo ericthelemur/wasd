@@ -18,6 +18,14 @@ import Editable from 'wasd-common/shared/components/editable';
 
 import add from '../assets/add.svg';
 
+function reorder<T>(list: T[], startIndex: number, endIndex: number) {
+	const result = Array.from(list);
+	const [removed] = result.splice(startIndex, 1);
+	result.splice(endIndex, 0, removed);
+
+	return result;
+};
+
 function SocialIcon({ icon }: { icon: Icon }) {
 	if (icon) {
 		try {
@@ -44,10 +52,11 @@ function SocialComp({ soc, provided }: { soc: Social, provided: DraggableProvide
 	</Stack>
 }
 
-function PersonComp({ person, provided }: { person: Person, provided: DraggableProvided }) {
+function PersonComp({ person, provided, onHandle }: { person: Person, provided: DraggableProvided, onHandle: () => {} }) {
 	const { name, socials } = person;
 	return <Accordion.Item ref={provided.innerRef} {...provided.draggableProps} eventKey={name}>
 		<Accordion.Header>
+			<InsertHandle onClick={onHandle} />
 			<Stack direction="horizontal" className="gap-1 person">
 				<div {...provided.dragHandleProps}>
 					<GripVertical />
@@ -82,7 +91,7 @@ export function PeoplePanel() {
 				ids={(people ?? []).map(p => p.name)}
 				data={people ?? []}
 				content={(id, index, p, provided) => {
-					return <PersonComp person={p} provided={provided} />
+					return <PersonComp person={p} provided={provided} onHandle={() => people?.splice(index, 0, { name: "New", socials: [] })} />
 				}} />
 		</Accordion>
 	</DragDropContext>
