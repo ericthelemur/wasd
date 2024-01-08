@@ -52,12 +52,12 @@ function SocialComp({ soc, provided, onHandle, onRemove }: { soc: Social, provid
 		</div>
 		<InsertHandle onClick={onHandle} />
 
-		<div className="btn btn-outline-secondary" >
-			<SocialIcon icon={icon} />
-		</div>
+		<Form.Select defaultValue={social} className="py-0" style={{ width: "7em", flexGrow: 0 }}>
+			{Object.entries(socials!).map(([id, icon]) => <option key={id} value={id}>{icon.name}</option>)}
+		</Form.Select>
 		<Editable className='msg-text' textClasses="input-group-text" text={name} setText={(v) => soc.name = v} type="multi" container={false} />
 		<Button variant="outline-secondary" onClick={onRemove}><XLg /></Button>
-	</InputGroup>
+	</InputGroup >
 }
 
 interface PersonProps {
@@ -65,21 +65,21 @@ interface PersonProps {
 	provided: DraggableProvided;
 	onHandle: () => void;
 	setEditPerson: (p: Person) => void;
+	onRemove: () => void;
 }
 
-function PersonComp({ person, provided, onHandle, setEditPerson }: PersonProps) {
+function PersonComp({ person, provided, onHandle, setEditPerson, onRemove }: PersonProps) {
 	const { name, socials } = person;
-	return <Card ref={provided.innerRef} {...provided.draggableProps} className="m-1">
+	return <InputGroup className="person h4 m-1" ref={provided.innerRef} {...provided.draggableProps}>
+		<div className="btn btn-outline-secondary" {...provided.dragHandleProps}>
+			<GripVertical />
+		</div>
 		<InsertHandle onClick={onHandle} />
-		<Stack direction="horizontal" className="gap-1 person h-4">
-			<div {...provided.dragHandleProps} className="px-1">
-				<GripVertical />
-			</div>
-			<div className="flex-grow-1 editable lh-1" onClick={() => setEditPerson(person)}>
-				{name} <PenFill className="icon" />
-			</div>
-		</Stack>
-	</Card>
+		<div className="editable input-group-text" onClick={() => setEditPerson(person)}>
+			{name} <PenFill className="icon" />
+		</div>
+		<Button variant="outline-secondary py-0 px-1" onClick={onRemove}><XLg /></Button>
+	</InputGroup>
 }
 
 function EditModal({ person, setEditPerson }: { person: Person, setEditPerson: (p: Person | null) => void }) {
@@ -143,7 +143,8 @@ export function PeoplePanel() {
 				content={(id, index, p, provided) => {
 					return <PersonComp person={p} provided={provided}
 						setEditPerson={(p) => setEditPerson(p)}
-						onHandle={() => people!.splice(index, 0, defaultPerson())} />
+						onHandle={() => people!.splice(index, 0, defaultPerson())}
+						onRemove={() => people!.splice(index, 1)} />
 				}} />
 			<div className="position-relative mt-2">
 				<InsertHandle onClick={() => people!.push(defaultPerson())} />
