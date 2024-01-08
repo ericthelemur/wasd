@@ -14,3 +14,27 @@
 .accordion-button {
     padding: 0.5em;
 }
+
+
+.input-group-text {
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: hidden;
+    text-wrap: wrap;
+    text-wrap: stable;
+    text-align: left;
+    display: inline;
+}
+
+.input-group {
+    width: unset;
+    flex-wrap: nowrap;
+
+    & .input-group-text {
+        padding: 0.1em 0.5em;
+    }
+
+    & .btn {
+        padding: 0.1em 0.25em !important;
+    }
+}
