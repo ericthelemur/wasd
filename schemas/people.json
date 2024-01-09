@@ -16,20 +16,31 @@
         "all": {
             "name": "All",
             "people": [
-                "owen"
+                "owen",
+                "person-2",
+                "person-3",
+                "person-4"
             ]
         },
         "runners": {
             "name": "Runners",
-            "people": []
+            "people": [
+                "person-2",
+                "person-3"
+            ]
         },
         "commentators": {
             "name": "Commentators",
-            "people": []
+            "people": [
+                "person-3",
+                "person-4"
+            ]
         },
         "tech": {
             "name": "Tech",
-            "people": []
+            "people": [
+                "owen"
+            ]
         }
     }
 }

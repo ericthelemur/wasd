@@ -2,7 +2,7 @@ import 'wasd-common/shared/uwcs-bootstrap.css';
 import './people.scss';
 
 import { useState } from 'react';
-import { DropResult } from 'react-beautiful-dnd';
+import { DragStart, DropResult } from 'react-beautiful-dnd';
 import { PenFill } from 'react-bootstrap-icons';
 import { createRoot } from 'react-dom/client';
 import { Category, People, PeopleBank, Person } from 'types/schemas';
@@ -20,7 +20,7 @@ function remove(src: Category, srcIndex: number) {
 }
 
 function add(item: string, dest: Category, destIndex: number) {
-	if (!dest) return;
+	if (!dest || dest.people.includes(item)) return;
 	const newDest = Array.from(dest.people);
 	newDest.splice(destIndex, 0, item);
 	dest.people = newDest;
@@ -48,18 +48,19 @@ function PersonContent({ id, person, onClick }: { id: string, person: Person, on
 	</div>
 }
 
-function onDragEnd({ source, destination }: DropResult, people: People) {
+function onDragEnd({ source, destination }: DropResult, src: Category, dest: Category) {
 	if (!destination) return;
 
-	if (destination.droppableId !== source.droppableId) {
-		const src = people![source.droppableId];
-		const dest = people![destination.droppableId];
+	if (destination.droppableId === source.droppableId) {
+		reorder(src, source.index, destination.index)
+	} else if (destination.droppableId === "all") {
+		remove(src, source.index);
+	} else if (source.droppableId === "all") {
+		add(src.people[source.index], dest, destination.index);
+	} else {
 		// Add first to be fail safe
 		add(src.people[source.index], dest, destination.index);
 		remove(src, source.index);
-	} else {
-		const list = people![source.droppableId];
-		reorder(list, source.index, destination.index)
 	}
 }
 
@@ -68,6 +69,7 @@ export function PeoplePanel() {
 	const [people,] = useReplicant<People>("people", { all: { name: "", people: [] } });
 	const [peopleBank,] = useReplicant<PeopleBank>("peopleBank", {});
 	const [editPerson, setEditPerson] = useState<string | null>(null);
+	const [hv, setHover] = useState({ dragging: false, showBin: false });
 
 	function genGroupArgs(gid: string, group: Category) {
 		return {
@@ -84,23 +86,33 @@ export function PeoplePanel() {
 	function onHandle(gid: string, group: GroupProps<Person>, index: number, id: string | null, item: Person | null) {
 		const newID = newPerson(peopleBank!);
 		group.original.splice(index, 0, newID);
+		if (group.id !== "all") people!.all.people.push(newID);
 		setEditPerson(newID);
 	}
 	function onRemove(gid: string, group: GroupProps<Person>, index: number, id: string | null, item: Person | null) {
 		group.original.splice(index, 1)
 	}
+	function onBeforeDragStart(start: DragStart) {
+		// Register drag start and show bin if dragging out of queue
+		setHover({ dragging: true, showBin: start.source.droppableId !== "all" });
+	}
 	return <>
 		{people && peopleBank && <TwoColDnD
 			left={{
 				cid: "pool", groups: [genGroupArgs("all", people.all)],
-				functions: { content, onHandle, onRemove }
+				functions: { content, onHandle, onRemove },
+				showBin: hv.showBin
 			}}
 			right={{
 				cid: "assignments",
 				groups: Object.entries(people).filter(([gid, g]) => gid !== "all").map(([gid, group]) => genGroupArgs(gid, group)),
 				functions: { content, onHandle, onRemove }
 			}}
-			onDragEnd={(r) => onDragEnd(r, people)}
+			onDragEnd={(r) => {
+				setHover({ dragging: false, showBin: false });
+				if (r.destination) onDragEnd(r, people![r.source.droppableId], people![r.destination.droppableId])
+			}}
+			onBeforeDragStart={onBeforeDragStart}
 		/>}
 		{editPerson && <EditModal editPerson={peopleBank![editPerson]} setEditPerson={setEditPerson} />}
 	</>

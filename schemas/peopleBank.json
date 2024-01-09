@@ -25,6 +25,33 @@
                     "name": "test"
                 }
             ]
+        },
+        "person-2": {
+            "name": "Person 2",
+            "pronouns": "They/Them",
+            "socials": [
+                {
+                    "id": "discord",
+                    "social": "discord",
+                    "name": "p2"
+                }
+            ]
+        },
+        "person-3": {
+            "name": "Person 3",
+            "pronouns": "She/Her",
+            "socials": [
+                {
+                    "id": "a",
+                    "social": "somethingrandom",
+                    "name": "p2"
+                }
+            ]
+        },
+        "person-4": {
+            "name": "",
+            "pronouns": "",
+            "socials": []
         }
     }
 }
