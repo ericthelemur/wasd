@@ -1,30 +1,35 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "type": "array",
-    "items": {
-        "$ref": "types/person.json"
-    },
-    "default": [
-        {
-            "id": "owen",
-            "name": "Owen",
-            "socials": [
-                {
-                    "id": "discord-1",
-                    "social": "discord",
-                    "name": "ericthelemur"
-                },
-                {
-                    "id": "website-1",
-                    "social": "website",
-                    "name": "warwickspeed.run"
-                },
-                {
-                    "id": "test-1",
-                    "social": "unknown",
-                    "name": "test"
-                }
-            ]
+    "type": "object",
+    "properties": {
+        "all": {
+            "$ref": "types/category.json"
         }
-    ]
+    },
+    "required": [
+        "all"
+    ],
+    "additionalProperties": {
+        "$ref": "types/category.json"
+    },
+    "default": {
+        "all": {
+            "name": "All",
+            "people": [
+                "owen"
+            ]
+        },
+        "runners": {
+            "name": "Runners",
+            "people": []
+        },
+        "commentators": {
+            "name": "Commentators",
+            "people": []
+        },
+        "tech": {
+            "name": "Tech",
+            "people": []
+        }
+    }
 }

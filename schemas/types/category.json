@@ -1,0 +1,19 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "people": {
+            "type": "array",
+            "items": {
+                "$ref": "personRef.json"
+            }
+        }
+    },
+    "required": [
+        "name",
+        "people"
+    ]
+}

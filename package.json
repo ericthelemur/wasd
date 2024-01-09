@@ -14,7 +14,7 @@
       {
         "name": "people-control",
         "title": "People Control",
-        "width": 3,
+        "width": 4,
         "file": "people.dashboard.html",
         "headerColor": "#525F78"
       }

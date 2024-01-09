@@ -5,12 +5,17 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface People {
-	all: Category;
-	[k: string]: Category;
+export interface PeopleBank {
+	[k: string]: Person;
 }
-export interface Category {
+export interface Person {
 	name: string;
-	people: string[];
+	socials: Social[];
+	[k: string]: unknown;
+}
+export interface Social {
+	id: string;
+	social: string;
+	name: string;
 	[k: string]: unknown;
 }
