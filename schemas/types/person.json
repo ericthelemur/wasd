@@ -5,6 +5,9 @@
         "name": {
             "type": "string"
         },
+        "pronouns": {
+            "type": "string"
+        },
         "socials": {
             "type": "array",
             "items": {
@@ -14,10 +17,12 @@
     },
     "required": [
         "name",
+        "pronouns",
         "socials"
     ],
     "default": {
         "name": "Owen",
+        "pronouns": "He/Him",
         "socials": [
             {
                 "id": "discord-1",

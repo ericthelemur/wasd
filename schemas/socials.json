@@ -28,6 +28,9 @@
             "$ref": "#/definitions/icon"
         }
     },
+    "required": [
+        "unknown"
+    ],
     "additionalProperties": {
         "type": "object",
         "oneOf": [

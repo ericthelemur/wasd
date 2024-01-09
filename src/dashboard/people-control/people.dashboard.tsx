@@ -1,118 +1,44 @@
 import 'wasd-common/shared/uwcs-bootstrap.css';
 import './people.scss';
 
-import { group } from 'console';
-import { createContext, ReactElement, useContext, useState } from 'react';
-import {
-    DragDropContext, DraggableProvided, DroppableProvided, DropResult
-} from 'react-beautiful-dnd';
-import {
-    At, DistributeVertical, GripVertical, PenFill, RecordFill, Wifi, X, XLg
-} from 'react-bootstrap-icons';
-import Button from 'react-bootstrap/Button';
-import Card from 'react-bootstrap/Card';
-import Dropdown from 'react-bootstrap/Dropdown';
-import Form from 'react-bootstrap/Form';
-import InputGroup from 'react-bootstrap/InputGroup';
-import Modal from 'react-bootstrap/Modal';
-import Stack from 'react-bootstrap/Stack';
+import { useState } from 'react';
+import { DropResult } from 'react-beautiful-dnd';
+import { PenFill } from 'react-bootstrap-icons';
 import { createRoot } from 'react-dom/client';
-import { Category, Icon, People, PeopleBank, Person, Social, Socials } from 'types/schemas';
+import { Category, People, PeopleBank, Person } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
-import {
-    DnDTransitionsList, GroupProps, InsertHandle, TwoColDnD
-} from 'wasd-common/shared/components/dndlist';
-import Editable from 'wasd-common/shared/components/editable';
+import { GroupProps, TwoColDnD } from 'wasd-common/shared/components/dndlist';
 
-function SocialIcon({ icon }: { icon: Icon }) {
-	if (icon) {
-		try {
-			switch (icon.iconType) {
-				case "svg":
-					return <span dangerouslySetInnerHTML={{ __html: icon.icon }} />
-			}
-		} catch { }
-	}
-	return <span><At size="16px" /></span>
+import { EditModal } from './editPerson';
+
+function remove(src: Category, srcIndex: number) {
+	if (!src) return;
+	const newSrc = Array.from(src.people);
+	const [r] = newSrc.splice(srcIndex, 1);
+	src.people = newSrc;
+	return r;
 }
 
-function SocialSelect({ social, setSocial }: { social: string, setSocial: (s: string) => void }) {
-	const [socials,] = useReplicant<Socials>("socials", { "unknown": { "name": "Unknown", "iconType": "svg", "icon": "" } });
-	var icon = socials![social];
-	if (!icon) icon = socials!.unknown;
-	return <Dropdown>
-		<Dropdown.Toggle variant="outline-secondary">
-			<SocialIcon icon={icon} />
-		</Dropdown.Toggle>
-
-		<Dropdown.Menu className="social-dropdown">
-			{Object.entries(socials ?? {}).map(([s, icon]) =>
-				<Dropdown.Item key={s} disabled={s === social} onClick={() => setSocial(s)}><SocialIcon icon={icon} /></Dropdown.Item>)}
-		</Dropdown.Menu>
-	</Dropdown>
+function add(item: string, dest: Category, destIndex: number) {
+	if (!dest) return;
+	const newDest = Array.from(dest.people);
+	newDest.splice(destIndex, 0, item);
+	dest.people = newDest;
 }
 
-const defaultSocial = () => ({ id: `social-${Date.now()}`, social: "unknown", name: "" })
-function SocialComp({ soc, provided, onHandle, onRemove }: { soc: Social, provided: DraggableProvided, onHandle: () => void, onRemove: () => void }) {
-	const { social, name } = soc;
+function reorder(list: Category, srcIndex: number, destIndex: number) {
+	if (!list) return;
 
-	return <InputGroup className="m-1" ref={provided.innerRef} {...provided.draggableProps}>
-		<div className="btn btn-outline-secondary" {...provided.dragHandleProps}>
-			<GripVertical />
-		</div>
-		<InsertHandle onClick={onHandle} />
-
-		<SocialSelect social={social} setSocial={(s) => { soc.social = s }} />
-		<Editable className='msg-text' textClasses="input-group-text" text={name} setText={(v) => soc.name = v} type="multi" container={false} />
-		<Button variant="outline-secondary" onClick={onRemove}><XLg /></Button>
-	</InputGroup >
+	const newList = Array.from(list.people);
+	const [r] = newList.splice(srcIndex, 1);
+	newList.splice(destIndex, 0, r);
+	list.people = newList;
 }
 
-function EditModal({ editPerson, setEditPerson }: { editPerson: Person | null, setEditPerson: (p: string | null) => void }) {
-	if (!editPerson) return <></>
-
-	function onDragEnd(result: DropResult) {
-		if (!result.destination || !editPerson) return;
-		const [r] = editPerson.socials.splice(result.source.index, 1);
-		if (r) editPerson.socials.splice(result.destination.index, 0, r);
-		// reorder(editPerson.socials, result.source.index, result.destination.index);
-	}
-
-	return <Modal show={true} fullscreen="md-down" onHide={() => setEditPerson(null)}>
-		<Modal.Header closeButton className="h4">Edit {editPerson.name}</Modal.Header>
-		<Modal.Body>
-			<Form>
-				<Form.Group className="hstack gap-1">
-					<Form.Label className="m-0 h6">Name: </Form.Label>
-					<InputGroup>
-						<Editable text={editPerson.name} setText={(v) => editPerson.name = v} type="single" />
-					</InputGroup>
-				</Form.Group>
-				<hr className="my-2" />
-				<Form.Group>
-					<Form.Label className="h4 m-0">Socials:</Form.Label>
-					<DragDropContext onDragEnd={onDragEnd}>
-						<DnDTransitionsList id={"socials::" + editPerson.id} type={"socials::" + editPerson.id}
-							ids={(editPerson.socials ?? []).map(s => editPerson.id + "::" + s.id)}
-							data={editPerson.socials ?? []}
-							content={(index, id, s, provided) => {
-								return <SocialComp soc={s} provided={provided}
-									onHandle={() => editPerson.socials.splice(index, 0, defaultSocial())}
-									onRemove={() => editPerson.socials.splice(index, 1)} />
-							}} />
-					</DragDropContext>
-					<div className="position-relative mt-2">
-						<InsertHandle onClick={() => editPerson.socials.push(defaultSocial())} />
-					</div>
-				</Form.Group>
-			</Form>
-		</Modal.Body>
-	</Modal>
-}
 
 function newPerson(bank: PeopleBank) {
 	const id = `person-${Date.now()}-${Math.trunc(Math.random() * 1000000)}`;
-	bank![id] = { name: "", socials: [] }
+	bank![id] = { name: "", pronouns: "", socials: [{ id: "initial", "social": "unknown", "name": "" }] }
 	return id;
 }
 
@@ -121,6 +47,22 @@ function PersonContent({ id, person, onClick }: { id: string, person: Person, on
 		{person.name} <PenFill className="icon" />
 	</div>
 }
+
+function onDragEnd({ source, destination }: DropResult, people: People) {
+	if (!destination) return;
+
+	if (destination.droppableId !== source.droppableId) {
+		const src = people![source.droppableId];
+		const dest = people![destination.droppableId];
+		// Add first to be fail safe
+		add(src.people[source.index], dest, destination.index);
+		remove(src, source.index);
+	} else {
+		const list = people![source.droppableId];
+		reorder(list, source.index, destination.index)
+	}
+}
+
 
 export function PeoplePanel() {
 	const [people,] = useReplicant<People>("people", { all: { name: "", people: [] } });
@@ -135,35 +77,14 @@ export function PeoplePanel() {
 		}
 	}
 
-	function onDragEnd(result: DropResult) {
-		if (!result.destination) return;
 
-		if (result.destination.droppableId !== result.source.droppableId) {
-			const src = people![result.source.droppableId];
-			const dest = people![result.destination.droppableId];
-			if (!src || !dest) return;
-
-			const newSrc = Array.from(src.people);
-			const newDest = Array.from(dest.people);
-			const [r] = newSrc.splice(result.source.index, 1);
-			newDest.splice(result.destination.index, 0, r);
-			src.people = newSrc;
-			dest.people = newDest;
-		} else {
-			const list = people![result.source.droppableId];
-			if (!list) return;
-
-			const newList = Array.from(list.people);
-			const [r] = newList.splice(result.source.index, 1);
-			newList.splice(result.destination.index, 0, r);
-			list.people = newList;
-		}
-	}
 	function content(gid: string, group: GroupProps<Person>, index: number, id: string, item: Person) {
 		return <PersonContent id={id} person={item} onClick={() => setEditPerson(id)} />
 	}
 	function onHandle(gid: string, group: GroupProps<Person>, index: number, id: string | null, item: Person | null) {
-		group.original.splice(index, 0, newPerson(peopleBank!))
+		const newID = newPerson(peopleBank!);
+		group.original.splice(index, 0, newID);
+		setEditPerson(newID);
 	}
 	function onRemove(gid: string, group: GroupProps<Person>, index: number, id: string | null, item: Person | null) {
 		group.original.splice(index, 1)
@@ -179,7 +100,7 @@ export function PeoplePanel() {
 				groups: Object.entries(people).filter(([gid, g]) => gid !== "all").map(([gid, group]) => genGroupArgs(gid, group)),
 				functions: { content, onHandle, onRemove }
 			}}
-			onDragEnd={onDragEnd}
+			onDragEnd={(r) => onDragEnd(r, people)}
 		/>}
 		{editPerson && <EditModal editPerson={peopleBank![editPerson]} setEditPerson={setEditPerson} />}
 	</>

@@ -10,6 +10,7 @@ export interface PeopleBank {
 }
 export interface Person {
 	name: string;
+	pronouns: string;
 	socials: Social[];
 	[k: string]: unknown;
 }
