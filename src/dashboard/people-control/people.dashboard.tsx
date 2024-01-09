@@ -66,34 +66,6 @@ function SocialComp({ soc, provided, onHandle, onRemove }: { soc: Social, provid
 	</InputGroup >
 }
 
-// interface PersonProps {
-// 	person: Person;
-// 	provided: DraggableProvided;
-// 	onHandle?: () => void;
-// 	onRemove: () => void;
-// }
-
-// function PersonWrapper(props: PersonProps) {
-// 	const { person, provided, onHandle, onRemove } = props;
-// 	return <InputGroup className="person h4 m-1" ref={provided.innerRef} {...provided.draggableProps}>
-// 		<div className="btn btn-outline-secondary" {...provided.dragHandleProps}>
-// 			<GripVertical />
-// 		</div>
-// 		{onHandle && <InsertHandle onClick={onHandle} />}
-// 		{(props as any).children}
-// 		<Button variant="outline-secondary py-0 px-1" onClick={onRemove}><XLg /></Button>
-// 	</InputGroup>
-// }
-
-// function PersonComp(props: PersonProps) {
-// 	const { setEditPerson } = useContext(EditPersonContext);
-
-// 	return <PersonWrapper {...props}>{!props.person ? "Unknown Person" :
-// 		<div className="editable input-group-text" onClick={() => setEditPerson(props.person)}>
-// 			{props.person.name} <PenFill className="icon" />
-// 		</div>
-// 	}</PersonWrapper>
-// }
 
 function EditModal({ editPerson, setEditPerson }: { editPerson: Person | null, setEditPerson: (p: Person | null) => void }) {
 	if (editPerson === null) return <></>
@@ -134,35 +106,18 @@ function newPerson(bank: PeopleBank) {
 	return id;
 }
 
-// interface CategoryProps {
-// 	id: string
-// 	category: Category,
-// 	bank: PeopleBank,
-// }
-
-// function CategoryComp({ id, category, bank }: CategoryProps) {
-// 	return <div>
-// 		<h2>{category.name}</h2>
-// 		<Stack className="m-2">
-// 			<DnDTransitionsList id={`people::${id}`} type="people"
-// 				ids={category.people.map(pid => `${id}::${pid}`)}
-// 				data={category.people.map(pid => bank[pid])}
-// 				content={(id, index, p, provided) => {
-// 					return <PersonComp person={p} provided={provided}
-// 						onHandle={() => category.people.splice(index, 0, newPerson(bank))}
-// 						onRemove={() => category.people.splice(index, 1)} />
-// 				}} />
-// 			<div className="position-relative mt-2">
-// 				<InsertHandle onClick={() => category.people.push(newPerson(bank))} />
-// 			</div>
-// 		</Stack>
-// 	</div>
-// }
-
 export function PeoplePanel() {
 	const [people,] = useReplicant<People>("people", { all: { name: "", people: [] } });
 	const [peopleBank,] = useReplicant<PeopleBank>("peopleBank", {});
 	const [editPerson, setEditPerson] = useState<Person | null>(null);
+
+	function genGroupArgs(gid: string, group: Category) {
+		return {
+			title: group.name, id: gid,
+			original: group.people, ids: group.people,
+			data: group.people.map(id => peopleBank![id]),
+		}
+	}
 
 	function onDragEnd(result: DropResult) {
 		// if (!result.destination) return;
@@ -185,31 +140,18 @@ export function PeoplePanel() {
 		group.original.splice(index, 1)
 	}
 	return <>
-		{people && peopleBank && <TwoColDnD left={{
-			cid: "pool", groups: [
-				{
-					title: "All", id: "all",
-					original: people.all.people, ids: people.all.people,
-					data: people.all.people.map(id => peopleBank[id]),
-				}],
-			functions: { content, onHandle, onRemove }
-		}}
-			right={{ cid: "assignments", groups: [], functions: { content, onHandle, onRemove } }}
+		{people && peopleBank && <TwoColDnD
+			left={{
+				cid: "pool", groups: [genGroupArgs("all", people.all)],
+				functions: { content, onHandle, onRemove }
+			}}
+			right={{
+				cid: "assignments",
+				groups: Object.entries(people).filter(([gid, g]) => gid !== "all").map(([gid, group]) => genGroupArgs(gid, group)),
+				functions: { content, onHandle, onRemove }
+			}}
 			onDragEnd={onDragEnd}
 		/>}
-		{/* {people && peopleBank && <DragDropContext onDragEnd={onDragEnd}>
-			<div className='fill'>
-				<div className='w-50 h-100 overflow-auto'>
-					<CategoryComp id="all" category={{ name: "All", people: Object.keys(peopleBank) }} bank={peopleBank} />
-				</div>
-				<div className='w-50 h-100 overflow-auto'>
-					{Object.entries(people).map(([id, cat]) =>
-						<CategoryComp key={id} id={id} category={cat} bank={peopleBank} />
-					)}
-				</div>
-			</div>
-			{editPerson && <EditModal />}
-		</DragDropContext>} */}
 		{editPerson && <EditModal editPerson={editPerson} setEditPerson={setEditPerson} />}
 	</>
 }
