@@ -46,3 +46,13 @@
     left: 0;
     right: 0;
 }
+
+.social-dropdown.show {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    z-index: 200000;
+}
+
+.pool {
+    min-height: 1em;
+}

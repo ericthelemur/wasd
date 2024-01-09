@@ -6,6 +6,7 @@
  */
 
 export interface Socials {
+	unknown: Icon;
 	[k: string]: Icon;
 }
 export interface Icon {

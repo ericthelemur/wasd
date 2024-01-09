@@ -11,6 +11,7 @@ import {
 } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
+import Dropdown from 'react-bootstrap/Dropdown';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Modal from 'react-bootstrap/Modal';
@@ -22,17 +23,6 @@ import {
     DnDTransitionsList, GroupProps, InsertHandle, TwoColDnD
 } from 'wasd-common/shared/components/dndlist';
 import Editable from 'wasd-common/shared/components/editable';
-
-interface PersonContext {
-	person: Person | null;
-	setEditPerson: (p: Person | null) => void;
-}
-
-function reorder<T>(list: T[], startIndex: number, endIndex: number) {
-	const [removed] = list.splice(startIndex, 1);
-	list.splice(endIndex, 0, removed);
-	return list;
-};
 
 function SocialIcon({ icon }: { icon: Icon }) {
 	if (icon) {
@@ -46,11 +36,25 @@ function SocialIcon({ icon }: { icon: Icon }) {
 	return <span><At size="16px" /></span>
 }
 
+function SocialSelect({ social, setSocial }: { social: string, setSocial: (s: string) => void }) {
+	const [socials,] = useReplicant<Socials>("socials", { "unknown": { "name": "Unknown", "iconType": "svg", "icon": "" } });
+	var icon = socials![social];
+	if (!icon) icon = socials!.unknown;
+	return <Dropdown>
+		<Dropdown.Toggle variant="outline-secondary">
+			<SocialIcon icon={icon} />
+		</Dropdown.Toggle>
+
+		<Dropdown.Menu className="social-dropdown">
+			{Object.entries(socials ?? {}).map(([s, icon]) =>
+				<Dropdown.Item key={s} disabled={s === social} onClick={() => setSocial(s)}><SocialIcon icon={icon} /></Dropdown.Item>)}
+		</Dropdown.Menu>
+	</Dropdown>
+}
+
 const defaultSocial = () => ({ id: `social-${Date.now()}`, social: "unknown", name: "" })
 function SocialComp({ soc, provided, onHandle, onRemove }: { soc: Social, provided: DraggableProvided, onHandle: () => void, onRemove: () => void }) {
 	const { social, name } = soc;
-	const [socials,] = useReplicant<Socials>("socials", {});
-	const icon = socials![social];
 
 	return <InputGroup className="m-1" ref={provided.innerRef} {...provided.draggableProps}>
 		<div className="btn btn-outline-secondary" {...provided.dragHandleProps}>
@@ -58,9 +62,7 @@ function SocialComp({ soc, provided, onHandle, onRemove }: { soc: Social, provid
 		</div>
 		<InsertHandle onClick={onHandle} />
 
-		<Form.Select defaultValue={social} className="py-0" style={{ width: "7em", flexGrow: 0 }}>
-			{Object.entries(socials!).map(([id, icon]) => <option key={id} value={id}>{icon.name}</option>)}
-		</Form.Select>
+		<SocialSelect social={social} setSocial={(s) => { soc.social = s }} />
 		<Editable className='msg-text' textClasses="input-group-text" text={name} setText={(v) => soc.name = v} type="multi" container={false} />
 		<Button variant="outline-secondary" onClick={onRemove}><XLg /></Button>
 	</InputGroup >
