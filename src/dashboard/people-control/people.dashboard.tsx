@@ -71,9 +71,10 @@ export function PeoplePanel() {
 	const [editPerson, setEditPerson] = useState<string | null>(null);
 	const [hv, setHover] = useState({ dragging: false, showBin: false });
 
-	function genGroupArgs(gid: string, group: Category) {
+	function genGroupArgs(gid: string, group: Category): GroupProps<Person> {
 		return {
 			title: group.name, id: gid,
+			icon: group.icon,
 			original: group.people, ids: group.people,
 			data: group.people.map(id => peopleBank![id]),
 		}

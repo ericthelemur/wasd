@@ -12,5 +12,12 @@ export interface People {
 export interface Category {
 	name: string;
 	people: string[];
+	icon?: Icon;
+	[k: string]: unknown;
+}
+export interface Icon {
+	iconType: 'svg';
+	name?: string;
+	icon: string;
 	[k: string]: unknown;
 }
