@@ -68,9 +68,15 @@ function SocialComp({ soc, provided, onHandle, onRemove }: { soc: Social, provid
 	</InputGroup >
 }
 
+function EditModal({ editPerson, setEditPerson }: { editPerson: Person | null, setEditPerson: (p: string | null) => void }) {
+	if (!editPerson) return <></>
 
-function EditModal({ editPerson, setEditPerson }: { editPerson: Person | null, setEditPerson: (p: Person | null) => void }) {
-	if (editPerson === null) return <></>
+	function onDragEnd(result: DropResult) {
+		if (!result.destination || !editPerson) return;
+		const [r] = editPerson.socials.splice(result.source.index, 1);
+		if (r) editPerson.socials.splice(result.destination.index, 0, r);
+		// reorder(editPerson.socials, result.source.index, result.destination.index);
+	}
 
 	return <Modal show={true} fullscreen="md-down" onHide={() => setEditPerson(null)}>
 		<Modal.Header closeButton className="h4">Edit {editPerson.name}</Modal.Header>
@@ -85,14 +91,16 @@ function EditModal({ editPerson, setEditPerson }: { editPerson: Person | null, s
 				<hr className="my-2" />
 				<Form.Group>
 					<Form.Label className="h4 m-0">Socials:</Form.Label>
-					<DnDTransitionsList id={"socials::" + editPerson.id} type={"socials::" + editPerson.id}
-						ids={(editPerson.socials ?? []).map(s => editPerson.id + "::" + s.id)}
-						data={editPerson.socials ?? []}
-						content={(index, id, s, provided) => {
-							return <SocialComp soc={s} provided={provided}
-								onHandle={() => editPerson.socials.splice(index, 0, defaultSocial())}
-								onRemove={() => editPerson.socials.splice(index, 1)} />
-						}} />
+					<DragDropContext onDragEnd={onDragEnd}>
+						<DnDTransitionsList id={"socials::" + editPerson.id} type={"socials::" + editPerson.id}
+							ids={(editPerson.socials ?? []).map(s => editPerson.id + "::" + s.id)}
+							data={editPerson.socials ?? []}
+							content={(index, id, s, provided) => {
+								return <SocialComp soc={s} provided={provided}
+									onHandle={() => editPerson.socials.splice(index, 0, defaultSocial())}
+									onRemove={() => editPerson.socials.splice(index, 1)} />
+							}} />
+					</DragDropContext>
 					<div className="position-relative mt-2">
 						<InsertHandle onClick={() => editPerson.socials.push(defaultSocial())} />
 					</div>
@@ -108,10 +116,16 @@ function newPerson(bank: PeopleBank) {
 	return id;
 }
 
+function PersonContent({ id, person, onClick }: { id: string, person: Person, onClick: () => void }) {
+	return <div className="editable input-group-text" onClick={onClick}>
+		{person.name} <PenFill className="icon" />
+	</div>
+}
+
 export function PeoplePanel() {
 	const [people,] = useReplicant<People>("people", { all: { name: "", people: [] } });
 	const [peopleBank,] = useReplicant<PeopleBank>("peopleBank", {});
-	const [editPerson, setEditPerson] = useState<Person | null>(null);
+	const [editPerson, setEditPerson] = useState<string | null>(null);
 
 	function genGroupArgs(gid: string, group: Category) {
 		return {
@@ -122,18 +136,31 @@ export function PeoplePanel() {
 	}
 
 	function onDragEnd(result: DropResult) {
-		// if (!result.destination) return;
-		// if (result.type === "people") {
-		// 	reorder(people!, result.source.index, result.destination.index);
-		// } else if (editPerson && result.type.startsWith("socials::")) {
-		// 	reorder(editPerson.socials, result.source.index, result.destination.index);
-		// }
+		if (!result.destination) return;
+
+		if (result.destination.droppableId !== result.source.droppableId) {
+			const src = people![result.source.droppableId];
+			const dest = people![result.destination.droppableId];
+			if (!src || !dest) return;
+
+			const newSrc = Array.from(src.people);
+			const newDest = Array.from(dest.people);
+			const [r] = newSrc.splice(result.source.index, 1);
+			newDest.splice(result.destination.index, 0, r);
+			src.people = newSrc;
+			dest.people = newDest;
+		} else {
+			const list = people![result.source.droppableId];
+			if (!list) return;
+
+			const newList = Array.from(list.people);
+			const [r] = newList.splice(result.source.index, 1);
+			newList.splice(result.destination.index, 0, r);
+			list.people = newList;
+		}
 	}
-	console.log("DATA2", people, peopleBank, people!.all.people.map(id => peopleBank![id]));
 	function content(gid: string, group: GroupProps<Person>, index: number, id: string, item: Person) {
-		return <div className="editable input-group-text" onClick={() => setEditPerson(item)}>
-			{item.name} <PenFill className="icon" />
-		</div>
+		return <PersonContent id={id} person={item} onClick={() => setEditPerson(id)} />
 	}
 	function onHandle(gid: string, group: GroupProps<Person>, index: number, id: string | null, item: Person | null) {
 		group.original.splice(index, 0, newPerson(peopleBank!))
@@ -154,7 +181,7 @@ export function PeoplePanel() {
 			}}
 			onDragEnd={onDragEnd}
 		/>}
-		{editPerson && <EditModal editPerson={editPerson} setEditPerson={setEditPerson} />}
+		{editPerson && <EditModal editPerson={peopleBank![editPerson]} setEditPerson={setEditPerson} />}
 	</>
 }
 
