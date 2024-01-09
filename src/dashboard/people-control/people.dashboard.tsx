@@ -89,8 +89,16 @@ export function PeoplePanel() {
 		if (group.id !== "all") people!.all.people.push(newID);
 		setEditPerson(newID);
 	}
+	function fullRemove(id: string, item: Person) {
+		if (confirm(`Remove ${item ? item.name : id} from all groups?`)) {
+			console.log(id, item);
+			Object.values(people!).forEach(g => g.people = g.people.filter(p => p !== id));
+			delete peopleBank![id];
+		}
+	}
 	function onRemove(gid: string, group: GroupProps<Person>, index: number, id: string | null, item: Person | null) {
-		group.original.splice(index, 1)
+		if (gid !== "all") group.original.splice(index, 1);
+		else fullRemove(id!, item!);
 	}
 	function onBeforeDragStart(start: DragStart) {
 		// Register drag start and show bin if dragging out of queue
