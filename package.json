@@ -38,7 +38,8 @@
     "react-bootstrap-icons": "^1.10.3",
     "react-dom": "^18.2.0",
     "ts-node": "^10.9.1",
-    "use-nodecg": "github:ericthelemur/use-nodecg"
+    "use-nodecg": "github:ericthelemur/use-nodecg",
+    "tiny-typed-emitter": "^2.1.0"
   },
   "devDependencies": {
     "@nodecg/types": "^2.0.0",
