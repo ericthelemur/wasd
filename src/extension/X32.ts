@@ -2,7 +2,7 @@
 // MIT License from ESA
 
 import type NodeCGTypes from '@nodecg/types';
-import osc from 'osc';
+import osc, { OscMessage } from 'osc';
 import { TypedEmitter } from 'tiny-typed-emitter';
 import { Login, XrStatus } from 'types/schemas';
 
@@ -13,6 +13,7 @@ import { Replicant } from './utils';
 
 interface X32Events {
     'ready': () => void;
+    'message': (msg: OscMessage) => void;
 }
 
 export class X32Utility extends TypedEmitter<X32Events> {
@@ -31,6 +32,8 @@ export class X32Utility extends TypedEmitter<X32Events> {
         }
     } = {};
     private fadersInterval: { [k: string]: NodeJS.Timeout } = {};
+
+    private pendingReplies: { [address: string]: OscMessage } = {};
 
     constructor(nodecg: NodeCGTypes.ServerAPI) {
         super();
@@ -54,8 +57,19 @@ export class X32Utility extends TypedEmitter<X32Events> {
             });
 
             listenTo("DEBUG:callOSC", (msg, ack) => {
+                this.pendingReplies[msg.address] = msg;
+                console.log(this.pendingReplies);
                 this.conn.send(msg);
-                if (ack && !ack.handled) ack();
+
+                const process = (m: OscMessage) => {
+                    if (m.address === msg.address) {
+                        nodecg.log.info("Responding to DEBUG:callOSC of", m.address);
+                        this.removeListener("message", process);
+                        if (ack && !ack.handled) ack(null, m);
+                    }
+                };
+                this.addListener("message", process);
+                return process;
             });
         } else {
             this.status.value.connected = false;
@@ -82,9 +96,15 @@ export class X32Utility extends TypedEmitter<X32Events> {
 
         this.conn.on('message', (message) => {
             // I don't trust myself with all posibilities, so wrapping this up.
-            nodecg.log.info("[X32] Message recieved", message);
+            nodecg.log.debug("[X32] Message recieved", message);
+
+            if (this.pendingReplies[message.address]) {
+                this.emit("message", message);
+                delete this.pendingReplies[message.address];
+            }
+
             try {
-                if (message.address.endsWith('/fader')) {
+                if (message.address.endsWith('/fader') || message.address.endsWith('/level')) {
                     this.checkFaders(message);
                 }
             } catch (err) {
