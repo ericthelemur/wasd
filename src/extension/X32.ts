@@ -8,18 +8,21 @@ import { Login, XrStatus } from 'types/schemas';
 
 import NodeCG from '@nodecg/types';
 
+import { listenTo, sendTo } from '../common/listeners';
 import { Replicant } from './utils';
 
 interface X32Events {
     'ready': () => void;
 }
 
-export default class X32 extends TypedEmitter<X32Events> {
+export class X32Utility extends TypedEmitter<X32Events> {
     private nodecg: NodeCGTypes.ServerAPI;
     private conn!: osc.UDPPort;
 
     status: NodeCG.ServerReplicantWithSchemaDefault<XrStatus>;
     login: NodeCG.ServerReplicantWithSchemaDefault<Login>;
+    private _ignoreConnectionClosedEvents = false;
+    private _reconnectInterval: NodeJS.Timeout | null = null;
 
     faders: { [k: string]: number } = {};
     fadersExpected: {
@@ -37,6 +40,25 @@ export default class X32 extends TypedEmitter<X32Events> {
 
         if (this.login.value.enabled) {
             this.connect();
+
+            listenTo("connect", (login, ack) => {
+                this.login.value = { ...this.login.value, ...login };
+                this.connect();
+                if (ack && !ack.handled) ack();
+            });
+
+            listenTo("disconnect", (login, ack) => {
+                this._ignoreConnectionClosedEvents = true;
+                this.conn.close();
+                if (ack && !ack.handled) ack();
+            });
+
+            listenTo("DEBUG:callOSC", (msg, ack) => {
+                this.conn.send(msg);
+                if (ack && !ack.handled) ack();
+            });
+        } else {
+            this.status.value.connected = false;
         }
     }
 
@@ -55,10 +77,12 @@ export default class X32 extends TypedEmitter<X32Events> {
         this.conn.on('error', (err) => {
             nodecg.log.warn('[X32] Error on connection');
             nodecg.log.debug('[X32] Error on connection:', err);
+            this.status.value.connected = false;
         });
 
         this.conn.on('message', (message) => {
             // I don't trust myself with all posibilities, so wrapping this up.
+            nodecg.log.info("[X32] Message recieved", message);
             try {
                 if (message.address.endsWith('/fader')) {
                     this.checkFaders(message);
@@ -85,16 +109,34 @@ export default class X32 extends TypedEmitter<X32Events> {
 
             this.status.value.connected = true;
             this.emit('ready');
+
+            this._ignoreConnectionClosedEvents = false;
+            clearInterval(this._reconnectInterval!);
+            this._reconnectInterval = null;
         });
 
         this.conn.on('close', () => {
             nodecg.log.info('[X32] Connection closed');
             this.status.value.connected = false;
             clearInterval(renewInterval);
+            this._reconnect();
         });
 
         this.conn.open();
     }
+
+    private _reconnect() {
+        if (this._reconnectInterval || this.status.value.connected) return;
+
+        if (this._ignoreConnectionClosedEvents) {
+            this.status.value.connected = false;
+            return;
+        }
+
+        this.nodecg.log.warn('Connection closed, will attempt to reconnect every 5 seconds.');
+        this._reconnectInterval = setInterval(this.connect, 5000);
+    }
+
 
 
     connected() {

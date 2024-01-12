@@ -6,6 +6,9 @@
             "type": "boolean"
         }
     },
+    "required": [
+        "connected"
+    ],
     "default": {
         "connected": false
     }

@@ -10,48 +10,63 @@ import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Stack from 'react-bootstrap/Stack';
 import { createRoot } from 'react-dom/client';
-import {
-    Configschema, ConnStatus, Login, ObsStatus, PreviewScene, ProgramScene, SceneList
-} from 'types/schemas';
+import { Configschema, Login, XrStatus } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
 import NodeCG from '@nodecg/types';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;
 
-function Status({ status }: { status?: ConnStatus }) {
-	switch (status) {
-		case "connected": return <Badge bg="success">Connected</Badge>
-		case "connecting": return <Badge bg="info">Connecting</Badge>
-		case "disconnected": return <Badge bg="danger">Disconnected</Badge>
-		case "error": return <Badge bg="danger">Error</Badge>
+function Status({ connected }: { connected?: boolean }) {
+	switch (connected) {
+		case true: return <Badge bg="success">Connected</Badge>
+		case false: return <Badge bg="danger">Disconnected</Badge>
 	}
 	return null;
 }
 
+function Statuses() {
+	const [status,] = useReplicant<XrStatus>("xrStatus", { "connected": false });
+
+	return <div className="mt-3">
+		<Stack direction="horizontal" gap={1}>
+			Status:
+			<Status connected={status?.connected} />
+			{/* {status?.streaming && <Badge bg="danger"><Wifi /> LIVE</Badge>}
+			{status?.recording && <Badge bg="danger"><RecordFill /> Recording</Badge>}
+			{status?.transitioning && <Badge bg="info">Transitioning</Badge>} */}
+		</Stack>
+		{/* {status?.connection === "connected" &&
+			<Stack direction="horizontal" gap={1}>
+				{previewScene && <>Preview: <Badge bg="secondary">{previewScene.name}</Badge></>}
+				{programScene && <>Program: <Badge bg="danger">{programScene.name}</Badge></>}
+			</Stack>} */}
+	</div>
+}
+
 function ConnectForm() {
-	const [login,] = useReplicant<Login>("login", { ip: "ws://localhost:4455", password: "" });
+	const [login,] = useReplicant<Login>("login", { "enabled": false, "ip": "", "xr18": true });
 	const urlElem = useRef<HTMLInputElement>(null);
-	const pwElem = useRef<HTMLInputElement>(null);
+	const portElem = useRef<HTMLInputElement>(null);
 
 	function connect(e: FormEvent) {
 		e.preventDefault();
-		nodecg.log.info('Attempting to connect', urlElem.current?.value, pwElem.current?.value);
+		nodecg.log.info('Attempting to connect', urlElem.current?.value, portElem.current?.value);
 		(sendTo("connect", {
 			ip: urlElem.current!.value,
-			password: pwElem.current!.value
+			localPort: portElem.current!.valueAsNumber || undefined
 		}) as unknown as Promise<void>
-		).then(() => nodecg.log.info('successfully connected to obs'))
-			.catch((err: any) => nodecg.log.error('failed to connect to obs:', err));
+		).then(() => nodecg.log.info('successfully connected to xr18'))
+			.catch((err: any) => nodecg.log.error('failed to connect to xr18:', err));
 	}
 
 	return (
 		<Form onSubmit={connect} className="vstack gap-3">
-			<FloatingLabel className="flex-grow-1" controlId="url" label="OBS URL">
-				<Form.Control ref={urlElem} placeholder="ws://localhost:4455" defaultValue={login?.ip} />
+			<FloatingLabel className="flex-grow-1" controlId="url" label="Mixer IP">
+				<Form.Control ref={urlElem} placeholder="192.168.1.99" defaultValue={login?.ip} />
 			</FloatingLabel>
-			<FloatingLabel controlId="password" label="Password">
-				<Form.Control ref={pwElem} type="password" placeholder="Password" defaultValue={login?.password} />
+			<FloatingLabel controlId="port" label="port">
+				<Form.Control ref={portElem} type="number" inputMode="numeric" placeholder="57121" defaultValue={login?.localPort ?? 57121} />
 			</FloatingLabel>
 			<Button type="submit">Connect</Button>
 		</Form>
@@ -62,11 +77,11 @@ function ConnectForm() {
 function DisconnectForm() {
 	function disconnect(e: FormEvent) {
 		e.preventDefault();
-		if (confirm("Are you sure you want to disconnect from OBS?")) {
+		if (confirm("Are you sure you want to disconnect from Mixer?")) {
 			nodecg.log.info('Attempting to disconnect');
 			(sendTo("disconnect", {}) as unknown as Promise<void>
-			).then(() => nodecg.log.info('successfully disconnected from obs'))
-				.catch((err: any) => nodecg.log.error('failed to disconnect to obs:', err));
+			).then(() => nodecg.log.info('successfully disconnected from xr18'))
+				.catch((err: any) => nodecg.log.error('failed to disconnect to xr18:', err));
 		}
 	}
 
@@ -79,9 +94,9 @@ function DisconnectForm() {
 
 
 function ControlForms() {
-	const [status,] = useReplicant<ObsStatus>("obsStatus", { "connection": "disconnected", "streaming": false, "recording": false, "studioMode": false, "transitioning": false });
+	const [status,] = useReplicant<XrStatus>("xrStatus", { "connected": false });
 	if (status) {
-		if (status.connection !== "connected") {
+		if (!status.connected) {
 			return <ConnectForm />
 		} else {
 			return <>

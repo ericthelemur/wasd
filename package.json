@@ -12,10 +12,10 @@
     "compatibleRange": "^2.0.0",
     "dashboardPanels": [
       {
-        "name": "obs-control",
-        "title": "OBS Control",
+        "name": "XR18-control",
+        "title": "XR18 Control",
         "width": 3,
-        "file": "obscontrol.dashboard.html",
+        "file": "xr18.dashboard.html",
         "headerColor": "#525F78"
       }
     ]

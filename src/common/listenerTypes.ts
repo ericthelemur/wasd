@@ -1,27 +1,11 @@
-import type { ObsTransform } from 'types/schemas';
+import { OscMessage } from 'osc';
+import { Login } from 'types/schemas';
 
 export type ListenerTypes = {
     connect: {
-        ip: string,
-        password: string
+        ip: string;
+        localPort?: number;
     },
     disconnect: {},
-    transition: {
-        sceneName?: string;
-        transitionName?: string;
-        transitionDuration?: number;
-    },
-    transitioning: {
-        transitionName: string;
-        fromScene?: string;
-        toScene?: string;
-    },
-    preview: {
-        sceneName: string;
-    },
-    moveItem: {
-        sceneName: string;
-        sceneItemId: number;
-        transform: Partial<ObsTransform>
-    }
+    "DEBUG:callOSC": OscMessage
 }
