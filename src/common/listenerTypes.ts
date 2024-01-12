@@ -7,5 +7,9 @@ export type ListenerTypes = {
         localPort?: number;
     },
     disconnect: {},
-    "DEBUG:callOSC": OscMessage
+    "DEBUG:callOSC": OscMessage,
+
+    "muteToggle": {
+        mic: string;
+    }
 }

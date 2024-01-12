@@ -5,11 +5,7 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface Login {
-	enabled: boolean;
-	ip: string;
-	localPort?: number;
-	xr18: boolean;
-	override?: boolean;
+export interface Groups {
+	connected: boolean;
 	[k: string]: unknown;
 }

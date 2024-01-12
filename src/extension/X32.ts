@@ -58,7 +58,6 @@ export class X32Utility extends TypedEmitter<X32Events> {
 
             listenTo("DEBUG:callOSC", (msg, ack) => {
                 this.pendingReplies[msg.address] = msg;
-                console.log(this.pendingReplies);
                 this.conn.send(msg);
 
                 const process = (m: OscMessage) => {

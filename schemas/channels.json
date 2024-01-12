@@ -1,0 +1,76 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {},
+    "type": "object",
+    "properties": {
+        "dcas": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "mics": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "tech": {
+            "type": "string"
+        },
+        "scenes": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "required": [
+        "dcas",
+        "channels",
+        "tech"
+    ],
+    "default": {
+        "dcas": {
+            "RUN-1": "/dca/1/fader",
+            "RUN-2": "/dca/2/fader",
+            "COMMS": "/dca/3/fader",
+            "MUSIC": "/dca/4/fader"
+        },
+        "mics": {
+            "COM-1": "/ch/01/mix/on",
+            "COM-2": "/ch/02/mix/on",
+            "COM-3": "/ch/03/mix/on",
+            "RUN-1": "/ch/04/mix/on",
+            "RUN-2": "/ch/05/mix/on",
+            "TECH": "/ch/06/mix/on",
+            "RODE-1": "/ch/015/mix/on",
+            "RODE-2": "/ch/016/mix/on"
+        },
+        "scenes": {
+            "RUN-1": [
+                "RUN-1",
+                "COMMS"
+            ],
+            "RUN-2": [
+                "RUN-2",
+                "COMMS"
+            ],
+            "RUN-RACE": [
+                "RUN-1",
+                "RUN-2",
+                "COMMS"
+            ],
+            "COMMS": [
+                "COMMS",
+                "MUSIC"
+            ],
+            "BREAK": [
+                "MUSIC"
+            ]
+        }
+    }
+}

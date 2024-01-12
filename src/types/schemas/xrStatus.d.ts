@@ -6,6 +6,6 @@
  */
 
 export interface XrStatus {
-	connected?: boolean;
+	connected: boolean;
 	[k: string]: unknown;
 }

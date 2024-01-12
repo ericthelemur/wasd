@@ -13,6 +13,9 @@
         },
         "xr18": {
             "type": "boolean"
+        },
+        "override": {
+            "type": "boolean"
         }
     },
     "required": [
