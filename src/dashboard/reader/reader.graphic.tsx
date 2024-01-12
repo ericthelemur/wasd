@@ -1,7 +1,7 @@
 import 'wasd-common/shared/uwcs-bootstrap.css';
 import './reader.graphic.css';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import { createRoot } from 'react-dom/client';
 
@@ -34,8 +34,9 @@ function copyToParams(settings: SortSettings) {
 
 export function Reader() {
 	const [sortSettings, setSortSettings] = useState(fetchFromParams());
-	copyToParams(sortSettings);
-	console.log(sortSettings);
+	useEffect(() => {
+		copyToParams(sortSettings);
+	}, [sortSettings]);
 
 	var donos = <></>;
 	const args = { sortSettings: sortSettings, setSortSettings: setSortSettings };
