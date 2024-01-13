@@ -95,7 +95,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
 
         this.conn.on('message', (message) => {
             // I don't trust myself with all posibilities, so wrapping this up.
-            nodecg.log.debug("[X32] Message recieved", message);
+            nodecg.log.info("[X32] Message recieved", message);
 
             if (this.pendingReplies[message.address]) {
                 this.emit("message", message);
@@ -164,8 +164,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
         this.pendingReplies[msg.address] = msg;
         this.conn.send(msg);
 
-
-        return new Promise((resolve, reject) => {
+        return new Promise<OscMessage>((resolve, reject) => {
             const process = (m: OscMessage) => {
                 if (m.address === msg.address) {
                     this.removeListener("message", process);

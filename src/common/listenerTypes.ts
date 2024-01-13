@@ -9,7 +9,8 @@ export type ListenerTypes = {
     disconnect: {},
     "DEBUG:callOSC": OscMessage,
 
-    "muteToggle": {
+    "setMute": {
         mic: string;
+        muted: boolean;
     }
 }

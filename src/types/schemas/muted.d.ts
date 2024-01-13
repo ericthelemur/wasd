@@ -5,16 +5,6 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface Channels {
-	dcas: {
-		[k: string]: number;
-	};
-	mics: {
-		[k: string]: number;
-	};
-	tech: number;
-	scenes: {
-		[k: string]: number[];
-	};
-	[k: string]: unknown;
+export interface Muted {
+	[k: string]: boolean;
 }

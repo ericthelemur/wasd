@@ -6,17 +6,17 @@
         "dcas": {
             "type": "object",
             "additionalProperties": {
-                "type": "string"
+                "type": "integer"
             }
         },
         "mics": {
             "type": "object",
             "additionalProperties": {
-                "type": "string"
+                "type": "integer"
             }
         },
         "tech": {
-            "type": "string"
+            "type": "integer"
         },
         "scenes": {
             "type": "object",
@@ -30,25 +30,27 @@
     },
     "required": [
         "dcas",
+        "tech",
         "mics",
         "scenes"
     ],
     "default": {
         "dcas": {
-            "RUN-1": "/dca/1/fader",
-            "RUN-2": "/dca/2/fader",
-            "COMMS": "/dca/3/fader",
-            "MUSIC": "/dca/4/fader"
+            "RUN-1": 1,
+            "RUN-2": 2,
+            "COMMS": 3,
+            "MUSIC": 4
         },
+        "tech": 6,
         "mics": {
-            "COM-1": "/ch/01/mix/on",
-            "COM-2": "/ch/02/mix/on",
-            "COM-3": "/ch/03/mix/on",
-            "RUN-1": "/ch/04/mix/on",
-            "RUN-2": "/ch/05/mix/on",
-            "TECH": "/ch/06/mix/on",
-            "RODE-1": "/ch/015/mix/on",
-            "RODE-2": "/ch/016/mix/on"
+            "COM-1": 1,
+            "COM-2": 2,
+            "COM-3": 3,
+            "RUN-1": 4,
+            "RUN-2": 5,
+            "TECH": 6,
+            "RODE-1": 7,
+            "RODE-2": 8
         },
         "scenes": {
             "RUN-1": [

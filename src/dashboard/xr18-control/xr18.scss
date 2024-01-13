@@ -5,3 +5,28 @@
 .w-0 {
     width: 0 !important;
 }
+
+.mute-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin: 0 0.5em;
+}
+
+@media (max-width: 576px) {
+    .mute-buttons {
+        align-items: stretch;
+        flex-wrap: nowrap;
+        flex-direction: column;
+        gap: 1em !important;
+        margin-top: 1em !important;
+    }
+
+    .mute-buttons>.btn {
+        padding: 2rem !important;
+    }
+
+    .mute-indicator {
+        padding: 2em 0 !important;
+    }
+}
