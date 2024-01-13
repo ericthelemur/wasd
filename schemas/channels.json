@@ -30,8 +30,8 @@
     },
     "required": [
         "dcas",
-        "channels",
-        "tech"
+        "mics",
+        "scenes"
     ],
     "default": {
         "dcas": {

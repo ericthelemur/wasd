@@ -156,10 +156,25 @@ export class X32Utility extends TypedEmitter<X32Events> {
         this._reconnectInterval = setInterval(this.connect, 5000);
     }
 
-
-
     connected() {
         return this.login.value.enabled && this.status.value.connected && this.conn;
+    }
+
+    sendMethod(msg: OscMessage) {
+        this.pendingReplies[msg.address] = msg;
+        this.conn.send(msg);
+
+
+        return new Promise((resolve, reject) => {
+            const process = (m: OscMessage) => {
+                if (m.address === msg.address) {
+                    this.removeListener("message", process);
+                    resolve(m);
+                }
+            };
+
+            this.addListener("message", process);
+        })
     }
 
     /**
