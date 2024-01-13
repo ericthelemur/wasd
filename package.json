@@ -17,6 +17,13 @@
         "width": 3,
         "file": "xr18.dashboard.html",
         "headerColor": "#525F78"
+      },
+      {
+        "name": "mute-control",
+        "title": "Commentator Mute Control",
+        "width": 2,
+        "file": "mute.dashboard.html",
+        "headerColor": "#525F78"
       }
     ]
   },
