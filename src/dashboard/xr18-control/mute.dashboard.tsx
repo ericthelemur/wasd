@@ -12,24 +12,18 @@ import NodeCG from '@nodecg/types';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;
 
-export interface MuteSettings {
-	mic?: string | null;
-}
-
-const defaultSettings: MuteSettings = {};
-
 function fetchFromParams() {
 	const url = new URL(window.location.href);
 	var params = url.searchParams;
-	var settings = { ...defaultSettings };
-	settings.mic = params.get("mic");
-	return settings;
+	return params.get("mic");
 }
 
-function copyToParams(settings: MuteSettings) {
+function copyToParams(mic: string | null) {
 	const url = new URL(window.location.href);
 	var params = url.searchParams;
-	Object.entries(settings).filter(([k, v]) => v).forEach(([k, v]) => params.set(k, v.toString()));
+	// Object.entries(settings).filter(([k, v]) => v).forEach(([k, v]) => params.set(k, v.toString()));
+	if (mic) params.set("mic", mic);
+	else params.delete("mic");
 	history.replaceState(null, "", url.href);
 }
 
@@ -99,10 +93,14 @@ function MutePanel() {
 
 	if (!status || !status.connected) return null;
 
-	if (mic.mic) {
-		return <MuteControl mic={mic.mic} />
+	if (mic) {
+		return <>
+			{" "} Controlling {mic} <Button variant="link p-0 m-0" style={{ verticalAlign: "unset" }}
+				onClick={(e) => { setMic(null); e.stopPropagation() }}>← Back to Selection</Button>
+			<MuteControl mic={mic} />
+		</>
 	} else {
-		return <MicChoice setMic={(m) => setMic({ mic: m })} />
+		return <MicChoice setMic={(m) => setMic(m)} />
 	}
 }
 
