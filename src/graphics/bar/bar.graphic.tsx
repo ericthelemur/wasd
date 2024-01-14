@@ -1,6 +1,6 @@
 import 'wasd-common/shared/uwcs-bootstrap.css';
 import './bar.scss';
-import 'wasd-common/shared/browser.d';
+import 'wasd-common/shared/custom.d';
 
 import { Current } from 'nodecg-ticker-control/src/types/schemas';
 import { Total } from 'nodecg-tiltify/src/types/schemas';

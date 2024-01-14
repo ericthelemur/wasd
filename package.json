@@ -17,7 +17,19 @@
       {
         "file": "bar/bar.graphic.html",
         "width": 1920,
+        "height": 70,
+        "singleInstance": false
+      },
+      {
+        "file": "background/background.graphic.html",
+        "width": 1920,
         "height": 1080,
+        "singleInstance": false
+      },
+      {
+        "file": "overlay/overlay.graphic.html",
+        "width": 1920,
+        "height": 1010,
         "singleInstance": false
       }
     ]
