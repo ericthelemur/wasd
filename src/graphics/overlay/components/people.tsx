@@ -64,12 +64,10 @@ function PersonComp({ person, goToNextPerson }: { person: Person, goToNextPerson
         setSocial(clone(person.socials[index]));
     }, [index]);
 
-    return <ReactCSSTransitionReplace transitionName="people" transitionEnterTimeout={250} transitionLeaveTimeout={250}>
-        <div key={person.name} className="person h1 lh-1" style={{ fontSize: "3rem" }}>
-            <NameComp name={person.name} pronouns={person.pronouns} />
-            {social && <SocialComp social={social} />}
-        </div>
-    </ReactCSSTransitionReplace>
+    return <div key={person.name} className="person h1 lh-1" style={{ fontSize: "3rem" }}>
+        <NameComp name={person.name} pronouns={person.pronouns} />
+        {social && <SocialComp social={social} />}
+    </div>
 
 }
 
@@ -94,7 +92,9 @@ export function CategoryComp({ cat }: { cat: Category }) {
     }, [personIndex, cat, bank]);
 
     if (!person) return <>No Person</>
-    else return <PersonComp key={person.name} person={person} goToNextPerson={goToNextPerson} />;
+    else return <ReactCSSTransitionReplace transitionName="people" transitionEnterTimeout={300} transitionLeaveTimeout={300}>
+        <PersonComp key={person.name} person={person} goToNextPerson={goToNextPerson} />;
+    </ReactCSSTransitionReplace>
 }
 
 export default function People() {

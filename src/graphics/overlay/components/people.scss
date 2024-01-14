@@ -4,7 +4,7 @@
 
 .people-leave.people-leave-active {
     opacity: 0;
-    transition: opacity 0.2s ease-in;
+    transition: opacity 0.25s ease-in;
 }
 
 .people-enter {
@@ -14,5 +14,5 @@
 .people-enter.people-enter-active {
     opacity: 1;
     /* Delay the enter animation until the leave completes */
-    transition: opacity 0.2s ease-in;
+    transition: opacity 0.25s ease-in;
 }
