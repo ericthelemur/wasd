@@ -44,6 +44,7 @@
     "dev": "concurrently --kill-others \"npm run watch -- --types\" \"npm run watch -- --browser\" \"npm run nodemon\""
   },
   "dependencies": {
+    "clone": "^2.1.2",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-bootstrap": "^2.9.1",
@@ -55,10 +56,12 @@
     "react-textfit": "github:ericthelemur/react-textfit",
     "react-transition-group": "^4.4.5",
     "ts-node": "^10.9.1",
-    "use-nodecg": "github:ericthelemur/use-nodecg"
+    "use-nodecg": "github:ericthelemur/use-nodecg",
+    "nodecg-people-control": "1.0.0"
   },
   "devDependencies": {
     "@nodecg/types": "^2.0.0",
+    "@types/clone": "^2.1.4",
     "@types/node": "^18",
     "@types/obs-studio": "^2.17.2",
     "@types/react": "^18.2.0",
