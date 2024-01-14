@@ -1,3 +1,5 @@
+import './people.scss';
+
 import clone from 'clone';
 import {
     Category, Icon, People, PeopleBank, Person, Social, Socials
@@ -5,6 +7,7 @@ import {
 import { useEffect, useState } from 'react';
 import { At } from 'react-bootstrap-icons';
 import Badge from 'react-bootstrap/badge';
+import ReactCSSTransitionReplace from 'react-css-transition-replace';
 import { useReplicant } from 'use-nodecg';
 
 const defaultSocials: () => Socials = () => ({
@@ -29,16 +32,18 @@ function SocialIcon({ social }: { social: string }) {
 }
 
 function SocialComp({ social }: { social: Social }) {
-    return <div className="d-flex gap-2" style={{ fontSize: "0.7em" }}>
-        <SocialIcon social={social.social} />
-        <span className="flex-grow-1">{social.name}</span>
-    </div>
+    return <ReactCSSTransitionReplace transitionName="people" transitionEnterTimeout={250} transitionLeaveTimeout={250}>
+        <div key={social.id} className="d-flex gap-2" style={{ fontSize: "0.7em" }}>
+            <SocialIcon social={social.social} />
+            <span className="flex-grow-1">{social.name}</span>
+        </div>
+    </ReactCSSTransitionReplace>
 }
 
 function NameComp({ name, pronouns }: { name: string, pronouns: string }) {
     return <div className="d-flex gap-2">
         <span className="name flex-grow-1">{name}</span>
-        {pronouns && <Badge className="pronouns small p-0" bg="secondary">pronouns</Badge>}
+        {pronouns && <Badge className="pronouns small p-2" bg="secondary">{pronouns}</Badge>}
     </div>
 }
 
@@ -51,18 +56,20 @@ function PersonComp({ person, goToNextPerson }: { person: Person, goToNextPerson
             var newIndex = index + 1;
             if (newIndex >= person.socials.length) return goToNextPerson();
             setIndex(newIndex);
-        }, 1000)
+        }, 3000)
         return () => clearInterval(interval);
-    }, []);
+    }, [person, index]);
 
     useEffect(() => {
         setSocial(clone(person.socials[index]));
     }, [index]);
 
-    return <div className="person h1 lh-1" style={{ fontSize: "3rem" }}>
-        <NameComp name={person.name} pronouns={person.pronouns} />
-        {social && <SocialComp social={social} />}
-    </div>
+    return <ReactCSSTransitionReplace transitionName="people" transitionEnterTimeout={250} transitionLeaveTimeout={250}>
+        <div key={person.name} className="person h1 lh-1" style={{ fontSize: "3rem" }}>
+            <NameComp name={person.name} pronouns={person.pronouns} />
+            {social && <SocialComp social={social} />}
+        </div>
+    </ReactCSSTransitionReplace>
 
 }
 
@@ -74,7 +81,7 @@ export function CategoryComp({ cat }: { cat: Category }) {
 
     function goToNextPerson() {
         var newIndex = personIndex + 1;
-        if (newIndex > cat.people.length) newIndex = 0;
+        if (newIndex >= cat.people.length) newIndex = 0;
         setPersonIndex(newIndex);
     }
 
@@ -87,7 +94,7 @@ export function CategoryComp({ cat }: { cat: Category }) {
     }, [personIndex, cat, bank]);
 
     if (!person) return <>No Person</>
-    else return <PersonComp person={person} goToNextPerson={goToNextPerson} />;
+    else return <PersonComp key={person.name} person={person} goToNextPerson={goToNextPerson} />;
 }
 
 export default function People() {
