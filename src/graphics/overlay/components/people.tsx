@@ -32,12 +32,10 @@ function SocialIcon({ social }: { social: string }) {
 }
 
 function SocialComp({ social }: { social: Social }) {
-    return <ReactCSSTransitionReplace transitionName="people" transitionEnterTimeout={250} transitionLeaveTimeout={250}>
-        <div key={social.id} className="d-flex gap-2" style={{ fontSize: "0.7em" }}>
-            <SocialIcon social={social.social} />
-            <span className="flex-grow-1">{social.name}</span>
-        </div>
-    </ReactCSSTransitionReplace>
+    return <div key={social.id} className="d-flex gap-2" style={{ fontSize: "0.7em" }}>
+        <SocialIcon social={social.social} />
+        <span className="flex-grow-1">{social.name}</span>
+    </div>
 }
 
 function NameComp({ name, pronouns }: { name: string, pronouns: string }) {
@@ -47,54 +45,64 @@ function NameComp({ name, pronouns }: { name: string, pronouns: string }) {
     </div>
 }
 
-function PersonComp({ person, goToNextPerson }: { person: Person, goToNextPerson: () => void }) {
-    const [index, setIndex] = useState(0);
-    const [social, setSocial] = useState<Social | undefined>(person.socials[0]);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            var newIndex = index + 1;
-            if (newIndex >= person.socials.length) return goToNextPerson();
-            setIndex(newIndex);
-        }, 3000)
-        return () => clearInterval(interval);
-    }, [person, index]);
-
-    useEffect(() => {
-        setSocial(clone(person.socials[index]));
-    }, [index]);
-
-    return <div key={person.name} className="person h1 lh-1" style={{ fontSize: "3rem" }}>
-        <NameComp name={person.name} pronouns={person.pronouns} />
-        {social && <SocialComp social={social} />}
-    </div>
-
-}
-
 export function CategoryComp({ cat }: { cat: Category }) {
+    // Quite ugly, but transition element is kinda awkward here
+
     const [bank,] = useReplicant<PeopleBank>("peopleBank", {}, { namespace: "nodecg-people-control" })
 
     const [person, setPerson] = useState<Person | null>(null);
+    const [personID, setPersonID] = useState<string>("");
     const [personIndex, setPersonIndex] = useState<number>(0);
+    // Pass down to PersonComp, here for key on transition
+    const [social, setSocial] = useState<Social | undefined>(undefined);
+    const [socialIndex, setSocialIndex] = useState(0);
 
+    // Called when socials for person are exhausted
     function goToNextPerson() {
         var newIndex = personIndex + 1;
         if (newIndex >= cat.people.length) newIndex = 0;
         setPersonIndex(newIndex);
+        setSocialIndex(0);
     }
 
+    // Update person to match new person index
     useEffect(() => {
         const personId = cat.people[personIndex];
+        setPersonID(personId);
         if (!personId) return setPerson(null);
         const person = bank![personId];
         if (!person) return setPerson(null);
         setPerson(clone(person));
     }, [personIndex, cat, bank]);
 
+    // Periodically move to next social index for person
+    // Move to next person if out of socials
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (!person) return;
+            var newIndex = socialIndex + 1;
+            if (newIndex >= person.socials.length) return goToNextPerson();
+            setSocialIndex(newIndex);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, [person, socialIndex]);
+
+    // Update social to match social index
+    useEffect(() => {
+        if (!person) return;
+        setSocial(clone(person.socials[socialIndex]));
+    }, [person, socialIndex]);
+
     if (!person) return <>No Person</>
-    else return <ReactCSSTransitionReplace transitionName="people" transitionEnterTimeout={300} transitionLeaveTimeout={300}>
-        <PersonComp key={person.name} person={person} goToNextPerson={goToNextPerson} />;
-    </ReactCSSTransitionReplace>
+    return <div className="person h1 lh-1" style={{ fontSize: "3rem" }}>
+        <ReactCSSTransitionReplace key="name" transitionName="people" transitionEnterTimeout={300} transitionLeaveTimeout={300}>
+            <span key={personID}><NameComp name={person.name} pronouns={person.pronouns} /></span>
+        </ReactCSSTransitionReplace>
+
+        <ReactCSSTransitionReplace key="social" transitionName="people" transitionEnterTimeout={300} transitionLeaveTimeout={300}>
+            <span key={social?.id}>{social && <SocialComp social={social} />}</span>
+        </ReactCSSTransitionReplace>
+    </div>
 }
 
 export default function People() {
