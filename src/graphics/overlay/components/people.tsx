@@ -22,7 +22,7 @@ function IconComp({ icon }: { icon?: Icon }) {
     try {
         if (icon && icon.iconType === "svg") return <span className="icon" dangerouslySetInnerHTML={{ __html: icon.icon }} />
     } catch { }
-    return <span className="icon"><At size="16px" /></span>
+    return <span className="icon"><At size="1em" /></span>
 }
 
 function SocialIcon({ social }: { social: string }) {
@@ -47,6 +47,7 @@ function NameComp({ name, pronouns }: { name: string, pronouns: string }) {
 
 export function CategoryComp({ cat }: { cat: Category }) {
     // Quite ugly, but transition element is kinda awkward here
+    if (!cat) return <div>No category exists</div>
 
     const [bank,] = useReplicant<PeopleBank>("peopleBank", {}, { namespace: "nodecg-people-control" })
 

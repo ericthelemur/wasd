@@ -1,16 +1,18 @@
 import 'wasd-common/shared/uwcs-bootstrap.css';
+import './overlay.graphic.scss';
 
-import { useEffect, useState } from 'react';
-import ReactCSSTransitionReplace from 'react-css-transition-replace';
 import { createRoot } from 'react-dom/client';
-import { Textfit } from 'react-textfit';
-import { useReplicant } from 'use-nodecg';
 
-import People from './components/people';
-import Overlay16x9 from './single/16-9';
+import { Camera } from './components/cam';
+import { Sidebar } from './components/sidebar';
 
 function Overlay() {
-    return <People />
+    return <div className="fill d-flex outer">
+        <Sidebar style={{ width: "400px" }} />
+        <div className="flex-grow-1">
+            <Camera camName="run1" aspectRatio={"16 / 9"} />
+        </div>
+    </div>
 }
 
 const root = createRoot(document.getElementById('root')!);
