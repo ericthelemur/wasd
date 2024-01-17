@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { At } from 'react-bootstrap-icons';
 import Badge from 'react-bootstrap/badge';
 import ReactCSSTransitionReplace from 'react-css-transition-replace';
+import { Textfit } from 'react-textfit';
 import { useReplicant } from 'use-nodecg';
 
 const defaultSocials: () => Socials = () => ({
@@ -32,17 +33,17 @@ function SocialIcon({ social }: { social: string }) {
 }
 
 function SocialComp({ social }: { social: Social }) {
-    return <div key={social.id} className="d-flex gap-2" style={{ fontSize: "0.7em" }}>
-        <SocialIcon social={social.social} />
+    return <Textfit mode="single" style={{ width: "300px", fontSize: "0.7em" }} max={22}>
+        <SocialIcon social={social.social} />{" "}
         <span className="flex-grow-1">{social.name}</span>
-    </div>
+    </Textfit>
 }
 
 function NameComp({ name, pronouns }: { name: string, pronouns: string }) {
-    return <div className="d-flex gap-2">
-        <span className="name flex-grow-1">{name}</span>
-        {pronouns && <Badge className="pronouns small p-2" bg="secondary">{pronouns}</Badge>}
-    </div>
+    return <Textfit mode="single" style={{ width: "300px" }} max={32}>
+        <span className="name">{name}</span>{" "}
+        {pronouns && <span className="pronouns">{pronouns}</span>}
+    </Textfit>
 }
 
 export function CategoryComp({ cat }: { cat: Category }) {
@@ -79,12 +80,13 @@ export function CategoryComp({ cat }: { cat: Category }) {
     // Periodically move to next social index for person
     // Move to next person if out of socials
     useEffect(() => {
-        const interval = setInterval(() => {
+        const time = person && person.socials && person.socials.length > 3 ? 10000 / person.socials.length : 2000;
+        const interval = setTimeout(() => {
             if (!person) return;
             var newIndex = socialIndex + 1;
             if (newIndex >= person.socials.length) return goToNextPerson();
             setSocialIndex(newIndex);
-        }, 3000);
+        }, time);
         return () => clearInterval(interval);
     }, [person, socialIndex]);
 
@@ -95,19 +97,23 @@ export function CategoryComp({ cat }: { cat: Category }) {
     }, [person, socialIndex]);
 
     if (!person) return <>No Person</>
-    return <div className="person h1 lh-1" style={{ fontSize: "3rem" }}>
+    return <div className="person flex-grow-1">
         <ReactCSSTransitionReplace key="name" transitionName="people" transitionEnterTimeout={300} transitionLeaveTimeout={300}>
             <span key={personID}><NameComp name={person.name} pronouns={person.pronouns} /></span>
         </ReactCSSTransitionReplace>
 
         <ReactCSSTransitionReplace key="social" transitionName="people" transitionEnterTimeout={300} transitionLeaveTimeout={300}>
-            <span key={social?.id}>{social && <SocialComp social={social} />}</span>
+            <span key={`${personID}::${social?.id}`}>{social ? <SocialComp social={social} /> : " "}</span>
         </ReactCSSTransitionReplace>
     </div>
 }
 
-export default function People() {
+export function People({ cat }: { cat?: string }) {
     const [people,] = useReplicant<People>("people", { all: { name: "All", people: [] } }, { namespace: "nodecg-people-control" })
     if (!people) return <></>;
-    return <CategoryComp cat={people.all} />
+    const category = people[cat ?? "all"];
+    return <div className="d-flex h2 lh-1 gap-2" style={{ fontSize: "2rem", fontWeight: 600 }}>
+        <IconComp icon={category?.icon} />
+        <CategoryComp cat={category} />
+    </div>
 }
