@@ -12,3 +12,29 @@ body {
     --offset: calc(0.5 * var(--bw));
     margin: var(--offset) var(--offset) 0 var(--offset)
 }
+
+.tabnum {
+    font-variant: tabular-nums;
+    -moz-font-feature-settings: "tnum";
+    -webkit-font-feature-settings: "tnum";
+    font-feature-settings: "tnum"
+}
+
+.text-wrap-balance {
+    text-wrap: balance;
+}
+
+#game {
+    flex-shrink: 0 !important;
+}
+
+.noflow {
+    flex: 1 1 0;
+    min-height: 0;
+    min-width: 0;
+}
+
+.wrapouter>div {
+    @extend .noflow;
+    height: 100%;
+}

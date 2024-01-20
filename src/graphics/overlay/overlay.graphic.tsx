@@ -4,7 +4,7 @@ import './overlay.graphic.scss';
 import { createRoot } from 'react-dom/client';
 
 import { Camera } from './components/cam';
-import { GameDetails } from './components/game';
+import { Game, TimerComp } from './components/game';
 import { Sidebar } from './components/sidebar';
 
 function Overlay() {
