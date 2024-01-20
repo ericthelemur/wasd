@@ -33,17 +33,22 @@ function SocialIcon({ social }: { social: string }) {
 }
 
 function SocialComp({ social }: { social: Social }) {
-    return <Textfit mode="single" style={{ width: "300px", fontSize: "0.7em" }} max={22}>
-        <SocialIcon social={social.social} />{" "}
-        <span className="flex-grow-1">{social.name}</span>
-    </Textfit>
+    return <div className="vcentre gap-2" style={{ fontSize: "0.7em" }} >
+        <SocialIcon social={social.social} />
+        <Textfit mode="multi" max={22} style={{ width: "250px", fontSize: "22px", height: "22px" }} className="social vcentre">
+            {social.name}
+        </Textfit>
+    </div>
 }
 
 function NameComp({ name, pronouns }: { name: string, pronouns: string }) {
-    return <Textfit mode="single" style={{ width: "300px" }} max={32}>
-        <span className="name">{name}</span>{" "}
-        {pronouns && <span className="pronouns">{pronouns}</span>}
+    return <Textfit mode="multi" style={{ height: "32px", width: "300px" }} max={32}>
+        <div className='name gap-2 vcentre'>
+            <span className="flex-grow-1">{name}</span>
+            {pronouns && <span className="pronouns"><span>{pronouns.replaceAll("\/", "$&\u200b")}</span></span>}
+        </div>
     </Textfit>
+
 }
 
 export function CategoryComp({ cat }: { cat: Category }) {
@@ -52,48 +57,50 @@ export function CategoryComp({ cat }: { cat: Category }) {
 
     const [bank,] = useReplicant<PeopleBank>("peopleBank", {}, { namespace: "nodecg-people-control" })
 
-    const [person, setPerson] = useState<Person | null>(null);
-    const [personID, setPersonID] = useState<string>("");
     const [personIndex, setPersonIndex] = useState<number>(0);
+    const [personID, setPersonID] = useState<string>("");
+    const [person, setPerson] = useState<Person | null>(null);
     // Pass down to PersonComp, here for key on transition
-    const [social, setSocial] = useState<Social | undefined>(undefined);
     const [socialIndex, setSocialIndex] = useState(0);
+    const [social, setSocial] = useState<Social | undefined>(clone(person?.socials[socialIndex]));
 
-    // Called when socials for person are exhausted
-    function goToNextPerson() {
-        var newIndex = personIndex + 1;
-        if (newIndex >= cat.people.length) newIndex = 0;
-        setPersonIndex(newIndex);
-        setSocialIndex(0);
-    }
-
-    // Update person to match new person index
-    useEffect(() => {
-        const personId = cat.people[personIndex];
+    function updatePersonSocials(pi: number) {
+        const personId = cat.people[pi];
         setPersonID(personId);
         if (!personId) return setPerson(null);
-        const person = bank![personId];
-        if (!person) return setPerson(null);
-        setPerson(clone(person));
+        const p = bank![personId];
+        if (!p) return setPerson(null);
+        setPerson(clone(p));
+
+        setSocialIndex(0);
+        setSocial(clone(p.socials[0]));
+    }
+
+    // Update person to match new person index & reset socials
+    useEffect(() => {
+        updatePersonSocials(personIndex);
     }, [personIndex, cat, bank]);
 
     // Periodically move to next social index for person
     // Move to next person if out of socials
     useEffect(() => {
-        const time = person && person.socials && person.socials.length > 3 ? 10000 / person.socials.length : 2000;
-        const interval = setTimeout(() => {
+        var time = person && person.socials && person.socials.length >= 3 ? 6000 / person.socials.length : 2000;
+        if (!social || !social.name) time = 0;  // Move to next immediately if empty
+        // const time = 3000;
+        const timeout = setTimeout(() => {
             if (!person) return;
             var newIndex = socialIndex + 1;
-            if (newIndex >= person.socials.length) return goToNextPerson();
-            setSocialIndex(newIndex);
+            if (newIndex >= person.socials.length) {
+                var newIndex = personIndex + 1;
+                if (newIndex >= cat.people.length) newIndex = 0;
+                setPersonIndex(newIndex);
+                updatePersonSocials(newIndex);
+            } else {
+                setSocialIndex(newIndex);
+                setSocial(clone(person.socials[newIndex]));
+            }
         }, time);
-        return () => clearInterval(interval);
-    }, [person, socialIndex]);
-
-    // Update social to match social index
-    useEffect(() => {
-        if (!person) return;
-        setSocial(clone(person.socials[socialIndex]));
+        return () => clearTimeout(timeout);
     }, [person, socialIndex]);
 
     if (!person) return <>No Person</>

@@ -32,7 +32,13 @@
 
 .pronouns {
     font-size: 0.6em;
-    padding: 0.1em 0.3em;
+    padding: 0.3rem 0.3rem;
     border-radius: 0.375rem;
     background: #8884;
+    text-align: center;
+}
+
+.vcentre {
+    display: flex;
+    align-items: center;
 }
