@@ -10,9 +10,12 @@ import { Sidebar } from './components/sidebar';
 function Overlay() {
     return <div className="fill d-flex outer">
         <Sidebar className="flex-grow-1" />
-        <div style={{ width: "1530px" }}>
+        <div className="d-flex flex-column" style={{ width: "1440px" }}>
             <Camera camName="game" aspectRatio={"16 / 9"} />
-            <GameDetails />
+            <div className="d-flex vcentre noflow">
+                <Game />
+                <TimerComp />
+            </div>
         </div>
     </div>
 }
