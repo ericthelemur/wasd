@@ -131,13 +131,15 @@ export function CategoryComp({ cat }: { cat: Category }) {
     }, [person, socialIndex]);
 
     if (!person || !person.name) return <></>
+    const animTime = 400;
     return <div className="d-flex h2 lh-1 gap-2" style={{ fontSize: "2rem", fontWeight: 600 }}>
-        <IconComp icon={cat.icon} /><div className="person flex-grow-1">
-            <ReactCSSTransitionReplace key="name" transitionName="people" transitionEnterTimeout={300} transitionLeaveTimeout={300}>
+        <IconComp icon={cat.icon} />
+        <div className="person flex-grow-1" style={{ "--enter-time": `${animTime}ms`, "--leave-time": `${animTime}ms` } as unknown as React.CSSProperties}>
+            <ReactCSSTransitionReplace key="name" transitionName="fade-wait" transitionEnterTimeout={2 * animTime} transitionLeaveTimeout={animTime}>
                 <span key={personID}><NameComp name={person.name} pronouns={person.pronouns} /></span>
             </ReactCSSTransitionReplace>
 
-            <ReactCSSTransitionReplace key="social" transitionName="people" transitionEnterTimeout={300} transitionLeaveTimeout={300}>
+            <ReactCSSTransitionReplace key="social" transitionName="fade-wait" transitionEnterTimeout={2 * animTime} transitionLeaveTimeout={animTime}>
                 <span key={`${personID}::${social?.id}`}><SocialComp social={social} /></span>
             </ReactCSSTransitionReplace>
         </div>
