@@ -4,13 +4,15 @@ import './overlay.graphic.scss';
 import { createRoot } from 'react-dom/client';
 
 import { Camera } from './components/cam';
+import { GameDetails } from './components/game';
 import { Sidebar } from './components/sidebar';
 
 function Overlay() {
     return <div className="fill d-flex outer">
-        <Sidebar style={{ width: "400px" }} />
-        <div className="flex-grow-1">
-            <Camera camName="run1" aspectRatio={"16 / 9"} />
+        <Sidebar className="flex-grow-1" />
+        <div style={{ width: "1530px" }}>
+            <Camera camName="game" aspectRatio={"16 / 9"} />
+            <GameDetails />
         </div>
     </div>
 }

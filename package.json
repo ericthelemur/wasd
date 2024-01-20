@@ -53,11 +53,12 @@
     "react-css-transition-replace": "^5.0.1",
     "react-dom": "^18.2.0",
     "react-fitty": "^1.0.1",
-    "react-textfit": "github:ericthelemur/react-textfit",
+    "react-textfit": "git+http://github.com/ericthelemur/react-textfit.git",
     "react-transition-group": "^4.4.5",
     "ts-node": "^10.9.1",
     "use-nodecg": "github:ericthelemur/use-nodecg",
-    "nodecg-people-control": "1.0.0"
+    "nodecg-people-control": "1.0.0",
+    "speedcontrol-util": "^0.6.1"
   },
   "devDependencies": {
     "@nodecg/types": "^2.0.0",

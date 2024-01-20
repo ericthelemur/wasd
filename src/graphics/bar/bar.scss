@@ -21,7 +21,7 @@
     padding-right: 15px;
 
     // background-color: #351344;
-    font-size: 36px;
+    font-size: 32px;
 
     --bs-border-color: var(--bs-emphasis-color);
 
@@ -40,6 +40,7 @@
         font-weight: bold;
         color: var(--bs-emphasis-color);
         margin-bottom: unset;
+        font-size: 32px;
     }
 
     & .ticker {
