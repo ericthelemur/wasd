@@ -32,12 +32,14 @@ function SocialIcon({ social }: { social: string }) {
     return <IconComp icon={icon} />;
 }
 
-function SocialComp({ social }: { social: Social }) {
-    return <div className="vcentre gap-2" style={{ fontSize: "0.7em" }} >
-        <SocialIcon social={social.social} />
-        <Textfit mode="multi" max={22} style={{ width: "250px", fontSize: "22px", height: "22px" }} className="social vcentre">
-            {social.name}
-        </Textfit>
+function SocialComp({ social }: { social?: Social }) {
+    return <div className="vcentre gap-2" style={{ fontSize: "0.7em", height: "22px" }} >
+        {social ? <>
+            <SocialIcon social={social.social} />
+            <Textfit mode="multi" max={22} style={{ width: "250px", fontSize: "22px", height: "22px" }} className="social vcentre">
+                {social.name}
+            </Textfit>
+        </> : " "}
     </div>
 }
 
@@ -64,6 +66,12 @@ export function CategoryComp({ cat }: { cat: Category }) {
     const [socialIndex, setSocialIndex] = useState(0);
     const [social, setSocial] = useState<Social | undefined>(clone(person?.socials[socialIndex]));
 
+    // Trigger person load once bank loaded
+    useEffect(() => {
+        if (bank && !person) updatePersonSocials(0);
+    }, [bank, cat, personID])
+
+    // Set person and social details for new
     function updatePersonSocials(pi: number) {
         const personId = cat.people[pi];
         setPersonID(personId);
@@ -76,42 +84,63 @@ export function CategoryComp({ cat }: { cat: Category }) {
         setSocial(clone(p.socials[0]));
     }
 
-    // Update person to match new person index & reset socials
-    useEffect(() => {
-        updatePersonSocials(personIndex);
-    }, [personIndex, cat, bank]);
+    // Find next non blank person
+    function findNextPerson() {
+        for (var i = 1; i <= cat.people.length; i++) {
+            var newPersonIndex = (personIndex + i) % cat.people.length;
+            if (cat.people[newPersonIndex] && bank![cat.people[newPersonIndex]] && bank![cat.people[newPersonIndex]].name) {
+                setPersonIndex(newPersonIndex);
+                updatePersonSocials(newPersonIndex);
+                return;
+            }
+        }
+        setPerson(null);
+        setPersonID("");
+        setPersonIndex(-1);
+    }
+
+    function findNextSocial() {
+        if (!person) return;
+        for (var i = 1; i <= person.socials.length; i++) {
+            var newSocIndex = (socialIndex + i) % person.socials.length;
+            if (person.socials[newSocIndex] && person.socials[newSocIndex].name) {
+                setSocialIndex(newSocIndex);
+                setSocial(clone(person.socials[newSocIndex]));
+                return;
+            }
+        }
+        setSocialIndex(-1);
+        setSocial(undefined);
+    }
 
     // Periodically move to next social index for person
     // Move to next person if out of socials
     useEffect(() => {
         var time = person && person.socials && person.socials.length >= 3 ? 6000 / person.socials.length : 2000;
-        if (!social || !social.name) time = 0;  // Move to next immediately if empty
         // const time = 3000;
         const timeout = setTimeout(() => {
             if (!person) return;
-            var newIndex = socialIndex + 1;
-            if (newIndex >= person.socials.length) {
-                var newIndex = personIndex + 1;
-                if (newIndex >= cat.people.length) newIndex = 0;
-                setPersonIndex(newIndex);
-                updatePersonSocials(newIndex);
+            var newSocIndex = socialIndex + 1;
+            if (newSocIndex >= person.socials.length) {
+                findNextPerson();
             } else {
-                setSocialIndex(newIndex);
-                setSocial(clone(person.socials[newIndex]));
+                findNextSocial();
             }
         }, time);
         return () => clearTimeout(timeout);
     }, [person, socialIndex]);
 
-    if (!person) return <>No Person</>
-    return <div className="person flex-grow-1">
-        <ReactCSSTransitionReplace key="name" transitionName="people" transitionEnterTimeout={300} transitionLeaveTimeout={300}>
-            <span key={personID}><NameComp name={person.name} pronouns={person.pronouns} /></span>
-        </ReactCSSTransitionReplace>
+    if (!person || !person.name) return <></>
+    return <div className="d-flex h2 lh-1 gap-2" style={{ fontSize: "2rem", fontWeight: 600 }}>
+        <IconComp icon={cat.icon} /><div className="person flex-grow-1">
+            <ReactCSSTransitionReplace key="name" transitionName="people" transitionEnterTimeout={300} transitionLeaveTimeout={300}>
+                <span key={personID}><NameComp name={person.name} pronouns={person.pronouns} /></span>
+            </ReactCSSTransitionReplace>
 
-        <ReactCSSTransitionReplace key="social" transitionName="people" transitionEnterTimeout={300} transitionLeaveTimeout={300}>
-            <span key={`${personID}::${social?.id}`}>{social ? <SocialComp social={social} /> : " "}</span>
-        </ReactCSSTransitionReplace>
+            <ReactCSSTransitionReplace key="social" transitionName="people" transitionEnterTimeout={300} transitionLeaveTimeout={300}>
+                <span key={`${personID}::${social?.id}`}><SocialComp social={social} /></span>
+            </ReactCSSTransitionReplace>
+        </div>
     </div>
 }
 
@@ -119,8 +148,5 @@ export function People({ cat }: { cat?: string }) {
     const [people,] = useReplicant<People>("people", { all: { name: "All", people: [] } }, { namespace: "nodecg-people-control" })
     if (!people) return <></>;
     const category = people[cat ?? "all"];
-    return <div className="d-flex h2 lh-1 gap-2" style={{ fontSize: "2rem", fontWeight: 600 }}>
-        <IconComp icon={category?.icon} />
-        <CategoryComp cat={category} />
-    </div>
+    return <CategoryComp cat={category} />
 }
