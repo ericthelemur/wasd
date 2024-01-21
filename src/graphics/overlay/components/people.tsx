@@ -36,7 +36,7 @@ function SocialComp({ social }: { social?: Social }) {
     return <div className="vcentre gap-2" style={{ fontSize: "0.7em", height: "22px" }} >
         {social ? <>
             <SocialIcon social={social.social} />
-            <Textfit mode="multi" max={22} style={{ width: "250px", fontSize: "22px", height: "22px" }} className="social vcentre">
+            <Textfit mode="multi" max={22} style={{ fontSize: "22px", height: "22px" }} className="social vcentre">
                 {social.name}
             </Textfit>
         </> : " "}
@@ -44,7 +44,7 @@ function SocialComp({ social }: { social?: Social }) {
 }
 
 function NameComp({ name, pronouns }: { name: string, pronouns: string }) {
-    return <Textfit mode="multi" style={{ height: "32px", width: "300px" }} max={32}>
+    return <Textfit mode="multi" style={{ height: "32px" }} max={32}>
         <div className='name gap-2 vcentre'>
             <span className="flex-grow-1">{name}</span>
             {pronouns && <span className="pronouns"><span>{pronouns.replaceAll("\/", "$&\u200b")}</span></span>}
