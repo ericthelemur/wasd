@@ -67,9 +67,14 @@ function onDragEnd({ source, destination }: DropResult, src: Category, dest: Cat
 
 export function PeoplePanel() {
 	const [people,] = useReplicant<People>("people", { all: { name: "", people: [] } });
-	const [peopleBank,] = useReplicant<PeopleBank>("peopleBank", {});
+	const [peopleBank, setPeopleBank] = useReplicant<PeopleBank>("peopleBank", {});
 	const [editPerson, setEditPerson] = useState<string | null>(null);
 	const [hv, setHover] = useState({ dragging: false, showBin: false });
+
+	function changePersonProp(id: string, person: Person) {
+		console.log(id, person);
+		setPeopleBank({ ...peopleBank, id: person });
+	}
 
 	function genGroupArgs(gid: string, group: Category): GroupProps<Person> {
 		return {
@@ -123,7 +128,7 @@ export function PeoplePanel() {
 			}}
 			onBeforeDragStart={onBeforeDragStart}
 		/>}
-		{editPerson && <EditModal editPerson={peopleBank![editPerson]} setEditPerson={setEditPerson} />}
+		{editPerson && <EditModal pid={editPerson} editPerson={peopleBank![editPerson]} closeEdit={() => setEditPerson(null)} changePersonProp={changePersonProp} />}
 	</>
 }
 

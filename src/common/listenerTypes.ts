@@ -1,1 +1,9 @@
-export type ListenerTypes = {}
+
+import { Person } from 'types/schemas';
+
+export type ListenerTypes = {
+    setPerson: {
+        id: string,
+        person: Person
+    }
+}

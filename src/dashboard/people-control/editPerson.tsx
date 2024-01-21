@@ -1,4 +1,6 @@
 
+import { sendTo } from 'common/listeners';
+import { useEffect } from 'react';
 import { DragDropContext, DraggableProvided, DropResult } from 'react-beautiful-dnd';
 import { At, GripVertical, XLg } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
@@ -16,7 +18,7 @@ export function SocialIcon({ icon }: { icon: Icon }) {
         try {
             switch (icon.iconType) {
                 case "svg":
-                    return <span dangerouslySetInnerHTML={{ __html: icon.icon }} />
+                    return <span className="icon" dangerouslySetInnerHTML={{ __html: icon.icon }} />
             }
         } catch { }
     }
@@ -55,7 +57,7 @@ function SocialComp({ soc, provided, onHandle, onRemove }: { soc: Social, provid
     </InputGroup >
 }
 
-export function EditModal({ editPerson, setEditPerson }: { editPerson: Person | null, setEditPerson: (p: string | null) => void }) {
+export function EditModal({ pid, editPerson, closeEdit, changePersonProp }: { pid: string, editPerson: Person | null, closeEdit: () => void, changePersonProp: (id: string, person: Person) => void }) {
     if (!editPerson) return <></>
 
     function onDragEnd(result: DropResult) {
@@ -66,16 +68,19 @@ export function EditModal({ editPerson, setEditPerson }: { editPerson: Person | 
         editPerson.socials = newList;
     }
 
-    return <Modal show={true} fullscreen="md-down" onHide={() => setEditPerson(null)}>
+    useEffect(() => console.log("Current person", editPerson), [editPerson])
+
+    const noPros = "No Pronouns";
+
+    return <Modal show={true} fullscreen="md-down" onHide={closeEdit}>
         <Modal.Header closeButton className="h4">Edit {editPerson.name}</Modal.Header>
         <Modal.Body>
             <Form>
                 <Form.Group>
                     <InputGroup>
                         <InputGroup.Text className="flex-grow-0">Name: </InputGroup.Text>
-                        <Editable text={editPerson.name} textClasses="input-group-text" setText={(v) => editPerson.name = v} type="single" />
-                        <InputGroup.Text className="flex-grow-0">Pronouns: </InputGroup.Text>
-                        <Editable text={editPerson.pronouns} textClasses="input-group-text" setText={(v) => editPerson.pronouns = v} type="single" />
+                        <Editable text={editPerson.name} textClasses="input-group-text" setText={(v) => sendTo("setPerson", { id: pid, person: { ...editPerson, name: v } })} type="single" />
+                        <Editable text={editPerson.pronouns || noPros} textClasses="input-group-text" setText={(v) => sendTo("setPerson", { id: pid, person: { ...editPerson, pronouns: v } })} type="single" />
                     </InputGroup>
                 </Form.Group>
                 <hr className="my-2" />
