@@ -30,7 +30,7 @@ function QueueMsgBody(props: MessageProps) {
                 text={message.text} setText={v => message.text = v} />
         </>
     const priority = queue ? undefined :
-        <Editable type="number" className="priority" textClasses="input-group-text" text={message.priority.toString()}
+        <Editable className="priority" textClasses="input-group-text" text={message.priority.toString()}
             setText={v => message.priority = Number(v)} />
     return <>{text}{priority}</>
 }
