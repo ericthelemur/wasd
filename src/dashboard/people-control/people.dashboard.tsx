@@ -4,12 +4,27 @@ import './people.scss';
 import { useState } from 'react';
 import { DragStart, DropResult } from 'react-beautiful-dnd';
 import { PenFill } from 'react-bootstrap-icons';
+import Button from 'react-bootstrap/Button';
+import InputGroup from 'react-bootstrap/InputGroup';
 import { createRoot } from 'react-dom/client';
-import { Category, People, PeopleBank, Person } from 'types/schemas';
+import { Category, Configschema, People, PeopleBank, Person } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 import { GroupProps, TwoColDnD } from 'wasd-common/shared/components/dndlist';
 
+import NodeCG from '@nodecg/types';
+
+import { sendToF } from '../../common/listeners';
 import { EditModal } from './editPerson';
+
+declare const nodecg: NodeCG.ClientAPI<Configschema>;
+
+function ControlButtons() {
+	const [v,] = useReplicant<boolean>("timerChangesDisabled", false, { namespace: "nodecg-speedcontrol" })
+	if (v === undefined) return null;
+	return <InputGroup className="m-2">
+		<Button onClick={sendToF("loadRunners", {})}>Add all runners to pool</Button>
+	</InputGroup>
+}
 
 function remove(src: Category, srcIndex: number) {
 	if (!src) return;
@@ -110,7 +125,8 @@ export function PeoplePanel() {
 		// Register drag start and show bin if dragging out of queue
 		setHover({ dragging: true, showBin: start.source.droppableId !== "all" });
 	}
-	return <>
+	return <div>
+		<ControlButtons />
 		{people && peopleBank && <TwoColDnD
 			left={{
 				cid: "pool", groups: [genGroupArgs("all", people.all)],
@@ -129,7 +145,7 @@ export function PeoplePanel() {
 			onBeforeDragStart={onBeforeDragStart}
 		/>}
 		{editPerson && <EditModal pid={editPerson} editPerson={peopleBank![editPerson]} closeEdit={() => setEditPerson(null)} changePersonProp={changePersonProp} />}
-	</>
+	</div>
 }
 
 const root = createRoot(document.getElementById('root')!);

@@ -39,7 +39,8 @@
     "react-contenteditable": "^3.3.7",
     "react-dom": "^18.2.0",
     "ts-node": "^10.9.1",
-    "use-nodecg": "github:ericthelemur/use-nodecg"
+    "use-nodecg": "github:ericthelemur/use-nodecg",
+    "speedcontrol-util": "^0.6.1"
   },
   "devDependencies": {
     "@nodecg/types": "^2.0.0",

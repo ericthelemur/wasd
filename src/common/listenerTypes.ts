@@ -5,5 +5,6 @@ export type ListenerTypes = {
     setPerson: {
         id: string,
         person: Person
-    }
+    },
+    loadRunners: {}
 }
