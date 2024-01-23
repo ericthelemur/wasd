@@ -1,5 +1,5 @@
 import { getNodeCG } from 'extension/utils';
-import { useEffect, useRef, useState } from 'react';
+import { Ref, useEffect, useRef, useState } from 'react';
 import { Textfit } from 'react-textfit';
 import { RunData, Timer } from 'speedcontrol-util/types/speedcontrol';
 import { useReplicant } from 'use-nodecg';
@@ -13,18 +13,22 @@ export function Game({ vertical }: { vertical?: boolean }) {
     const info = [activeRun?.category, activeRun?.system, activeRun?.release].filter(v => v);
 
     // Textfit apparently doesn't run on resize, so lazy update game on delay
-    const [g, setG] = useState<string | undefined>(undefined);
+    const [g, setG] = useState(activeRun?.game);
+    const ref = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
-        const t = setTimeout(() => setG(activeRun?.game), 1000)
-        return () => clearTimeout(t);
-    }, [activeRun]);
+        if (ref.current) {
+            const observer = new ResizeObserver(() => setTimeout(() => setG(activeRun?.game ?? ""), 150));
+            observer.observe(ref.current);
+            return () => observer.disconnect();
+        }
+    }, [activeRun, ref]);
 
     return <div className={"position-relative flex-grow-1 mb-0 " + (vertical ? "h-0 w-100" : "h-100 w-0")}>
-        <div style={{ position: "absolute", inset: 0 }} className="text-center p-3 lh-1 text-wrap-balance">
-            {g && <Textfit max={200} mode="multi" className="h-100">
-                {g}
-                <div style={{ fontSize: "70%" }}>{info.join(" / ")}</div>
-            </Textfit>}
+        <div ref={ref} style={{ position: "absolute", inset: 0 }} className="text-center p-3 lh-1 text-wrap-balance">
+            <Textfit className="mh-100" throttle={1}>
+                {g}<div style={{ marginTop: 3, fontSize: "60%" }}>{info.join(" / ")}</div>
+            </Textfit>
         </div>
     </div >;
 }
