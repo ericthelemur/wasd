@@ -19,7 +19,7 @@ body {
 
 .outer {
     --offset: calc(0.5 * var(--bw));
-    margin: var(--offset) var(--offset) 0 var(--offset)
+    // margin: var(--offset) var(--offset) 0 var(--offset)
 }
 
 .tabnum {

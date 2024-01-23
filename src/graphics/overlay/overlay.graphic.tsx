@@ -27,11 +27,11 @@ function Overlay() {
     console.log(aspect, infoInSidebar);
 
     return <div className="fill d-flex outer">
-        <Sidebar className="flex-grow-1">
+        <Sidebar className="flex-grow-1" style={{ marginRight: "calc(-0.5 * var(--bw)" }}>
             {infoInSidebar && <><Game /><TimerComp /></>}
         </Sidebar>
-        <div className="d-flex flex-column">
-            <Camera camName="game" aspectRatio={`${aspect[0]} / ${aspect[1]}`} style={infoInSidebar ? { height: "100%" } : { width: "1520px" }} />
+        <div className="d-flex flex-column" style={{ marginLeft: "calc(-0.5 * var(--bw)" }}>
+            <Camera camName="game" aspectRatio={`${aspect[0]} / ${aspect[1]}`} width={1520} />
             {!infoInSidebar && <div className="d-flex vcentre flex-gs">
                 <Game />
                 <TimerComp />

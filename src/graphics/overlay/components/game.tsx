@@ -12,13 +12,11 @@ export function Game() {
     const [activeRun,] = useReplicant<RunData | undefined>("runDataActiveRun", undefined, { namespace: "nodecg-speedcontrol" })
     const info = [activeRun?.category, activeRun?.system, activeRun?.release].filter(v => v);
 
-    return <div className="h1 mb-0 p-3 w-0 flex-grow-1" style={{ fontSize: 10, height: "100%", overflow: "hidden" }}>
-        <div className="wrapouter w-100" style={{ height: "100%", overflow: "hidden" }}>
-            <Textfit max={200} mode="multi" className="w-100 text-center">
-                {activeRun?.game}
-                <div style={{ fontSize: "70%" }}>{info.join(" / ")}</div>
-            </Textfit>
-        </div>
+    return <div className="h-100 w-0 flex-grow-1 mb-0 p-3 h1">
+        <Textfit max={200} mode="multi" className="text-center">
+            {activeRun?.game}
+            <div style={{ fontSize: "70%" }}>{info.join(" / ")}</div>
+        </Textfit>
     </div >;
 }
 
