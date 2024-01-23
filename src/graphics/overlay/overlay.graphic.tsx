@@ -28,7 +28,7 @@ function Overlay() {
 
     return <div className="fill d-flex outer">
         <Sidebar className="flex-grow-1" style={{ marginRight: "calc(-0.5 * var(--bw)" }}>
-            {infoInSidebar && <><Game /><TimerComp /></>}
+            {infoInSidebar && <><Game vertical={true} /><TimerComp /></>}
         </Sidebar>
         <div className="d-flex flex-column" style={{ marginLeft: "calc(-0.5 * var(--bw)" }}>
             <Camera camName="game" aspectRatio={`${aspect[0]} / ${aspect[1]}`} dims={infoInSidebar ? [null, 1010] : [1520, null]} />

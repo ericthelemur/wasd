@@ -86,6 +86,7 @@ export function CategoryComp({ cat }: { cat: Category }) {
 
     // Find next non blank person
     function findNextPerson() {
+        if (cat.people.length <= 1) return;
         for (var i = 1; i <= cat.people.length; i++) {
             var newPersonIndex = (personIndex + i) % cat.people.length;
             if (cat.people[newPersonIndex] && bank![cat.people[newPersonIndex]] && bank![cat.people[newPersonIndex]].name) {
@@ -101,6 +102,7 @@ export function CategoryComp({ cat }: { cat: Category }) {
 
     function findNextSocial() {
         if (!person) return;
+        if (person.socials.length <= 1) return;
         for (var i = 1; i <= person.socials.length; i++) {
             var newSocIndex = (socialIndex + i) % person.socials.length;
             if (person.socials[newSocIndex] && person.socials[newSocIndex].name) {

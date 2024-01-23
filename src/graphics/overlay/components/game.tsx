@@ -1,5 +1,5 @@
 import { getNodeCG } from 'extension/utils';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Textfit } from 'react-textfit';
 import { RunData, Timer } from 'speedcontrol-util/types/speedcontrol';
 import { useReplicant } from 'use-nodecg';
@@ -8,15 +8,24 @@ import { NodeCGAPIClient } from '@nodecg/types/client/api/api.client';
 
 declare var nodecg: NodeCGAPIClient;
 
-export function Game() {
+export function Game({ vertical }: { vertical?: boolean }) {
     const [activeRun,] = useReplicant<RunData | undefined>("runDataActiveRun", undefined, { namespace: "nodecg-speedcontrol" })
     const info = [activeRun?.category, activeRun?.system, activeRun?.release].filter(v => v);
 
-    return <div className="flex-grow-1 mb-0 p-3 h1">
-        <Textfit max={200} mode="multi" className="text-center">
-            {activeRun?.game}
-            <div style={{ fontSize: "70%" }}>{info.join(" / ")}</div>
-        </Textfit>
+    // Textfit apparently doesn't run on resize, so lazy update game on delay
+    const [g, setG] = useState<string | undefined>(undefined);
+    useEffect(() => {
+        const t = setTimeout(() => setG(activeRun?.game), 1000)
+        return () => clearTimeout(t);
+    }, [activeRun]);
+
+    return <div className={"position-relative flex-grow-1 mb-0 " + (vertical ? "h-0 w-100" : "h-100 w-0")}>
+        <div style={{ position: "absolute", inset: 0 }} className="text-center p-3 lh-1 text-wrap-balance">
+            {g && <Textfit max={200} mode="multi" className="h-100">
+                {g}
+                <div style={{ fontSize: "70%" }}>{info.join(" / ")}</div>
+            </Textfit>}
+        </div>
     </div >;
 }
 
