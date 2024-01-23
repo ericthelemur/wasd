@@ -5,18 +5,12 @@
 .cam {
     width: 100%;
     position: relative;
-    // border: var(--bs-body-color) solid calc(2 * var(--bw));
 }
 
-// .centred-border {
-//     border: var(--bs-body-color) solid var(--bw);
-//     position: absolute;
-//     inset: calc(-0.5 * var(--bw));
-//     overflow: hidden;
-// }
-
-
-.cam-inner {
+.cam {
     box-sizing: content-box;
+}
+
+.cam-border {
     border: var(--bs-body-color) solid var(--bw);
 }

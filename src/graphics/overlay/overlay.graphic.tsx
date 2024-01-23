@@ -23,7 +23,7 @@ function fetchFromParams(): [number, number] {
 function Overlay() {
     const [aspect,] = useState<[number, number]>(fetchFromParams());
 
-    const infoInSidebar = 16 * aspect[0] < 9 * aspect[1];
+    const infoInSidebar = 9 * aspect[0] < 16 * aspect[1];
     console.log(aspect, infoInSidebar);
 
     return <div className="fill d-flex outer">
@@ -31,7 +31,7 @@ function Overlay() {
             {infoInSidebar && <><Game /><TimerComp /></>}
         </Sidebar>
         <div className="d-flex flex-column" style={{ marginLeft: "calc(-0.5 * var(--bw)" }}>
-            <Camera camName="game" aspectRatio={`${aspect[0]} / ${aspect[1]}`} width={1520} />
+            <Camera camName="game" aspectRatio={`${aspect[0]} / ${aspect[1]}`} dims={infoInSidebar ? [null, 1010] : [1520, null]} />
             {!infoInSidebar && <div className="d-flex vcentre flex-gs">
                 <Game />
                 <TimerComp />
