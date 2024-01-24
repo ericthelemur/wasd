@@ -20,6 +20,11 @@ function fetchFromParams(): [number, number] {
     }
     return [16, 9];
 }
+
+function VR() {
+    return <div style={{ height: "100%", width: "var(--bw)", margin: "0 calc(-1 * var(--bw))", backgroundColor: "var(--bs-body-color)" }} />
+}
+
 function Overlay() {
     const [aspect,] = useState<[number, number]>(fetchFromParams());
 
@@ -27,10 +32,11 @@ function Overlay() {
     console.log(aspect, infoInSidebar);
 
     return <div className="fill d-flex outer">
-        <Sidebar className="flex-grow-1" style={{ marginRight: "calc(-0.5 * var(--bw)" }}>
+        <Sidebar className="flex-grow-1" camWidth={infoInSidebar ? "70%" : "100%"}>
             {infoInSidebar && <><Game vertical={true} /><TimerComp /></>}
         </Sidebar>
-        <div className="d-flex flex-column" style={{ marginLeft: "calc(-0.5 * var(--bw)" }}>
+        <VR />
+        <div className="d-flex flex-column">
             <Camera camName="game" aspectRatio={`${aspect[0]} / ${aspect[1]}`} dims={infoInSidebar ? [null, 1010] : [1520, null]} />
             {!infoInSidebar && <div className="d-flex vcentre flex-gs">
                 <Game />
