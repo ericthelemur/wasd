@@ -37,3 +37,10 @@ body {
     flex-grow: 1;
     flex-shrink: 1;
 }
+
+.textfit {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}

@@ -25,8 +25,8 @@ export function Game({ vertical }: { vertical?: boolean }) {
     }, [activeRun, ref]);
 
     return <div className={"position-relative flex-grow-1 mb-0 " + (vertical ? "h-0 w-100" : "h-100 w-0")}>
-        <div ref={ref} style={{ position: "absolute", inset: 0 }} className="text-center p-3 lh-1 text-wrap-balance">
-            <Textfit className="mh-100" throttle={1}>
+        <div ref={ref} style={{ position: "absolute", inset: 0, textAlign: "center", lineHeight: 1.05, textWrap: "balance" }}>
+            <Textfit className="h-100 textfit" throttle={1}>
                 {g}<div style={{ marginTop: 3, fontSize: "60%" }}>{info.join(" / ")}</div>
             </Textfit>
         </div>
@@ -37,7 +37,7 @@ export function TimerComp() {
     const [timer,] = useReplicant<Timer | undefined>("timer", undefined, { namespace: "nodecg-speedcontrol" })
     const [activeRun,] = useReplicant<RunData | undefined>("runDataActiveRun", undefined, { namespace: "nodecg-speedcontrol" })
     if (!timer) return <></>
-    return <div className="h1 m-3 text-center tabnum" style={{ fontSize: 72 }}>
+    return <div className="h1 text-center tabnum" style={{ fontSize: 60 }}>
         {timer?.time}
         <span className="ms-auto tabnum" style={{ fontSize: 26 }}>
             .{String(Math.trunc(timer?.milliseconds / 10) % 100).padStart(2, "0")}

@@ -31,14 +31,12 @@ function Overlay() {
     const infoInSidebar = 9 * aspect[0] < 16 * aspect[1];
     console.log(aspect, infoInSidebar);
 
-    return <div className="fill d-flex outer">
-        <Sidebar className="flex-grow-1" camWidth={infoInSidebar ? "70%" : "100%"}>
-            {infoInSidebar && <><Game vertical={true} /><TimerComp /></>}
-        </Sidebar>
+    return <div className="fill d-flex outer" style={{ fontFamily: "Montserrat", fontWeight: "600" }}>
+        <Sidebar className="flex-grow-1" vertical={infoInSidebar} />
         <VR />
         <div className="d-flex flex-column">
             <Camera camName="game" aspectRatio={`${aspect[0]} / ${aspect[1]}`} dims={infoInSidebar ? [null, 1010] : [1520, null]} />
-            {!infoInSidebar && <div className="d-flex vcentre flex-gs">
+            {!infoInSidebar && <div className="d-flex vcentre flex-gs mx-4 my-2 gap-3">
                 <Game />
                 <TimerComp />
             </div>}
