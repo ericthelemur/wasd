@@ -49,3 +49,16 @@ listenTo("setMute", ({ mic, muted }) => {
     return x32.sendMethod({ address: address, args: [{ type: 'i', value: Number(!muted) }] })
     // })
 })
+
+const nodecg = getNodeCG();
+nodecg.listenFor("transitioning", "nodecg-obs-control", (data: { transitionName: string; fromScene?: string; toScene?: string; }) => {
+    if (!data.toScene) return;
+    const newActiveDCAs = channels.value.scenes[data.toScene]
+    if (!newActiveDCAs) return;
+    for (const [name, number] of Object.entries(channels.value.dcas)) {
+        const enabledDCA = newActiveDCAs.includes(name);
+        const address = `/dca/${number}/fader`;
+        // x32.setFader(address, enabledDCA ? 0.75 : 0);
+        x32.sendMethod({ address: address, args: [{ type: 'f', value: enabledDCA ? 0.75 : 0 }] });
+    }
+})

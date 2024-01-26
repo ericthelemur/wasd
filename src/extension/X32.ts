@@ -155,7 +155,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
 
             this._ignoreConnectionClosedEvents = false;
             clearInterval(this._reconnectInterval!);
-            this._reconnectInterval = null;
+            this._reconnectInterval = undefined;
         });
 
         this.conn.on('close', () => {
