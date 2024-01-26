@@ -35,15 +35,26 @@
     inset: 0;
 }
 
+.name {
+    white-space: nowrap;
+}
+
 .pronouns {
     font-size: 0.6em;
     padding: 0.3rem 0.3rem;
     border-radius: 0.375rem;
     background: #8884;
     text-align: center;
+    vertical-align: middle;
 }
 
 .vcentre {
     display: flex;
     align-items: center;
+}
+
+.name-inner {
+    height: 1.5em;
+    width: 100%;
+    position: relative;
 }

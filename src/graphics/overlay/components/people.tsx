@@ -11,6 +11,8 @@ import ReactCSSTransitionReplace from 'react-css-transition-replace';
 import { Textfit } from 'react-textfit';
 import { useReplicant } from 'use-nodecg';
 
+import { FittingText } from './FittingText';
+
 const defaultSocials: () => Socials = () => ({
     unknown: {
         "name": "Unknown",
@@ -36,7 +38,7 @@ function SocialComp({ social }: { social?: Social }) {
     return <div className="vcentre gap-2" style={{ fontSize: "0.7em", height: "22px" }} >
         {social ? <>
             <SocialIcon social={social.social} />
-            <Textfit mode="multi" max={22} style={{ fontSize: "22px", height: "22px" }} className="social vcentre">
+            <Textfit mode="multi" max={22} style={{ fontSize: "22px", height: "25px" }} className="social vcentre lh-1 flex-gs">
                 {social.name}
             </Textfit>
         </> : " "}
@@ -44,12 +46,14 @@ function SocialComp({ social }: { social?: Social }) {
 }
 
 function NameComp({ name, pronouns }: { name: string, pronouns: string }) {
-    return <Textfit mode="multi" style={{ height: "32px" }} max={32}>
-        <div className='name gap-2 vcentre'>
-            <span className="flex-grow-1">{name}</span>
-            {pronouns && <span className="pronouns"><span>{pronouns.replaceAll("\/", "$&\u200b")}</span></span>}
+    return <div>
+        <div className='name gap-2 lh-1 pa'>
+            <FittingText className="name-inner">
+                {name}
+                {pronouns && <span className="pronouns"><span>{pronouns.replaceAll("\/", "$&\u200b")}</span></span>}
+            </FittingText>
         </div>
-    </Textfit>
+    </div>
 
 }
 
@@ -86,7 +90,6 @@ export function CategoryComp({ cat }: { cat: Category }) {
 
     // Find next non blank person
     function findNextPerson() {
-        if (cat.people.length <= 1) return;
         for (var i = 1; i <= cat.people.length; i++) {
             var newPersonIndex = (personIndex + i) % cat.people.length;
             if (cat.people[newPersonIndex] && bank![cat.people[newPersonIndex]] && bank![cat.people[newPersonIndex]].name) {
@@ -102,7 +105,7 @@ export function CategoryComp({ cat }: { cat: Category }) {
 
     function findNextSocial() {
         if (!person) return;
-        if (person.socials.length <= 1) return;
+        if (person.socials.length == 1) return;
         for (var i = 1; i <= person.socials.length; i++) {
             var newSocIndex = (socialIndex + i) % person.socials.length;
             if (person.socials[newSocIndex] && person.socials[newSocIndex].name) {
@@ -120,7 +123,7 @@ export function CategoryComp({ cat }: { cat: Category }) {
     useEffect(() => {
         var time = person && person.socials && person.socials.length >= 3 ? 6000 / person.socials.length : 2000;
         // const time = 3000;
-        const timeout = setTimeout(() => {
+        const timeout = setInterval(() => {
             if (!person) return;
             var newSocIndex = socialIndex + 1;
             if (newSocIndex >= person.socials.length) {
@@ -136,7 +139,7 @@ export function CategoryComp({ cat }: { cat: Category }) {
     const animTime = 400;
     return <div className="d-flex h2 lh-1 gap-2" style={{ fontSize: "2rem", fontWeight: 600 }}>
         <IconComp icon={cat.icon} />
-        <div className="person flex-grow-1" style={{ "--enter-time": `${animTime}ms`, "--leave-time": `${animTime}ms` } as unknown as React.CSSProperties}>
+        <div className="person flex-gs" style={{ "--enter-time": `${animTime}ms`, "--leave-time": `${animTime}ms` } as unknown as React.CSSProperties}>
             <ReactCSSTransitionReplace key="name" transitionName="fade-wait" transitionEnterTimeout={2 * animTime} transitionLeaveTimeout={animTime}>
                 <span key={personID}><NameComp name={person.name} pronouns={person.pronouns} /></span>
             </ReactCSSTransitionReplace>

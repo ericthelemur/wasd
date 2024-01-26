@@ -32,7 +32,7 @@ function Overlay() {
     console.log(aspect, infoInSidebar);
 
     return <div className="fill d-flex outer" style={{ fontFamily: "Montserrat", fontWeight: "600" }}>
-        <Sidebar className="flex-grow-1" vertical={infoInSidebar} />
+        <Sidebar className="flex-gs" vertical={infoInSidebar} />
         <VR />
         <div className="d-flex flex-column">
             <Camera camName="game" aspectRatio={`${aspect[0]} / ${aspect[1]}`} dims={infoInSidebar ? [null, 1010] : [1520, null]} />

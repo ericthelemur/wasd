@@ -17,11 +17,6 @@ body {
     overflow: hidden;
 }
 
-.outer {
-    --offset: calc(0.5 * var(--bw));
-    // margin: var(--offset) var(--offset) 0 var(--offset)
-}
-
 .tabnum {
     font-variant: tabular-nums;
     -moz-font-feature-settings: "tnum";
@@ -36,6 +31,7 @@ body {
 .flex-gs {
     flex-grow: 1;
     flex-shrink: 1;
+    flex-basis: 0;
 }
 
 .textfit {
@@ -43,4 +39,9 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+
+.pa {
+    position: absolute;
+    inset: 0;
 }
