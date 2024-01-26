@@ -17,30 +17,24 @@ import NodeCG from '@nodecg/types';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;
 
-function Status({ connected }: { connected?: boolean }) {
-	switch (connected) {
-		case true: return <Badge bg="success">Connected</Badge>
-		case false: return <Badge bg="danger">Disconnected</Badge>
+function Status() {
+	const [status,] = useReplicant<XrStatus>("xrStatus", { "connection": "disconnected" });
+	switch (status?.connection) {
+		case "connected": return <Badge bg="success">Connected</Badge>
+		case "connecting": return <Badge bg="info">Connecting</Badge>
+		case "disconnected": return <Badge bg="danger">Disconnected</Badge>
+		case "error": return <Badge bg="danger">Error</Badge>
 	}
 	return null;
 }
 
 function Statuses() {
-	const [status,] = useReplicant<XrStatus>("xrStatus", { "connected": false });
 
 	return <div className="mt-3">
 		<Stack direction="horizontal" gap={1}>
 			Status:
-			<Status connected={status?.connected} />
-			{/* {status?.streaming && <Badge bg="danger"><Wifi /> LIVE</Badge>}
-			{status?.recording && <Badge bg="danger"><RecordFill /> Recording</Badge>}
-			{status?.transitioning && <Badge bg="info">Transitioning</Badge>} */}
+			<Status />
 		</Stack>
-		{/* {status?.connection === "connected" &&
-			<Stack direction="horizontal" gap={1}>
-				{previewScene && <>Preview: <Badge bg="secondary">{previewScene.name}</Badge></>}
-				{programScene && <>Program: <Badge bg="danger">{programScene.name}</Badge></>}
-			</Stack>} */}
 	</div>
 }
 
@@ -66,7 +60,7 @@ function ConnectForm() {
 				<Form.Control ref={urlElem} placeholder="192.168.1.99" defaultValue={login?.ip} />
 			</FloatingLabel>
 			<FloatingLabel controlId="port" label="port">
-				<Form.Control ref={portElem} type="number" inputMode="numeric" placeholder="57121" defaultValue={login?.localPort ?? 57121} />
+				<Form.Control ref={portElem} type="number" inputMode="numeric" placeholder="10024" defaultValue={login?.localPort ?? 10024} />
 			</FloatingLabel>
 			<Button type="submit">Connect</Button>
 		</Form>
@@ -94,9 +88,9 @@ function DisconnectForm() {
 
 
 function ControlForms() {
-	const [status,] = useReplicant<XrStatus>("xrStatus", { "connected": false });
+	const [status,] = useReplicant<XrStatus>("xrStatus", { "connection": "disconnected" });
 	if (status) {
-		if (!status.connected) {
+		if (status.connection === "disconnected" || status.connection === "error") {
 			return <ConnectForm />
 		} else {
 			return <>

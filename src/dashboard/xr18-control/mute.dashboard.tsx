@@ -28,10 +28,12 @@ function copyToParams(mic: string | null) {
 }
 
 function Status() {
-	const [status,] = useReplicant<XrStatus>("xrStatus", { "connected": false });
-	switch (status?.connected) {
-		case true: return <Badge bg="success" className="mb-2">Connected</Badge>
-		case false: return <Badge bg="danger" className="mb-2">Disconnected</Badge>
+	const [status,] = useReplicant<XrStatus>("xrStatus", { "connection": "disconnected" });
+	switch (status?.connection) {
+		case "connected": return <Badge bg="success">Connected</Badge>
+		case "connecting": return <Badge bg="info">Connecting</Badge>
+		case "disconnected": return <Badge bg="danger">Disconnected</Badge>
+		case "error": return <Badge bg="danger">Error</Badge>
 	}
 	return null;
 }
@@ -86,7 +88,7 @@ function MuteControl({ mic }: { mic: string }) {
 
 
 function MutePanel() {
-	const [status,] = useReplicant<XrStatus>("xrStatus", { "connected": false });
+	const [status,] = useReplicant<XrStatus>("xrStatus", { "connection": "disconnected" });
 
 	const [mic, setMic] = useState(fetchFromParams());
 	useEffect(() => copyToParams(mic), [mic]);

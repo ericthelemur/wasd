@@ -14,7 +14,7 @@ export interface Channels {
 	};
 	tech: number;
 	scenes: {
-		[k: string]: number[];
+		[k: string]: string[];
 	};
 	[k: string]: unknown;
 }

@@ -26,6 +26,7 @@
     "default": {
         "enabled": true,
         "ip": "192.168.1.99",
+        "localPort": 10024,
         "xr18": true
     }
 }

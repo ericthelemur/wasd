@@ -1,15 +1,27 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "connStatus": {
+            "type": "string",
+            "enum": [
+                "connected",
+                "connecting",
+                "disconnected",
+                "error"
+            ],
+            "default": "disconnected"
+        }
+    },
     "type": "object",
     "properties": {
-        "connected": {
-            "type": "boolean"
+        "connection": {
+            "$ref": "#/definitions/connStatus"
         }
     },
     "required": [
-        "connected"
+        "connection"
     ],
     "default": {
-        "connected": false
+        "connection": "disconnected"
     }
 }

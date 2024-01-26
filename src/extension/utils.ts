@@ -1,6 +1,6 @@
 import type NodeCG from '@nodecg/types';
 import type { Configschema } from '../types/schemas';
-import { X32Utility } from './X32';
+import type { X32Utility } from './X32';
 
 let nodecg: NodeCG.ServerAPI<Configschema>;
 
@@ -20,6 +20,10 @@ export function storeX32(x32: X32Utility) {
 
 export function getX32(): X32Utility {
     return storedX32;
+}
+
+export function log(): NodeCG.Logger {
+    return nodecg?.log;
 }
 
 export function prefixName(prefix: string | undefined, name: string) {

@@ -5,7 +5,9 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
+export type ConnStatus = 'connected' | 'connecting' | 'disconnected' | 'error';
+
 export interface XrStatus {
-	connected: boolean;
+	connection: ConnStatus;
 	[k: string]: unknown;
 }
