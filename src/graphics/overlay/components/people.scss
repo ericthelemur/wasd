@@ -35,17 +35,14 @@
     inset: 0;
 }
 
-.name {
-    white-space: nowrap;
-}
-
 .pronouns {
     font-size: 0.6em;
-    padding: 0.3rem 0.3rem;
-    border-radius: 0.375rem;
+    padding: 0.1em 0.4em;
+    border-radius: 0.375em;
     background: #8884;
     text-align: center;
     vertical-align: middle;
+    white-space: nowrap;
 }
 
 .vcentre {
@@ -54,7 +51,12 @@
 }
 
 .name-inner {
-    height: 1.5em;
+    height: 1.2em;
     width: 100%;
     position: relative;
+    // white-space: nowrap;
+}
+
+.textfit>div {
+    width: 100%;
 }

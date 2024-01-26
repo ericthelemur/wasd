@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Textfit } from 'react-textfit';
 
-export function FittingText({ children, className, max }: { children: React.ReactNode; className: string; max?: number; }) {
+export function FittingText({ children, className, max, mode }: { children: React.ReactNode; className: string; max?: number; mode?: "single" | "multi" }) {
     const [g, setG] = useState(children);
     const [b, setB] = useState(0);
 
@@ -16,7 +16,7 @@ export function FittingText({ children, className, max }: { children: React.Reac
     }, [children, ref]);
 
     return <div ref={ref} className={"pa " + className}>
-        <Textfit className="h-100 textfit" throttle={1 + b} max={max}>
+        <Textfit className="h-100 textfit" throttle={1 + b} max={max} mode={mode}>
             {g}
         </Textfit>
     </div>;

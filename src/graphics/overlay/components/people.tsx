@@ -46,14 +46,10 @@ function SocialComp({ social }: { social?: Social }) {
 }
 
 function NameComp({ name, pronouns }: { name: string, pronouns: string }) {
-    return <div>
-        <div className='name gap-2 lh-1 pa'>
-            <FittingText className="name-inner">
-                {name}
-                {pronouns && <span className="pronouns"><span>{pronouns.replaceAll("\/", "$&\u200b")}</span></span>}
-            </FittingText>
-        </div>
-    </div>
+    return <FittingText className="name-inner" mode="multi" max={32}>
+        {name}{" "}
+        {pronouns && <span className="pronouns"><span>{pronouns.replaceAll("\/", "$&\u200b")}</span></span>}
+    </FittingText>
 
 }
 
@@ -140,7 +136,7 @@ export function CategoryComp({ cat }: { cat: Category }) {
     return <div className="d-flex h2 lh-1 gap-2" style={{ fontSize: "2rem", fontWeight: 600 }}>
         <IconComp icon={cat.icon} />
         <div className="person flex-gs" style={{ "--enter-time": `${animTime}ms`, "--leave-time": `${animTime}ms` } as unknown as React.CSSProperties}>
-            <ReactCSSTransitionReplace key="name" transitionName="fade-wait" transitionEnterTimeout={2 * animTime} transitionLeaveTimeout={animTime}>
+            <ReactCSSTransitionReplace key="name" transitionName="fade-wait" transitionEnterTimeout={2 * animTime} transitionLeaveTimeout={animTime} className="position-relative">
                 <span key={personID}><NameComp name={person.name} pronouns={person.pronouns} /></span>
             </ReactCSSTransitionReplace>
 
