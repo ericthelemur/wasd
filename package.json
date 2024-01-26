@@ -31,6 +31,12 @@
         "width": 1920,
         "height": 1010,
         "singleInstance": false
+      },
+      {
+        "file": "break/break.graphic.html",
+        "width": 1920,
+        "height": 1010,
+        "singleInstance": false
       }
     ]
   },
@@ -58,6 +64,7 @@
     "ts-node": "^10.9.1",
     "use-nodecg": "github:ericthelemur/use-nodecg",
     "nodecg-people-control": "1.0.0",
+    "nodecg-dono-control": "1.0.0",
     "speedcontrol-util": "^0.6.1"
   },
   "devDependencies": {
