@@ -59,9 +59,9 @@ function ConnectForm() {
 			<FloatingLabel className="flex-grow-1" controlId="url" label="Mixer IP">
 				<Form.Control ref={urlElem} placeholder="192.168.1.99" defaultValue={login?.ip} />
 			</FloatingLabel>
-			<FloatingLabel controlId="port" label="port">
+			{/* <FloatingLabel controlId="port" label="port">
 				<Form.Control ref={portElem} type="number" inputMode="numeric" placeholder="10024" defaultValue={login?.localPort ?? 10024} />
-			</FloatingLabel>
+			</FloatingLabel> */}
 			<Button type="submit">Connect</Button>
 		</Form>
 	)

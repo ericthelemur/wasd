@@ -22,7 +22,8 @@ export class X32Utility extends TypedEmitter<X32Events> {
     status: NodeCG.ServerReplicantWithSchemaDefault<XrStatus>;
     login: NodeCG.ServerReplicantWithSchemaDefault<Login>;
     private _ignoreConnectionClosedEvents = false;
-    private _reconnectInterval: NodeJS.Timeout | null = null;
+    private _reconnectInterval: NodeJS.Timeout | undefined = undefined;
+    private connectionTimeout: NodeJS.Timeout | undefined = undefined;
 
     faders: { [k: string]: number } = {};
     fadersExpected: {
@@ -57,6 +58,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
 
             listenTo("disconnect", (login, ack) => {
                 this._ignoreConnectionClosedEvents = true;
+                clearTimeout(this.connectionTimeout);
                 this.conn.close();
                 if (ack && !ack.handled) ack();
             });
@@ -98,14 +100,13 @@ export class X32Utility extends TypedEmitter<X32Events> {
             this.status.value.connection = "error";
         });
 
-        var connectionTimeout: NodeJS.Timeout;
         const startTimeout = (t?: number) => {
-            clearTimeout(connectionTimeout);
+            clearTimeout(this.connectionTimeout);
             this.conn.send({ address: '/xremote', args: [] });
             this.conn.send({ address: '/status', args: [] });
-            connectionTimeout = setTimeout(() => {
+            this.connectionTimeout = setTimeout(() => {
                 log().info("[X32] Connection timed out");
-                this.conn.close()
+                if (this.status.value.connection === "connected" || this.status.value.connection == "connecting") this.conn.close()
             }, t ?? 5000);
         }
 
@@ -120,7 +121,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
 
             try {
                 // Clear countdown to disconnect
-                clearTimeout(connectionTimeout);
+                clearTimeout(this.connectionTimeout);
                 if (message.address.endsWith("/status")) {
                     // Only transfer to connected on a response to initial status ping
                     if (this.status.value.connection === "connecting") {
