@@ -15,6 +15,12 @@
                 "type": "integer"
             }
         },
+        "buses": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
+        },
         "tech": {
             "type": "integer"
         },
@@ -41,7 +47,6 @@
             "COMMS": 3,
             "MUSIC": 4
         },
-        "tech": 6,
         "mics": {
             "COM-1": 1,
             "COM-2": 2,
@@ -52,6 +57,13 @@
             "RODE-1": 7,
             "RODE-2": 8
         },
+        "buses": {
+            "MAIN": 0,
+            "RUN-1": 1,
+            "RUN-2": 3,
+            "COMM": 5
+        },
+        "tech": 6,
         "scenes": {
             "RUN-1": [
                 "RUN-1",

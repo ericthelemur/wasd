@@ -41,14 +41,14 @@ function Statuses() {
 function ConnectForm() {
 	const [login,] = useReplicant<Login>("login", { "enabled": false, "ip": "", "xr18": true });
 	const urlElem = useRef<HTMLInputElement>(null);
-	const portElem = useRef<HTMLInputElement>(null);
+	// const portElem = useRef<HTMLInputElement>(null);
 
 	function connect(e: FormEvent) {
 		e.preventDefault();
-		nodecg.log.info('Attempting to connect', urlElem.current?.value, portElem.current?.value);
+		nodecg.log.info('Attempting to connect', urlElem.current?.value/*, portElem.current?.value*/);
 		(sendTo("connect", {
 			ip: urlElem.current!.value,
-			localPort: portElem.current!.valueAsNumber || undefined
+			// localPort: portElem.current!.valueAsNumber || undefined
 		}) as unknown as Promise<void>
 		).then(() => nodecg.log.info('successfully connected to xr18'))
 			.catch((err: any) => nodecg.log.error('failed to connect to xr18:', err));

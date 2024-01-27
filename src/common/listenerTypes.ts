@@ -12,5 +12,10 @@ export type ListenerTypes = {
     "setMute": {
         mic: string;
         muted: boolean;
+    },
+
+    "setTechMuted": {
+        bus: string;
+        muted: boolean;
     }
 }

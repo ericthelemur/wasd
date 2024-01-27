@@ -30,7 +30,8 @@ x32.on("message", ({ address, args }) => {
 
 x32.on("ready", () => {
     Object.entries(channels.value.mics).forEach(([k, ch]) => {
-        x32.sendMethod({ address: `/ch/0${ch}/mix/on`, args: [] }).then((r) => {
+        const adStr = String(ch).padStart(2, "0");
+        x32.sendMethod({ address: `/ch/${adStr}/mix/on`, args: [] }).then((r) => {
             const args = r.args as [{ type: "i", value: number }];
             muted.value[k] = Boolean(args[0].value);
         });
@@ -38,11 +39,13 @@ x32.on("ready", () => {
 })
 
 listenTo("setMute", ({ mic, muted }) => {
+    if (!x32.connected()) return;
     // mic like /ch/15/mix/on
     // response like { address: '/ch/15/mix/on', args: [ { type: 'i', value: 1 } ] }
     if (!channels.value || !channels.value.mics) return;
     const chIndex = channels.value.mics[mic];
-    const address = `/ch/0${chIndex}/mix/on`
+    const chStr = String(chIndex).padStart(2, "0");
+    const address = `/ch/${chStr}/mix/on`
     // x32.sendMethod({ address: address, args: [] }).then((r) => {
     //     const res = r as { address: string, args: { value: any; }[] };
     //     const currentlyMuted = res.args[0].value;
@@ -52,6 +55,7 @@ listenTo("setMute", ({ mic, muted }) => {
 
 const nodecg = getNodeCG();
 nodecg.listenFor("transitioning", "nodecg-obs-control", (data: { transitionName: string; fromScene?: string; toScene?: string; }) => {
+    if (!x32.connected()) return;
     if (!data.toScene) return;
     const newActiveDCAs = channels.value.scenes[data.toScene]
     if (!newActiveDCAs) return;
@@ -61,4 +65,22 @@ nodecg.listenFor("transitioning", "nodecg-obs-control", (data: { transitionName:
         // x32.setFader(address, enabledDCA ? 0.75 : 0);
         x32.sendMethod({ address: address, args: [{ type: 'f', value: enabledDCA ? 0.75 : 0 }] });
     }
+})
+
+listenTo("setTechMuted", ({ bus, muted }) => {
+    if (!x32.connected()) return;
+    if (!channels.value || !channels.value.buses) return;
+    nodecg.log.info(muted ? "Muting" : "Unmuting", "tech for", bus);
+    const busIndex = channels.value.buses[bus];
+    if (busIndex === undefined) return;
+    const busStr = String(busIndex).padStart(2, "0");
+
+    const techCh = String(channels.value.tech).padStart(2, "0");
+
+    nodecg.log.info("Buses", techCh, busStr);
+    var address: string;
+    if (busIndex === 0) address = `/ch/${techCh}/mix/fader`;
+    else address = `/ch/${techCh}/mix/${busStr}/level`;
+    nodecg.log.info("Tech", address);
+    return x32.sendMethod({ address, args: [{ type: 'f', value: muted ? 0 : 0.75 }] })
 })

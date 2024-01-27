@@ -112,7 +112,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
 
         this.conn.on('message', (message) => {
             // I don't trust myself with all posibilities, so wrapping this up.
-            log().info("[X32] Message recieved", message);
+            if (!message.address.endsWith("/status")) log().info("[X32] Message recieved", message);
 
             if (this.pendingReplies[message.address]) {
                 this.emit("message", message);

@@ -12,6 +12,9 @@ export interface Channels {
 	mics: {
 		[k: string]: number;
 	};
+	buses?: {
+		[k: string]: number;
+	};
 	tech: number;
 	scenes: {
 		[k: string]: string[];
