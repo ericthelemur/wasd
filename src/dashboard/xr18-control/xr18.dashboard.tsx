@@ -2,12 +2,12 @@ import './xr18.scss';
 
 import { sendTo, sendToF } from 'common/listeners';
 import { FormEvent, useRef } from 'react';
-import { RecordFill, Wifi } from 'react-bootstrap-icons';
+import { ExclamationTriangleFill, InfoCircleFill, RecordFill, Wifi } from 'react-bootstrap-icons';
+import Alert from 'react-bootstrap/Alert';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
-import InputGroup from 'react-bootstrap/InputGroup';
 import Stack from 'react-bootstrap/Stack';
 import { createRoot } from 'react-dom/client';
 import { Configschema, Login, XrStatus } from 'types/schemas';
@@ -69,6 +69,8 @@ function ConnectForm() {
 
 
 function DisconnectForm() {
+	const [login, setLogin] = useReplicant<Login>("login", { "enabled": false, "ip": "", "xr18": true, "suppress": false });
+
 	function disconnect(e: FormEvent) {
 		e.preventDefault();
 		if (confirm("Are you sure you want to disconnect from Mixer?")) {
@@ -81,6 +83,11 @@ function DisconnectForm() {
 
 	return (
 		<Form onSubmit={disconnect} className="vstack gap-3 mt-2">
+			{login && <Alert variant={login?.suppress ? "danger" : "info"}>
+				{login?.suppress ? <ExclamationTriangleFill /> : <InfoCircleFill />}{" "}
+				<Form.Check type="switch" className="d-inline-block ms-3" disabled={login === undefined} defaultChecked={login.suppress}
+					label="Suppress DCA updates" onChange={(e) => { console.log(e); setLogin({ ...login, suppress: e.target.checked }) }} />
+			</Alert>}
 			<Button variant="outline-danger" type="submit">Disconnect</Button>
 		</Form>
 	)
