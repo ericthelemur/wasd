@@ -10,6 +10,6 @@ export interface Login {
 	ip: string;
 	localPort?: number;
 	xr18: boolean;
-	override?: boolean;
+	suppress?: boolean;
 	[k: string]: unknown;
 }

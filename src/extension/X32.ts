@@ -95,9 +95,11 @@ export class X32Utility extends TypedEmitter<X32Events> {
         });
 
         this.conn.on('error', (err) => {
-            log().warn('[X32] Error on connection');
-            log().debug('[X32] Error on connection:', err);
-            this.status.value.connection = "error";
+            if (!err.message.startsWith("A malformed type tag string was found while reading the arguments of an OSC message.")) {
+                log().warn('[X32] Error on connection');
+                log().debug('[X32] Error on connection:', err);
+                // this.status.value.connection = "error";
+            }
         });
 
         const startTimeout = (t?: number) => {
@@ -105,8 +107,10 @@ export class X32Utility extends TypedEmitter<X32Events> {
             this.conn.send({ address: '/xremote', args: [] });
             this.conn.send({ address: '/status', args: [] });
             this.connectionTimeout = setTimeout(() => {
-                log().info("[X32] Connection timed out");
-                if (this.status.value.connection === "connected" || this.status.value.connection == "connecting") this.conn.close()
+                if (this.status.value.connection === "connected" || this.status.value.connection == "connecting") {
+                    log().info("[X32] Connection timed out");
+                    this.conn.close();
+                }
             }, t ?? 5000);
         }
 
@@ -126,6 +130,10 @@ export class X32Utility extends TypedEmitter<X32Events> {
                     // Only transfer to connected on a response to initial status ping
                     if (this.status.value.connection === "connecting") {
                         this.status.value.connection = "connected";
+
+                        this._ignoreConnectionClosedEvents = false;
+                        clearInterval(this._reconnectInterval!);
+                        this._reconnectInterval = undefined;
                         this.emit('ready');
                     }
                 }
@@ -139,23 +147,15 @@ export class X32Utility extends TypedEmitter<X32Events> {
             }
         });
 
-        this.conn.on('open', () => {
-            log().info('[X32] Connection opened');
-        });
-
         var renewInterval: NodeJS.Timeout;
         this.conn.on('ready', () => {
             log().info('[X32] Connection ready');
 
             // Subscribe/renew to updates (must be done every <10 seconds).
-            if (this.conn) startTimeout(25000);
+            if (this.conn) startTimeout(3000);
             renewInterval = setInterval(() => {
                 if (this.conn) startTimeout();
             }, 8 * 1000);
-
-            this._ignoreConnectionClosedEvents = false;
-            clearInterval(this._reconnectInterval!);
-            this._reconnectInterval = undefined;
         });
 
         this.conn.on('close', () => {
@@ -176,8 +176,8 @@ export class X32Utility extends TypedEmitter<X32Events> {
             return;
         }
 
-        log().warn('Connection closed, will attempt to reconnect every 5 seconds.');
-        this._reconnectInterval = setInterval(() => this.connect(), 5000);
+        log().warn('Connection closed, will attempt to reconnect every 10 seconds.');
+        this._reconnectInterval = setInterval(() => this.connect(), 10000);
     }
 
     connected() {

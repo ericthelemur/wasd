@@ -14,7 +14,7 @@
         "xr18": {
             "type": "boolean"
         },
-        "override": {
+        "suppress": {
             "type": "boolean"
         }
     },

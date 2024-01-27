@@ -1,10 +1,12 @@
-import { Channels, Muted } from 'types/schemas';
+import { Channels, Login, Muted } from 'types/schemas';
 
 import { listenTo } from '../common/listeners';
 import { getNodeCG, getX32, Replicant, storeNodeCG } from './utils';
 
 const x32 = getX32();
 
+const login = Replicant<Login>("login");
+const muted = Replicant<Muted>("muted");
 const channels = Replicant<Channels>("channels");
 var mutesMap: { [address: string]: string } = {}
 
@@ -16,7 +18,6 @@ channels.on("change", genReverseMap);
 genReverseMap();
 
 
-const muted = Replicant<Muted>("muted");
 
 const muteRegex = new RegExp(/^\/ch\/(\d+)\/mix\/on$/);
 x32.on("message", ({ address, args }) => {
@@ -55,9 +56,10 @@ listenTo("setMute", ({ mic, muted }) => {
 
 const nodecg = getNodeCG();
 nodecg.listenFor("transitioning", "nodecg-obs-control", (data: { transitionName: string; fromScene?: string; toScene?: string; }) => {
-    if (!x32.connected()) return;
+    if (!x32.connected() || login.value.suppress) return;
     if (!data.toScene) return;
     const newActiveDCAs = channels.value.scenes[data.toScene]
+    nodecg.log.info("Settings DCAs to", newActiveDCAs);
     if (!newActiveDCAs) return;
     for (const [name, number] of Object.entries(channels.value.dcas)) {
         const enabledDCA = newActiveDCAs.includes(name);
