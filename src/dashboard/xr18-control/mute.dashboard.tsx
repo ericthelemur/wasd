@@ -4,6 +4,7 @@ import { sendTo, sendToF } from 'common/listeners';
 import { useEffect, useState } from 'react';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
 import { createRoot } from 'react-dom/client';
 import { Channels, Configschema, Muted, XrStatus } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
@@ -43,7 +44,7 @@ function MicChoice({ setMic }: { setMic: (m: string) => void }) {
 
 	if (!channels || !channels.mics) return <>No active mics</>;
 	return <div className="gap-2 mb-2 d-flex flex-wrap">
-		{Object.keys(channels.mics).map(m => <Button variant="outline-primary" onClick={() => setMic(m)}>{m}</Button>)}
+		{Object.keys(channels.mics).map(m => <Button key={m} variant="outline-primary" onClick={() => setMic(m)}>{m}</Button>)}
 	</div>
 }
 
@@ -86,6 +87,45 @@ function MuteControl({ mic }: { mic: string }) {
 	</div>
 }
 
+function TechMute() {
+	const [channels,] = useReplicant<Channels>("channels", { dcas: {}, mics: {}, tech: -1, scenes: {} });
+	const [talkTo, setTalkTo] = useState<{ [k: string]: boolean }>({});
+	console.log(talkTo);
+	const [talking, setTalking] = useState(false);
+	const [debounce, setDebounce] = useState<NodeJS.Timeout | undefined>(undefined);
+
+	function holdDown() {
+		setTalking(true);
+		Object.entries(talkTo).map(([b, t]) => { if (t) sendTo("setTechMuted", { bus: b, muted: false }) })
+	}
+
+	function holdUp() {
+		clearTimeout(debounce);
+		setDebounce(setTimeout(() => {
+			Object.entries(talkTo).map(([b, t]) => { if (t) sendTo("setTechMuted", { bus: b, muted: true }) });
+			setTalking(false);
+		}, 100));
+	}
+
+	function talkToggle(m: string) {
+		if (m !== "MAIN" || (!talkTo[m] && confirm("DANGER: Enable Voice of God?"))) {
+			setTalkTo({ ...talkTo, [m]: !talkTo[m] });
+		}
+	}
+
+	if (!channels || !channels.buses) return <div>No active channels</div>;
+	return <div>
+		<h3>Tech Talk To</h3>
+		<div className="gap-2 mb-2 d-flex flex-wrap fs-3">
+			{Object.keys(channels.buses).map(m =>
+				<Form.Check key={m} type="switch" className="d-inline-block ms-3" disabled={talking} defaultChecked={talkTo[m]}
+					label={m} onChange={() => talkToggle(m)} />
+			)}
+		</div>
+		<Button variant="primary d-block" onMouseDown={holdDown} onMouseUp={holdUp} onTouchStart={holdDown} onTouchEnd={holdUp}>Talk To</Button>
+	</div >
+}
+
 
 function MutePanel() {
 	const [status,] = useReplicant<XrStatus>("xrStatus", { "connection": "disconnected" });
@@ -93,13 +133,14 @@ function MutePanel() {
 	const [mic, setMic] = useState(fetchFromParams());
 	useEffect(() => copyToParams(mic), [mic]);
 
-	if (!status || !status.connected) return null;
+	if (!status || status.connection === "disconnected" || status.connection === "connecting") return null;
 
 	if (mic) {
 		return <>
 			{" "} Controlling {mic} <Button variant="link p-0 m-0" style={{ verticalAlign: "unset" }}
 				onClick={(e) => { setMic(null); e.stopPropagation() }}>← Back to Selection</Button>
 			<MuteControl mic={mic} />
+			{mic === "TECH" && <TechMute />}
 		</>
 	} else {
 		return <MicChoice setMic={(m) => setMic(m)} />

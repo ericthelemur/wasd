@@ -21,7 +21,7 @@
       {
         "name": "mute-control",
         "title": "Commentator Mute Control",
-        "width": 2,
+        "width": 3,
         "file": "mute.dashboard.html",
         "headerColor": "#525F78"
       }
