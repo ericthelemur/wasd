@@ -4,7 +4,7 @@
 import type NodeCGTypes from '@nodecg/types';
 import osc, { OscMessage } from 'osc';
 import { TypedEmitter } from 'tiny-typed-emitter';
-import { Login, XrStatus } from 'types/schemas';
+import { Channels, Login, Muted, TechMuted, XrStatus } from 'types/schemas';
 
 import NodeCG from '@nodecg/types';
 
@@ -118,10 +118,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
             // I don't trust myself with all posibilities, so wrapping this up.
             if (!message.address.endsWith("/status")) log().info("[X32] Message recieved", message);
 
-            if (this.pendingReplies[message.address]) {
-                this.emit("message", message);
-                delete this.pendingReplies[message.address];
-            }
+            this.emit("message", message);
 
             try {
                 // Clear countdown to disconnect
@@ -138,6 +135,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
                     }
                 }
 
+                // Smooth faders
                 if (message.address.endsWith('/fader') || message.address.endsWith('/level')) {
                     this.checkFaders(message);
                 }
@@ -192,6 +190,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
             const process = (m: OscMessage) => {
                 if (m.address === msg.address) {
                     this.removeListener("message", process);
+                    delete this.pendingReplies[msg.address];
                     resolve(m);
                 }
             };

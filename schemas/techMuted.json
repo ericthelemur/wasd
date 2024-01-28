@@ -1,0 +1,14 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {},
+    "type": "object",
+    "additionalProperties": {
+        "type": "boolean"
+    },
+    "default": {
+        "MAIN": false,
+        "RUN-1": true,
+        "RUN-2": true,
+        "COMM": true
+    }
+}
