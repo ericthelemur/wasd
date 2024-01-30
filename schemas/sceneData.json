@@ -1,14 +1,21 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "properties": {
-        "additionalProperties": {
-            "$ref": "types/sceneInfo.json"
-        }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": {
+    "$ref": "types/sceneInfo.json"
+  },
+  "default": {
+    "RUN-1": {
+      "name": "RUN-1",
+      "run": null
     },
-    "default": {
-        "RUN-1": {},
-        "RUN-2": {},
-        "RUN-RACE": {}
+    "RUN-2": {
+      "name": "RUN-2",
+      "run": null
+    },
+    "RUN-RACE": {
+      "name": "RUN-RACE",
+      "run": null
     }
+  }
 }

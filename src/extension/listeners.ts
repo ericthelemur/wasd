@@ -1,18 +1,19 @@
 import clone from 'clone';
 import { RunData } from 'speedcontrol-util/types/speedcontrol';
+import { SceneData } from 'types/schemas';
 
 import { sc, sceneData } from './replicants';
 import { getNodeCG } from './utils';
 
-function checkRun(run: RunData, assigned: { [scene: string]: RunData | null }) {
-    const runScene = run.customData["scene"];
-    if (runScene && Object.keys(assigned).includes(runScene)) {
-        if (!assigned[runScene]) assigned[runScene] = run;
+function checkRun(run: RunData, assigned: SceneData) {
+    const runSceneName = run.customData["scene"];
+    if (runSceneName && assigned[runSceneName] && !assigned[runSceneName].run) {
+        assigned[runSceneName].run = run;
     }
 }
 
 function updateSceneRuns() {
-    const assigned = Object.fromEntries(Object.keys(sceneData.value).map(k => [k, null]));
+    const assigned: SceneData = Object.fromEntries(Object.keys(sceneData.value).map(k => [k, { name: k, run: null }]));
     const currRun = sc.getCurrentRun();
     if (currRun) checkRun(currRun, assigned);
 

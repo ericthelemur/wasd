@@ -1,17 +1,25 @@
 import 'wasd-common/shared/uwcs-bootstrap.css';
 import './overlay.graphic.scss';
 
-import { useState } from 'react';
+import clone from 'clone';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { RunData } from 'speedcontrol-util/types/speedcontrol';
+import { SceneData, SceneInfo } from 'types/schemas';
+import { useReplicant } from 'use-nodecg';
 
 import { Camera } from './components/cam';
 import { Game, TimerComp } from './components/game';
 import { Sidebar } from './components/sidebar';
 
-function fetchFromParams(): [number, number] {
-    const url = new URL(window.location.href);
-    var params = url.searchParams;
-    const aspect = params.get("aspect");
+declare const defaultScene: string | undefined;
+
+interface URLParams {
+    aspect: [number, number];
+    scene: string | null;
+}
+
+function aspectParse(aspect: string | null): [number, number] {
     if (aspect) {
         try {
             const parts = aspect.split("-").map(v => Number.parseInt(v));
@@ -21,12 +29,22 @@ function fetchFromParams(): [number, number] {
     return [16, 9];
 }
 
+function fetchFromParams(): URLParams {
+    const url = new URL(window.location.href);
+    var params = url.searchParams;
+    const aspect = params.get("aspect");
+    var scene = params.get("scene");
+    if (!scene && defaultScene) scene = defaultScene;
+    return { aspect: aspectParse(aspect), scene: scene };
+}
+
 function VR() {
     return <div style={{ height: "100%", width: "var(--bw)", margin: "0 calc(-1 * var(--bw))", backgroundColor: "var(--bs-body-color)" }} />
 }
 
-function Overlay() {
-    const [aspect,] = useState<[number, number]>(fetchFromParams());
+export const SceneInfoContext = createContext<SceneInfo>({ name: "Blank", run: null });
+
+function Overlay({ aspect }: { aspect: [number, number] }) {
 
     const infoInSidebar = 9 * aspect[0] < 16 * aspect[1];
     console.log(aspect, infoInSidebar);
@@ -44,5 +62,30 @@ function Overlay() {
     </div>
 }
 
+function OverlayWrapper() {
+    const [{ aspect, scene },] = useState<URLParams>(fetchFromParams());
+    const [sceneData,] = useReplicant<SceneData>("sceneData", {});
+    const [activeRun,] = useReplicant<RunData | undefined>("runDataActiveRun", undefined);
+
+    const [info, setInfo] = useState<SceneInfo>({ name: "", run: null });
+
+    useEffect(() => {
+        if (sceneData && scene) {
+            const info = sceneData[scene];
+            if (info) {
+                console.log("Set sceneinfo");
+                setInfo(clone(info));
+                return;
+            }
+        }
+        setInfo({ name: "Default", run: clone(activeRun ?? null) });
+    }, [sceneData, activeRun]);
+
+    const runAspect = info.run?.customData.aspect;
+    return <SceneInfoContext.Provider value={info}>
+        <Overlay aspect={runAspect ? aspectParse(runAspect) : aspect} />
+    </SceneInfoContext.Provider>
+}
+
 const root = createRoot(document.getElementById('root')!);
-root.render(<Overlay />);
+root.render(<OverlayWrapper />);

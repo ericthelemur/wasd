@@ -6,11 +6,11 @@
  */
 
 export interface SceneData {
-	additionalProperties?: SceneInfo;
-	[k: string]: unknown;
+	[k: string]: SceneInfo;
 }
 export interface SceneInfo {
-	run?: RunData | null;
+	name: string;
+	run: RunData | null;
 	[k: string]: unknown;
 }
 export interface RunData {
