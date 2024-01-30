@@ -27,10 +27,28 @@
         "singleInstance": false
       },
       {
-        "file": "overlay/overlay.graphic.html",
+        "file": "overlay/RUN-1.html",
         "width": 1920,
         "height": 1010,
-        "singleInstance": false
+        "singleInstance": true
+      },
+      {
+        "file": "overlay/RUN-2.html",
+        "width": 1920,
+        "height": 1010,
+        "singleInstance": true
+      },
+      {
+        "file": "overlay/RUN-RACE.html",
+        "width": 1920,
+        "height": 1010,
+        "singleInstance": true
+      },
+      {
+        "file": "overlay/RUN-BACKUP.html",
+        "width": 1920,
+        "height": 1010,
+        "singleInstance": true
       },
       {
         "file": "break/break.graphic.html",

@@ -133,7 +133,7 @@ export function CategoryComp({ cat }: { cat: Category }) {
 
     if (!person || !person.name) return <></>
     const animTime = 400;
-    return <div className="d-flex h2 lh-1 gap-2" style={{ fontSize: "2rem", fontWeight: 600 }}>
+    return <div className="d-flex h2 lh-1 gap-2" style={{ fontSize: "2rem", fontWeight: 600, height: 60 }}>
         <IconComp icon={cat.icon} />
         <div className="person flex-gs" style={{ "--enter-time": `${animTime}ms`, "--leave-time": `${animTime}ms` } as unknown as React.CSSProperties}>
             <ReactCSSTransitionReplace key="name" transitionName="fade-wait" transitionEnterTimeout={2 * animTime} transitionLeaveTimeout={animTime} className="position-relative">

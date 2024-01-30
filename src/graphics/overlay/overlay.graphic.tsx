@@ -81,7 +81,7 @@ function OverlayWrapper() {
         setInfo({ name: "Default", run: clone(activeRun ?? null) });
     }, [sceneData, activeRun]);
 
-    const runAspect = info.run?.customData.aspect;
+    const runAspect = info.run?.customData.layout;
     return <SceneInfoContext.Provider value={info}>
         <Overlay aspect={runAspect ? aspectParse(runAspect) : aspect} />
     </SceneInfoContext.Provider>
