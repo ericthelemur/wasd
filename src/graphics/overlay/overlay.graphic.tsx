@@ -45,6 +45,7 @@ function VR() {
 export const SceneInfoContext = createContext<SceneInfo>({ name: "Blank", run: null });
 
 function Overlay({ aspect }: { aspect: [number, number] }) {
+    const sceneInfo = useContext(SceneInfoContext);
 
     const infoInSidebar = 9 * aspect[0] < 16 * aspect[1];
     console.log(aspect, infoInSidebar);
@@ -53,7 +54,7 @@ function Overlay({ aspect }: { aspect: [number, number] }) {
         <Sidebar className="flex-gs" vertical={infoInSidebar} />
         <VR />
         <div className="d-flex flex-column">
-            <Camera camName="game" aspectRatio={`${aspect[0]} / ${aspect[1]}`} dims={infoInSidebar ? [null, 1010] : [1520, null]} />
+            <Camera camName={sceneInfo.name === "RUN-1" ? "GAME-1" : "GAME-2"} aspectRatio={`${aspect[0]} / ${aspect[1]}`} dims={infoInSidebar ? [null, 1010] : [1520, null]} />
             {!infoInSidebar && <div className="d-flex vcentre flex-gs mx-4 my-2 gap-3">
                 <Game />
                 <TimerComp />
