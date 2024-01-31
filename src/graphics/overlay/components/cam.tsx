@@ -34,43 +34,41 @@ function calculateTransform(ot: ObsTransform, t: { x: number, y: number, w: numb
 export function Camera({ camName, aspectRatio, dims, style }: { camName: string, aspectRatio: string, dims?: [number | string | null, number | string | null], style?: CSSProperties }) {
     const ref = useRef<HTMLDivElement>(null);
 
-    const [lastPos, setLastPos] = useState({ x: 0, y: 0, w: 0, h: 0 });
     const sceneInfo = useContext(SceneInfoContext);
-
     const [scenes,] = useReplicant<SceneList>("sceneList", [], { namespace: "nodecg-obs-control" });
     const [sceneSource, setSceneSource] = useState<ObsSource | null>(null);
-    console.log("ss", sceneSource);
 
+    const [lastPos, setLastPos] = useState({ x: 0, y: 0, w: 0, h: 0 });
 
     // Find source ID from component name
     useEffect(() => {
-        console.log("Scenes", scenes);
-        if (!scenes) setSceneSource(null);
-        else {
-            const scene = scenes?.find(sc => sc.name === sceneInfo.name);
-            console.log("Scene", scene?.name, scene?.sources);
-            const src = scene?.sources?.find(sr => sr.sourceName === camName);
-            console.log("src", src?.sourceName);
-            if (!scene || !src) setSceneSource(null);
-            else {
-                setSceneSource(src);
-            }
-        }
-    }, [scenes])
+        const scene = scenes?.find(sc => sc.name === sceneInfo.name);
+        const src = scene?.sources?.find(sr => sr.sourceName === camName);
+        setSceneSource(src ?? null);
+    }, [scenes, sceneInfo])
 
     // Send updates to OBS when cameras move
     useEffect(() => {
-        const interval = setInterval(() => {
+        function moveOBSSrc(force: boolean = false) {
+            console.log("Moving poll", force, sceneSource)
             if (!sceneSource) return;
             const dims = ref.current!.getBoundingClientRect();
-            if (!fd(dims.x, lastPos.x) || !fd(dims.y, lastPos.y) || !fd(dims.width, lastPos.w) || !fd(dims.height, lastPos.h)) {
+            if (force || (!fd(dims.x, lastPos.x) || !fd(dims.y, lastPos.y) || !fd(dims.width, lastPos.w) || !fd(dims.height, lastPos.h))) {
                 const target = { x: dims.x, y: dims.y, w: dims.width, h: dims.height };
                 const newTransform = calculateTransform(sceneSource.sceneItemTransform, target);
                 setLastPos(target);
                 nodecg.sendMessageToBundle("moveItem", "nodecg-obs-control", { sceneName: sceneInfo.name, sceneItemId: sceneSource.sceneItemId, transform: newTransform } as OBSMsgTypes["moveItem"])
             }
-        }, 1000);
-        return () => clearInterval(interval);
+        }
+
+        // Poll for movement on timer and force move on msg
+        const interval = setInterval(moveOBSSrc, 1000);
+        const forceF = () => moveOBSSrc(true);
+        nodecg.listenFor("moveOBSSources", "nodecg-obs-control", forceF);
+        return () => {
+            clearInterval(interval);
+            nodecg.unlisten("moveOBSSources", "nodecg-obs-control", forceF);
+        };
     }, [ref, sceneSource, lastPos]);
 
     const innerArgs: CSSProperties = {};
