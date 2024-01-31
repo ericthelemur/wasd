@@ -59,7 +59,9 @@ export class X32Utility extends TypedEmitter<X32Events> {
             listenTo("disconnect", (login, ack) => {
                 this._ignoreConnectionClosedEvents = true;
                 clearTimeout(this.connectionTimeout);
-                this.conn.close();
+                try {
+                    this.conn.close();
+                } catch (e) { log().error(e) }
                 if (ack && !ack.handled) ack();
             });
 
@@ -109,7 +111,9 @@ export class X32Utility extends TypedEmitter<X32Events> {
             this.connectionTimeout = setTimeout(() => {
                 if (this.status.value.connection === "connected" || this.status.value.connection == "connecting") {
                     log().info("[X32] Connection timed out");
-                    this.conn.close();
+                    try {
+                        this.conn.close();
+                    } catch (e) { log().error(e) }
                 }
             }, t ?? 5000);
         }
@@ -170,6 +174,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
         if (this._reconnectInterval || this.status.value.connection === "connected") return;
 
         if (this._ignoreConnectionClosedEvents) {
+            clearInterval(this._reconnectInterval);
             this.status.value.connection = "disconnected";
             return;
         }
