@@ -1,7 +1,8 @@
 import './cam.scss';
 
+import { it } from 'node:test';
 import { ListenerTypes as OBSMsgTypes } from 'nodecg-obs-control/src/common/listenerTypes';
-import { ObsSource, SceneList } from 'nodecg-obs-control/src/types/schemas';
+import { ObsSource, ObsTransform, SceneList } from 'nodecg-obs-control/src/types/schemas';
 import { CSSProperties, useContext, useEffect, useRef, useState } from 'react';
 import { useReplicant } from 'use-nodecg';
 
@@ -11,10 +12,29 @@ import { SceneInfoContext } from '../overlay.graphic';
 
 declare var nodecg: NodeCGAPIClient;
 
+function fd(a: number, b: number, e: number = 1) {
+    return Math.abs(a - b) < e;
+}
+
+function calculateTransform(ot: ObsTransform, t: { x: number, y: number, w: number, h: number }): Partial<ObsTransform> {
+    // Calculate scale to fill
+    const srcAspect = ot.sourceWidth / ot.sourceHeight;
+    const newW = Math.max(t.w, t.h * srcAspect);
+    const scale = newW / ot.sourceWidth;
+    const newH = newW / srcAspect;
+    // Calculate crop of excess
+    const cropX = (newW - t.w) / scale;
+    const cropY = (newH - t.h) / scale;
+    return {
+        positionX: t.x, positionY: t.y, scaleX: scale, scaleY: scale,
+        cropLeft: cropX / 2, cropRight: cropX / 2, cropTop: cropY / 2, cropBottom: cropY / 2
+    }
+}
+
 export function Camera({ camName, aspectRatio, dims, style }: { camName: string, aspectRatio: string, dims?: [number | string | null, number | string | null], style?: CSSProperties }) {
     const ref = useRef<HTMLDivElement>(null);
 
-    const [lastPos, setLastPos] = useState({ x: 0, y: 0, width: 0, height: 0 });
+    const [lastPos, setLastPos] = useState({ x: 0, y: 0, w: 0, h: 0 });
     const sceneInfo = useContext(SceneInfoContext);
 
     const [scenes,] = useReplicant<SceneList>("sceneList", [], { namespace: "nodecg-obs-control" });
@@ -41,14 +61,12 @@ export function Camera({ camName, aspectRatio, dims, style }: { camName: string,
     // Send updates to OBS when cameras move
     useEffect(() => {
         const interval = setInterval(() => {
-            console.log("poll", sceneSource);
             if (!sceneSource) return;
             const dims = ref.current!.getBoundingClientRect();
-            if (dims.x !== lastPos.x || dims.y !== lastPos.y || dims.width !== lastPos.width || dims.height !== lastPos.height) {
-                const newTransform = { x: dims.x, y: dims.y, height: dims.height, width: dims.width };
-                console.log(newTransform, lastPos);
-                setLastPos(newTransform);
-                console.log("Moving", camName, "to", newTransform);
+            if (!fd(dims.x, lastPos.x) || !fd(dims.y, lastPos.y) || !fd(dims.width, lastPos.w) || !fd(dims.height, lastPos.h)) {
+                const target = { x: dims.x, y: dims.y, w: dims.width, h: dims.height };
+                const newTransform = calculateTransform(sceneSource.sceneItemTransform, target);
+                setLastPos(target);
                 nodecg.sendMessageToBundle("moveItem", "nodecg-obs-control", { sceneName: sceneInfo.name, sceneItemId: sceneSource.sceneItemId, transform: newTransform } as OBSMsgTypes["moveItem"])
             }
         }, 1000);
