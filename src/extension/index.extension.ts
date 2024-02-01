@@ -6,4 +6,5 @@ module.exports = function (nodecg: NodeCG.ServerAPI) {
 
 	require("./replicants");
 	require("./listeners");
+	require("./countdown");
 };
