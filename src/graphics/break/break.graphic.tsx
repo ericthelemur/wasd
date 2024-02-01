@@ -6,6 +6,7 @@ import 'wasd-common/shared/custom.d';
 import { createRoot } from 'react-dom/client';
 
 import { CountdownComp } from './components/countdown';
+import { CurrentSong } from './components/song';
 
 function VR() {
     return <div style={{ height: "100%", width: "var(--bw)", backgroundColor: "white" }} />
@@ -15,6 +16,7 @@ export function Break() {
     return <div className='break h-100 d-flex h1'>
         <div className="sidebar">
             <CountdownComp />
+            <CurrentSong />
         </div>
         <VR />
         <div className="main"></div>

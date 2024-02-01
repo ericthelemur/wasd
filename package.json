@@ -94,6 +94,7 @@
     "nodecg-people-control": "1.0.0",
     "nodecg-dono-control": "1.0.0",
     "nodecg-obs-control": "1.0.0",
+    "ncg-spotify": "1.0.0",
     "speedcontrol-util": "^0.6.1"
   },
   "devDependencies": {
