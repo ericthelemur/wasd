@@ -1,3 +1,5 @@
+import './countdown.scss';
+
 import { Countdown } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
@@ -9,8 +11,8 @@ import { useReplicant } from 'use-nodecg';
 export function CountdownComp() {
     const [countdown,] = useReplicant<Countdown>("countdown", { "display": "00:00", "state": "paused", msg: "Back Soon" });
     if (!countdown) return null;
-    return <div className="countdown">
+    return <div className="countdown fw-semibold">
         <div className="msg">{countdown.msg}</div>
-        <div className="time">{countdown.display}</div>
+        <div className="time tabnum">{countdown.display}</div>
     </div>
 }

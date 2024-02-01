@@ -12,12 +12,12 @@ function VR() {
 }
 
 export function Break() {
-    return <div className='break h-100 d-flex'>
-        <div className="sidebar" style={{ flexGrow: 1, backgroundColor: "red" }}>
+    return <div className='break h-100 d-flex h1'>
+        <div className="sidebar">
             <CountdownComp />
         </div>
         <VR />
-        <div className="main" style={{ flexGrow: 3, backgroundColor: "green" }}></div>
+        <div className="main"></div>
     </div>
 }
 
