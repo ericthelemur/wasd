@@ -86,15 +86,16 @@
     "react-css-transition-replace": "^5.0.1",
     "react-dom": "^18.2.0",
     "react-fitty": "^1.0.1",
+    "react-markdown": "^9.0.1",
     "react-textfit": "git+http://github.com/ericthelemur/react-textfit.git",
     "react-transition-group": "^4.4.5",
     "ts-node": "^10.9.1",
     "moment": "^2.30.0",
     "use-nodecg": "github:ericthelemur/use-nodecg",
     "nodecg-people-control": "1.0.0",
+    "nodecg-tiltify": "1.0.0",
     "nodecg-dono-control": "1.0.0",
     "nodecg-obs-control": "1.0.0",
-    "ncg-spotify": "1.0.0",
     "speedcontrol-util": "^0.6.1"
   },
   "devDependencies": {

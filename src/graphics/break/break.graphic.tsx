@@ -6,6 +6,7 @@ import 'wasd-common/shared/custom.d';
 import { createRoot } from 'react-dom/client';
 
 import { CountdownComp } from './components/countdown';
+import { Slides } from './components/slides';
 import { CurrentSong } from './components/song';
 
 function VR() {
@@ -19,7 +20,9 @@ export function Break() {
             <CurrentSong />
         </div>
         <VR />
-        <div className="main"></div>
+        <div className="main">
+            <Slides />
+        </div>
     </div>
 }
 

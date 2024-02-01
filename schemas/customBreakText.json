@@ -1,0 +1,5 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "string",
+  "default": "Started in 2016, Warwick's Awesome Speedruns and Demos (WASD) is the largest student-run speedrunning event in the UK. We've showcased a wide variety of games from nailbitingly difficult ones like Dark Souls III to living room favourites such as Mario Kart Wii and Splatoon 3. Even some crazy games, like Toy Story 2: Buzz Lightyear To The Rescue and Deathsmiles IIX Makai no Merry Christmas!\n\nThe event raises money for SpecialEffect, a charity which develops and provides assistive technology to help people with disabilities to play games. To date, we have raised over £9,000! Find more information at [warwickspeed.run](https://warwickspeed.run)."
+}
