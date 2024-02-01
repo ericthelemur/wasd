@@ -29,7 +29,7 @@ function CountdownForm() {
 	const [countdown,] = useReplicant<Countdown>("countdown", { "display": "00:00", "state": "paused", msg: "Back Soon" });
 	const timeElem = useRef<HTMLInputElement>(null);
 
-	if (!countdown) return;
+	if (!countdown) return null;
 	const running = countdown.state === "running";
 	const k = running ? { value: countdown.display } : { defaultValue: countdown.display }
 

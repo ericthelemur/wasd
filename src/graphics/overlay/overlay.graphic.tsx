@@ -39,7 +39,7 @@ function fetchFromParams(): URLParams {
 }
 
 function VR() {
-    return <div style={{ height: "100%", width: "var(--bw)", margin: "0 calc(-1 * var(--bw))", backgroundColor: "var(--bs-body-color)" }} />
+    return <div style={{ height: "100%", width: "var(--bw)", margin: "0 calc(-1 * var(--bw))", backgroundColor: "white" }} />
 }
 
 export const SceneInfoContext = createContext<SceneInfo>({ name: "Blank", run: null });
