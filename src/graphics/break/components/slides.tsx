@@ -45,7 +45,7 @@ function AboutComp({ custom }: PageArgs) {
     return <Markdown>{custom}</Markdown>
 }
 
-const pages = [AboutComp, MilestonesComp, PollsComp, TargetsComp, RewardComp];
+const pages = [AboutComp, MilestonesComp, PollsComp, TargetsComp];
 
 export function Slides() {
     const [index, setIndex] = useState(0);
@@ -59,23 +59,23 @@ export function Slides() {
     const [custom,] = useReplicant<CustomBreakText>("custom", "");
 
     const args = { total, milestones, polls, targets, rewards, custom };
-    console.log("args", args);
+    console.log(index, Func, "args", args);
 
-    // useEffect(() => {
-    //     const interval = setInterval(() => {
-    //         var newIndex = index + 1;
-    //         for (let i = 1; i < pages.length + 1; i++) {
-    //             newIndex = (index + i) % pages.length;
-    //             const NewFunc = pages[newIndex];
-    //             if (<NewFunc {...args} /> !== null) break;
-    //         }
-    //         setIndex(newIndex);
-    //         setFunc(pages[newIndex]);
-    //     }, 5000);
-    //     return () => clearInterval(interval);
-    // }, []);
+    useEffect(() => {
+        const interval = setInterval(() => {
+            var newIndex = index + 1;
+            for (let i = 1; i < pages.length + 1; i++) {
+                newIndex = (index + i) % pages.length;
+                const NewFunc = pages[newIndex];
+                if (<NewFunc {...args} /> !== null) break;
+            }
+            setIndex(newIndex);
+            setFunc(() => pages[newIndex]);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [index]);
 
     return <div className="m-3">
-        {<AboutComp {...args} />}
+        {<Func {...args} />}
     </div>
 }
