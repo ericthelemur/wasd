@@ -13,6 +13,15 @@
     "bundleDependencies": {
       "nodecg-ticker-control": "*"
     },
+    "dashboardPanels": [
+      {
+        "name": "countdown-control",
+        "title": "Countdown",
+        "width": 2,
+        "file": "countdown.dashboard.html",
+        "headerColor": "#525F78"
+      }
+    ],
     "graphics": [
       {
         "file": "bar/bar.graphic.html",

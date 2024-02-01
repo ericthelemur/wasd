@@ -1,8 +1,9 @@
-import { listenTo } from 'common/listeners';
 import { EventEmitter } from 'events';
 import { duration } from 'moment';
+import { Countdown } from 'types/schemas';
 
-import { getNodeCG } from './utils';
+import { listenTo } from '../common/listeners';
+import { getNodeCG, Replicant } from './utils';
 
 const nodecg = getNodeCG();
 
@@ -38,15 +39,15 @@ class CountdownTimer extends EventEmitter {
             throw new TypeError('Expected number');
         }
 
-        const mins = Math.ceil(ms / (1000 * 60));
-        return `${mins} mins`
+        // const mins = Math.ceil(ms / (1000 * 60));
+        // return `${mins} mins`
 
-        // const d = duration({ milliseconds: ms });
+        const d = duration({ milliseconds: ms });
 
-        // return [(d.hours() || null), d.minutes(), d.seconds()]
-        //     .filter(d => d !== null)
-        //     .map(d => String(d).padStart(2, '0'))
-        //     .join(':');
+        return [(d.hours() || null), d.minutes(), d.seconds()]
+            .filter(d => d !== null)
+            .map(d => String(d).padStart(2, '0'))
+            .join(':');
     }
 
     update() {
@@ -59,6 +60,7 @@ class CountdownTimer extends EventEmitter {
 
         if (this.remainingMs === 0) {
             clearInterval(this.interval);
+            this.remainingMs = 300000;
             this.state = 'ended';
             this.update();
         }
@@ -84,9 +86,9 @@ class CountdownTimer extends EventEmitter {
     }
 }
 
-const countdownRep = nodecg.Replicant('countdown');
+const countdownRep = Replicant<Countdown>('countdown');
 const instance = new CountdownTimer();
-instance.on('tick', (display, state) => { countdownRep.value = { display, state } });
+instance.on('tick', (display, state) => { countdownRep.value = { msg: countdownRep.value.msg, display, state } });
 instance.update(); //Broadcast paused state on startup
 
 listenTo("countdown.start", ({ timeStr }) => instance.start(timeStr));

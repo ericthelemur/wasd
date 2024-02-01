@@ -6,7 +6,8 @@
  */
 
 export interface Countdown {
-	display?: string;
-	state?: 'paused' | 'running' | 'ended';
+	display: string;
+	state: 'paused' | 'running' | 'ended';
+	msg: string;
 	[k: string]: unknown;
 }
