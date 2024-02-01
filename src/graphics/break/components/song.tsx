@@ -11,8 +11,8 @@ export function CurrentSong() {
     const [song,] = useReplicant<CurrentSong>("currentSong", { name: "", artist: "", albumArt: "", playing: false }, { namespace: "ncg-spotify" })
     if (!song || !song.playing) return null;
 
-    return <ReactCSSTransitionReplace key={song.name} transitionName="fade-wait" transitionEnterTimeout={1000} transitionLeaveTimeout={1000} className="song-outer">
-        <div className="song">
+    return <ReactCSSTransitionReplace transitionName="fade-wait" transitionEnterTimeout={1000} transitionLeaveTimeout={1000} className="song-outer">
+        <div key={song.name} className="song fw-semibold">
             <div className="art">
                 {song.albumArt && <img src={song.albumArt} />}
             </div>

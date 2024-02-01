@@ -49,24 +49,34 @@
     }
 }
 
+:root {
+    --anim-time: 0.3s;
+    --anim-delay: 0.05s;
+}
+
 
 .fade-wait-leave {
     opacity: 1;
+    transform: translateX(0);
 }
 
 .fade-wait-leave.fade-wait-leave-active {
     opacity: 0;
-    transition: opacity 0.4s ease-in;
+    transform: translateX(-100%);
+    transition: opacity var(--anim-time) ease-in, transform var(--anim-time) linear;
 }
 
 .fade-wait-enter {
     opacity: 0;
+    transform: translateX(100%);
 }
 
 .fade-wait-enter.fade-wait-enter-active {
     opacity: 1;
-    /* Delay the enter animation until the leave completes */
-    transition: opacity 0.4s ease-in 0.6s;
+    transform: translateX(0);
+    transition:
+        opacity var(--anim-time) ease-in calc(var(--anim-time) + var(--anim-delay)),
+        transform var(--anim-time) linear calc(var(--anim-time) + var(--anim-delay));
 }
 
 .fade-wait-height {
