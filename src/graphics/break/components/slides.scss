@@ -1,0 +1,31 @@
+.card {
+    border-color: white;
+    color: white;
+    padding: 0.3em;
+    padding-bottom: 0.35em;
+}
+
+*,
+h1,
+h2,
+h3,
+h4,
+h5 {
+    font-weight: bold;
+}
+
+h2 {
+    font-size: 1.5em;
+}
+
+*:last-child {
+    margin-bottom: 0;
+}
+
+.main {
+    text-align: center;
+}
+
+.next-run {
+    font-size: 1em;
+}

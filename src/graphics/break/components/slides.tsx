@@ -1,3 +1,6 @@
+// import 'nodecg-dono-control/src/dashboard/reader/reader.graphic.css';
+import './slides.scss';
+
 import Markdown from 'markdown-to-jsx';
 import {
     findMilestones, MilestoneCard, PollCard, RewardCard, TargetCard
@@ -49,32 +52,48 @@ function RewardComp({ rewards }: PageArgs) {
     return <>{sortMapSingle(rewards, t => Number(t.highlighted), r => <RewardCard key={r.id} reward={r} />)}</>
 }
 
+function MarkdownPage({ md }: { md?: string }) {
+    if (!md) return null;
+    return <Textfit max={32} className="h-100"><Markdown>{md}</Markdown></Textfit>
+}
+
 function AboutComp({ custom }: PageArgs) {
-    if (!custom || !custom.about) return null;
-    return <Textfit max={32} className="h-100"><Markdown>{custom.about}</Markdown></Textfit>
+    if (!custom) return null;
+    return <MarkdownPage md={custom.about} />
 }
 
 
 function CharityComp({ custom }: PageArgs) {
-    if (!custom || !custom.charity) return null;
-    return <Textfit max={32} className="h-100"><Markdown>{custom.charity}</Markdown></Textfit>
+    if (!custom) return null;
+    return <MarkdownPage md={custom.charity} />
 }
 
+function formatDuration(durMS: number) {
+    const totalMins = durMS / (60);
+    const mins = Math.floor(totalMins % 60);
+    const hrs = Math.floor(totalMins / 60);
+    console.log(durMS, totalMins, mins, hrs);
+    if (hrs <= 0 && mins <= 2) return "now!"
+    return hrs ? `${hrs} hour${hrs !== 1 ? "s" : ""}` : `${mins} min${mins !== 1 ? "s" : ""}`;
+}
 
 function RunCard({ run }: { run: RunData }) {
     if (!run) return null;
 
-    const info = [run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. "), run.category, run.system, run.release].filter(v => v);
+    const runners = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
+    const info = [runners, run.estimate?.replace(/:?0*$/, ""), run.category, run.system, run.release].filter(v => v);
 
     const date = new Date(run.scheduled!);
-    const dateStr = date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: true });
+    const dateStr = date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", hour12: true });
+    // console.log("now", Date.now(), new Date(run.scheduled!), Date.now() - new Date(run.scheduled!).getUTCMilliseconds())
+    // const durStr = formatDuration(Date.now() - 1000 * new Date(run.scheduled!).getUTCMilliseconds());
 
     return <Card key={run.id}>
         <Card.Body>
             <div className="game">
                 <h2>
                     {run.game} at {dateStr}
-                    <div style={{ marginTop: 3, fontSize: "60%" }}>{info.join(" / ")}</div>
+                    <div style={{ marginTop: 3, fontSize: "0.6em", lineHeight: 1 }}>{info.join(" / ")}</div>
                 </h2>
             </div>
         </Card.Body>
@@ -137,7 +156,7 @@ export function Slides() {
     const runId = runDataActiveRunSurrounding?.next;
     const run = runDataArray && runId ? runDataArray.find(r => r.id === runId) : undefined;
     console.log("rid", runId, run);
-    return <div className="p-5 w-100 h-100 d-flex flex-column">
+    return <div className="p-5 w-100 h-100 d-flex flex-column next-run">
         <div>
             <h1>{run ? "Up Next:" : "That's It!"}</h1>
             {run ? <RunCard run={run} /> : "Thanks for watching! Tune back in next year:\nSame Bat Time, same Bat Channel"}
