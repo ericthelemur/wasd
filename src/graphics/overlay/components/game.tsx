@@ -5,7 +5,7 @@ import { useReplicant } from 'use-nodecg';
 
 import { NodeCGAPIClient } from '@nodecg/types/client/api/api.client';
 
-import { SceneInfoContext } from '../overlay.graphic';
+import { SceneInfoContext } from './cam';
 import { FittingText } from './FittingText';
 
 declare var nodecg: NodeCGAPIClient;

@@ -8,7 +8,7 @@ import { RunData } from 'speedcontrol-util/types/speedcontrol';
 import { SceneData, SceneInfo } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
-import { Camera } from './components/cam';
+import { Camera, SceneInfoContext } from './components/cam';
 import { Game, TimerComp } from './components/game';
 import { Sidebar } from './components/sidebar';
 
@@ -41,8 +41,6 @@ function fetchFromParams(): URLParams {
 function VR() {
     return <div style={{ height: "100%", width: "var(--bw)", margin: "0 calc(-1 * var(--bw))", backgroundColor: "white" }} />
 }
-
-export const SceneInfoContext = createContext<SceneInfo>({ name: "Blank", run: null });
 
 function Overlay({ aspect }: { aspect: [number, number] }) {
     const sceneInfo = useContext(SceneInfoContext);

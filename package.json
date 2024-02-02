@@ -60,7 +60,13 @@
         "singleInstance": true
       },
       {
-        "file": "break/break.graphic.html",
+        "file": "break/BREAK.html",
+        "width": 1920,
+        "height": 1010,
+        "singleInstance": false
+      },
+      {
+        "file": "overlay/COMMS.html",
         "width": 1920,
         "height": 1010,
         "singleInstance": false

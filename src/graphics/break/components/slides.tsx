@@ -160,7 +160,20 @@ function HR() {
     return <div style={{ width: "100%", height: "var(--bw)", backgroundColor: "white" }} />
 }
 
-export function Slides() {
+export function UpNext({ className }: { className?: string }) {
+    const [runDataArray,] = useReplicant<RunDataArray>("runDataArray", [], { namespace: "nodecg-speedcontrol" });
+    const [runDataActiveRunSurrounding,] = useReplicant<RunDataActiveRunSurrounding>("runDataActiveRunSurrounding", { previous: undefined, current: undefined, next: undefined }, { namespace: "nodecg-speedcontrol" });
+
+    const runId = runDataActiveRunSurrounding?.next;
+    const run = runDataArray && runId ? runDataArray.find(r => r.id === runId) : undefined;
+
+    return <div className="text-center">
+        <h1 className="fw-bold">{run ? "Up Next:" : "That's It!"}</h1>
+        {run ? <RunCard run={run} /> : "Thanks for watching! Tune back in next year"}
+    </div>
+}
+
+export function Slides({ side }: { side?: boolean }) {
     const [index, setIndex] = useState(0);
     const [Func, setFunc] = useState<PageComp>(() => AboutComp);
 
@@ -192,18 +205,14 @@ export function Slides() {
         return () => clearInterval(interval);
     }, [index, total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding]);
 
-    const runId = runDataActiveRunSurrounding?.next;
-    const run = runDataArray && runId ? runDataArray.find(r => r.id === runId) : undefined;
-
-    const page = <Func {...args} />;
-    console.log("PAGE", page);
+    const page = <Func {...args} />
     return <div className="w-100 h-100 d-flex flex-column next-run">
-        <div className="p-5">
-            <h3>{run ? "Up Next:" : "That's It!"}</h3>
-            {run ? <RunCard run={run} /> : "Thanks for watching! Tune back in next year:\nSame Bat Time, same Bat Channel"}
+        {!side && <><div className="p-5">
+            <UpNext />
         </div>
-        <HR />
-        <div className="p-5 vstack fb">
+            <HR />
+        </>}
+        <div className={"vstack fb " + (side ? "ps-5" : "p-5")}>
             {page}
         </div>
     </div >

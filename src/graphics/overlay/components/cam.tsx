@@ -3,12 +3,13 @@ import './cam.scss';
 import { it } from 'node:test';
 import { ListenerTypes as OBSMsgTypes } from 'nodecg-obs-control/src/common/listenerTypes';
 import { ObsSource, ObsTransform, SceneList } from 'nodecg-obs-control/src/types/schemas';
-import { CSSProperties, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, CSSProperties, useContext, useEffect, useRef, useState } from 'react';
+import { SceneInfo } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
 import { NodeCGAPIClient } from '@nodecg/types/client/api/api.client';
 
-import { SceneInfoContext } from '../overlay.graphic';
+export const SceneInfoContext = createContext<SceneInfo>({ name: "Blank", run: null });
 
 declare var nodecg: NodeCGAPIClient;
 

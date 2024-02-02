@@ -1,7 +1,6 @@
 import { useContext } from 'react';
 
-import { SceneInfoContext } from '../overlay.graphic';
-import { Camera } from './cam';
+import { Camera, SceneInfoContext } from './cam';
 import { Game, TimerComp } from './game';
 import { People } from './people';
 

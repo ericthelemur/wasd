@@ -33,6 +33,11 @@ h3 {
     justify-content: space-between;
 }
 
+.comms .upcoming {
+    justify-content: start;
+    gap: 1em;
+}
+
 .progress-custom {
     border-width: var(--bw) !important;
     margin-top: 0.25em !important;
