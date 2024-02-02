@@ -5,15 +5,25 @@
     padding-bottom: 0.35em;
     border-width: var(--bw);
     border-radius: 15px;
+    flex-grow: 0 !important;
+    font-size: 0.9em;
 }
 
 h2 {
     font-size: 1.5em;
+    font-weight: bold;
 }
 
-*:last-child {
-    margin-bottom: 0;
+h3 {
+    font-size: 1.2em;
+    font-weight: bold;
 }
+
+.h5 {
+    font-size: 1em;
+    font-weight: bold;
+}
+
 
 .main {
     text-align: center;
@@ -21,4 +31,26 @@ h2 {
 
 .upcoming {
     justify-content: space-between;
+}
+
+.progress-custom {
+    border-width: var(--bw) !important;
+    margin-top: 0.25em !important;
+    border-color: white !important;
+    color: white !important;
+
+    --col2: var(--bs-success-border-subtle) !important;
+}
+
+.border-success {
+    border-color: var(--bs-success) !important;
+    color: #a3cfbb !important;
+}
+
+.poll .text-body-tertiary {
+    font-weight: 500;
+}
+
+.fb {
+    flex: 1 1 0;
 }

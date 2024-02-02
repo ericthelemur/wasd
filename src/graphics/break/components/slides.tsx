@@ -1,4 +1,4 @@
-// import 'nodecg-dono-control/src/dashboard/reader/reader.graphic.css';
+import 'nodecg-dono-control/src/dashboard/reader/reader.graphic.css';
 import './slides.scss';
 
 import Markdown from 'markdown-to-jsx';
@@ -32,40 +32,63 @@ type PageComp = (a: PageArgs) => JSX.Element | null;
 
 function MilestonesComp({ milestones, total }: PageArgs) {
     if (!milestones || total === undefined) return null;
-    const chosen = findMilestones(milestones, total, 4);
+    const chosen = findMilestones(milestones, total, 3);
     if (!chosen) return null;
-    return <>{chosen.map(m => <MilestoneCard milestone={m} total={total} />)}</>;
+    return <>
+        <h3>Donation Milestones:</h3>
+        <div className="upcoming vstack fb">
+            {chosen.map(m => <MilestoneCard key={m.id} milestone={m} total={total} />)}
+        </div>
+    </>
 }
 
 function PollsComp({ polls }: PageArgs) {
     if (!polls) return null;
-    return <>{sortMapSingle(polls, t => Number(t.amount_raised.value), p => <PollCard key={p.id} poll={p} />, true, 4)}</>;
+    return <>
+        <h3>Donation Polls:</h3>
+        <div className="upcoming vstack fb">
+            {sortMapSingle(polls, t => Number(t.amount_raised.value), p => <PollCard key={p.id} poll={p} />, true, 2)}
+        </div>
+    </>
 }
 
 function TargetsComp({ targets }: PageArgs) {
     if (!targets) return null;
-    return <>{sortMapSingle(targets, t => Number(t.amount_raised.value), t => <TargetCard key={t.id} target={t} />, true, 4)}</>;
+    return <>
+        <h3>Donation Targets:</h3>
+        <div className="upcoming vstack fb">
+            {sortMapSingle(targets, t => Number(t.amount_raised.value) - 0.1 * Number(t.amount.value), t => <TargetCard key={t.id} target={t} />, false, 3)}
+        </div>
+    </>
 }
 
 function RewardComp({ rewards }: PageArgs) {
     if (!rewards) return null;
-    return <>{sortMapSingle(rewards, t => Number(t.highlighted), r => <RewardCard key={r.id} reward={r} />)}</>
+    return <>
+        <h3>Donation Rewards:</h3>
+        <div className="upcoming vstack fb">
+            {sortMapSingle(rewards, t => Number(t.highlighted), r => <RewardCard key={r.id} reward={r} />, false, 3)}
+        </div>
+    </>
 }
 
-function MarkdownPage({ md }: { md?: string }) {
+function MarkdownPage({ md, title }: { md?: string, title?: string }) {
     if (!md) return null;
-    return <Textfit max={40} className="h-100"><Markdown>{md}</Markdown></Textfit>
+    return <>
+        <h3>{title}</h3>
+        <Textfit max={40} className="h-100"><Markdown>{md}</Markdown></Textfit>
+    </>
 }
 
 function AboutComp({ custom }: PageArgs) {
     if (!custom) return null;
-    return MarkdownPage({ md: custom.about });
+    return MarkdownPage({ md: custom.about, title: "About WASD" });
 }
 
 
 function CharityComp({ custom }: PageArgs) {
     if (!custom) return null;
-    return MarkdownPage({ md: custom.charity });
+    return MarkdownPage({ md: custom.charity, title: "SpecialEffect" });
 }
 
 function formatDuration(durMS: number) {
@@ -122,11 +145,16 @@ function RunsComp({ runDataArray, runDataActiveRunSurrounding }: PageArgs) {
 
     const nextRuns = getNextRuns(3);
     if (!nextRuns) return null;
-    return <div className="upcoming vstack h-100">{nextRuns.map(r => <RunCard run={r} />)}</div>
+    return <>
+        <h3>Coming Up Later:</h3>
+        <div className="upcoming vstack fb">
+            {nextRuns.map(r => <RunCard run={r} />)}
+        </div>
+    </>
 }
 
-// const pages = [AboutComp, MilestonesComp, RunsComp, PollsComp, TargetsComp, RunsComp];
-const pages = [AboutComp, CharityComp, RunsComp];
+// const pages = [AboutComp, MilestonesComp, RunsComp, CharityComp, PollsComp, TargetsComp, RunsComp];
+const pages = [PollsComp];
 
 function HR() {
     return <div style={{ width: "100%", height: "var(--bw)", backgroundColor: "white" }} />
@@ -171,11 +199,11 @@ export function Slides() {
     console.log("PAGE", page);
     return <div className="w-100 h-100 d-flex flex-column next-run">
         <div className="p-5">
-            <h1 className="fw-bold">{run ? "Up Next:" : "That's It!"}</h1>
+            <h3>{run ? "Up Next:" : "That's It!"}</h3>
             {run ? <RunCard run={run} /> : "Thanks for watching! Tune back in next year:\nSame Bat Time, same Bat Channel"}
         </div>
         <HR />
-        <div className="p-5" style={{ flex: "1 1 0" }}>
+        <div className="p-5 vstack fb">
             {page}
         </div>
     </div >
