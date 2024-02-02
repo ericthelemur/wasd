@@ -1,12 +1,19 @@
+import Markdown from 'markdown-to-jsx';
 import {
     findMilestones, MilestoneCard, PollCard, RewardCard, TargetCard
 } from 'nodecg-dono-control/src/dashboard/reader/components/incentives';
 import { sortMapSingle } from 'nodecg-dono-control/src/dashboard/reader/utils';
 import { Milestones, Polls, Rewards, Targets, Total } from 'nodecg-tiltify/src/types/schemas';
 import React, { useEffect, useState } from 'react';
-import Markdown from 'react-markdown';
+import Card from 'react-bootstrap/Card';
+import { Textfit } from 'react-textfit';
+import { RunData, RunDataActiveRun, RunDataArray } from 'speedcontrol-util/types/speedcontrol';
+import { RunDataActiveRunSurrounding } from 'speedcontrol-util/types/speedcontrol/schemas';
 import { CustomBreakText } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
+
+import SpecialEffect from '../../assets/specialeffect-white.png';
+import WASDKeys from '../../assets/wasd-keys.svg';
 
 interface PageArgs {
     total?: Total;
@@ -15,6 +22,8 @@ interface PageArgs {
     targets?: Targets;
     rewards?: Rewards;
     custom?: CustomBreakText;
+    runDataActiveRunSurrounding?: RunDataActiveRunSurrounding;
+    runDataArray?: RunDataArray;
 }
 type PageComp = (a: PageArgs) => JSX.Element | null;
 
@@ -41,11 +50,58 @@ function RewardComp({ rewards }: PageArgs) {
 }
 
 function AboutComp({ custom }: PageArgs) {
-    if (!custom) return null;
-    return <Markdown>{custom}</Markdown>
+    if (!custom || !custom.about) return null;
+    return <Textfit max={32} className="h-100"><Markdown>{custom.about}</Markdown></Textfit>
 }
 
-const pages = [AboutComp, MilestonesComp, PollsComp, TargetsComp];
+
+function CharityComp({ custom }: PageArgs) {
+    if (!custom || !custom.charity) return null;
+    return <Textfit max={32} className="h-100"><Markdown>{custom.charity}</Markdown></Textfit>
+}
+
+
+function RunCard({ run }: { run: RunData }) {
+    if (!run) return null;
+
+    const info = [run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. "), run.category, run.system, run.release].filter(v => v);
+
+    const date = new Date(run.scheduled!);
+    const dateStr = date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: true });
+
+    return <Card key={run.id}>
+        <Card.Body>
+            <div className="game">
+                <h2>
+                    {run.game} at {dateStr}
+                    <div style={{ marginTop: 3, fontSize: "60%" }}>{info.join(" / ")}</div>
+                </h2>
+            </div>
+        </Card.Body>
+    </Card>
+}
+
+function RunsComp({ runDataArray, runDataActiveRunSurrounding }: PageArgs) {
+    if (!runDataArray || !runDataActiveRunSurrounding) return null;
+
+    function findRunIndex(arg?: RunData | string | null): number {
+        let runId = arg;
+        if (arg && typeof arg !== 'string') runId = arg.id;
+        return runDataArray!.findIndex((run) => run.id === runId);
+    }
+
+    function getNextRuns(amount = 4, run?: RunData | null): RunData[] {
+        const nextRun = runDataActiveRunSurrounding ? runDataActiveRunSurrounding.next : undefined;
+        let runIndex = findRunIndex(run || nextRun);
+        runIndex = (run) ? runIndex += 1 : runIndex;
+        return runDataArray!.slice(runIndex, runIndex + amount);
+    }
+
+    return <>{getNextRuns().map(r => <RunCard run={r} />)}</>
+}
+
+// const pages = [AboutComp, MilestonesComp, RunsComp, PollsComp, TargetsComp, RunsComp];
+const pages = [AboutComp, CharityComp];
 
 export function Slides() {
     const [index, setIndex] = useState(0);
@@ -56,11 +112,14 @@ export function Slides() {
     const [polls,] = useReplicant<Polls>("polls", [], { namespace: "nodecg-tiltify" });
     const [targets,] = useReplicant<Targets>("targets", [], { namespace: "nodecg-tiltify" });
     const [rewards,] = useReplicant<Rewards>("rewards", [], { namespace: "nodecg-tiltify" });
-    const [custom,] = useReplicant<CustomBreakText>("custom", "");
+    const [runDataArray,] = useReplicant<RunDataArray>("runDataArray", [], { namespace: "nodecg-speedcontrol" });
+    const [runDataActiveRunSurrounding,] = useReplicant<RunDataActiveRunSurrounding>("runDataActiveRunSurrounding", { previous: undefined, current: undefined, next: undefined }, { namespace: "nodecg-speedcontrol" });
+    const [custom,] = useReplicant<CustomBreakText>("customBreakText", {});
 
-    const args = { total, milestones, polls, targets, rewards, custom };
-    console.log(index, Func, "args", args);
+    const args = { total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding };
+    console.log(custom);
 
+    // Rotate through pages
     useEffect(() => {
         const interval = setInterval(() => {
             var newIndex = index + 1;
@@ -75,7 +134,17 @@ export function Slides() {
         return () => clearInterval(interval);
     }, [index]);
 
-    return <div className="m-3">
-        {<Func {...args} />}
-    </div>
+    const runId = runDataActiveRunSurrounding?.next;
+    const run = runDataArray && runId ? runDataArray.find(r => r.id === runId) : undefined;
+    console.log("rid", runId, run);
+    return <div className="p-5 w-100 h-100 d-flex flex-column">
+        <div>
+            <h1>{run ? "Up Next:" : "That's It!"}</h1>
+            {run ? <RunCard run={run} /> : "Thanks for watching! Tune back in next year:\nSame Bat Time, same Bat Channel"}
+        </div>
+        <hr />
+        <div style={{ flex: "1 1 0" }}>
+            {<Func {...args} />}
+        </div>
+    </div >
 }

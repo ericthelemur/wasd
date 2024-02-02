@@ -5,4 +5,8 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type CustomBreakText = string;
+export interface CustomBreakText {
+	about?: string;
+	charity?: string;
+	[k: string]: unknown;
+}

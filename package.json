@@ -86,7 +86,7 @@
     "react-css-transition-replace": "^5.0.1",
     "react-dom": "^18.2.0",
     "react-fitty": "^1.0.1",
-    "react-markdown": "^9.0.1",
+    "markdown-to-jsx": "^7.4.1",
     "react-textfit": "git+http://github.com/ericthelemur/react-textfit.git",
     "react-transition-group": "^4.4.5",
     "ts-node": "^10.9.1",

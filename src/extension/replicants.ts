@@ -13,4 +13,4 @@ const nodecg = getNodeCG();
 export const sc = new SpeedcontrolUtil(nodecg as unknown as NodeCGServer);
 
 export const sceneData = Replicant<SceneData>("sceneData");
-export const cusomBreakText = Replicant<CustomBreakText>("custom");
+export const cusomBreakText = Replicant<CustomBreakText>("customBreakText");
