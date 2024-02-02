@@ -30,6 +30,7 @@ function end_date(date: string | null) {
 }
 
 function dates(start: string | null, end: string | null) {
+    return null;
     const start_txt = start_date(start);
     if (start_txt) return start_txt;
     const end_txt = end_date(end);

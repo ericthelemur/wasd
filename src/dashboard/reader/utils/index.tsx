@@ -37,7 +37,8 @@ export function sortMap<T, U>(rep: T[] | undefined, comp: undefined | ((a: T, b:
     if (!rep) return [];
     const sorted = comp ? [...rep].sort(comp) : rep;
     const maybe_rev = rev ? sorted.reverse() : sorted;
-    return maybe_rev.slice(0, Math.min(maybe_rev.length, limit)).map(func);
+    const l = Math.min(maybe_rev.length, limit);
+    return maybe_rev.slice(0, l).map(func);
 }
 
 
@@ -47,5 +48,5 @@ function sorter<T>(f: (t: T) => any, rev: boolean = false) {
 }
 
 export function sortMapSingle<T, U>(rep: T[] | undefined, comp: (a: T) => number, func: (t: T) => U, rev: boolean = false, limit: number = 1e9) {
-    return sortMap(rep, sorter(comp, rev), func, rev);
+    return sortMap(rep, sorter(comp, rev), func, rev, limit);
 }
