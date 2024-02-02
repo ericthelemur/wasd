@@ -3,15 +3,8 @@
     color: white;
     padding: 0.3em;
     padding-bottom: 0.35em;
-}
-
-*,
-h1,
-h2,
-h3,
-h4,
-h5 {
-    font-weight: bold;
+    border-width: var(--bw);
+    border-radius: 15px;
 }
 
 h2 {
@@ -26,6 +19,6 @@ h2 {
     text-align: center;
 }
 
-.next-run {
-    font-size: 1em;
+.upcoming {
+    justify-content: space-between;
 }

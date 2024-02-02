@@ -54,18 +54,18 @@ function RewardComp({ rewards }: PageArgs) {
 
 function MarkdownPage({ md }: { md?: string }) {
     if (!md) return null;
-    return <Textfit max={32} className="h-100"><Markdown>{md}</Markdown></Textfit>
+    return <Textfit max={40} className="h-100"><Markdown>{md}</Markdown></Textfit>
 }
 
 function AboutComp({ custom }: PageArgs) {
     if (!custom) return null;
-    return <MarkdownPage md={custom.about} />
+    return MarkdownPage({ md: custom.about });
 }
 
 
 function CharityComp({ custom }: PageArgs) {
     if (!custom) return null;
-    return <MarkdownPage md={custom.charity} />
+    return MarkdownPage({ md: custom.charity });
 }
 
 function formatDuration(durMS: number) {
@@ -92,8 +92,12 @@ function RunCard({ run }: { run: RunData }) {
         <Card.Body>
             <div className="game">
                 <h2>
-                    {run.game} at {dateStr}
-                    <div style={{ marginTop: 3, fontSize: "0.6em", lineHeight: 1 }}>{info.join(" / ")}</div>
+                    <Textfit mode="single" max={60}>
+                        <span className="fw-bold">{run.game}</span>{" at "}<span className="fw-bold">{dateStr}</span>
+                    </Textfit>
+                    <Textfit mode="single" max={60}>
+                        <div style={{ marginTop: 3, fontSize: "0.6em", lineHeight: 1 }}>{info.join(" / ")}</div>
+                    </Textfit>
                 </h2>
             </div>
         </Card.Body>
@@ -109,18 +113,24 @@ function RunsComp({ runDataArray, runDataActiveRunSurrounding }: PageArgs) {
         return runDataArray!.findIndex((run) => run.id === runId);
     }
 
-    function getNextRuns(amount = 4, run?: RunData | null): RunData[] {
+    function getNextRuns(amount = 4) {
         const nextRun = runDataActiveRunSurrounding ? runDataActiveRunSurrounding.next : undefined;
-        let runIndex = findRunIndex(run || nextRun);
-        runIndex = (run) ? runIndex += 1 : runIndex;
-        return runDataArray!.slice(runIndex, runIndex + amount);
+        let runIndex = findRunIndex(nextRun);
+        if (runIndex > runDataArray!.length - 2) return null;
+        return runDataArray!.slice(runIndex + 1, runIndex + 1 + amount);
     }
 
-    return <>{getNextRuns().map(r => <RunCard run={r} />)}</>
+    const nextRuns = getNextRuns(3);
+    if (!nextRuns) return null;
+    return <div className="upcoming vstack h-100">{nextRuns.map(r => <RunCard run={r} />)}</div>
 }
 
 // const pages = [AboutComp, MilestonesComp, RunsComp, PollsComp, TargetsComp, RunsComp];
-const pages = [AboutComp, CharityComp];
+const pages = [AboutComp, CharityComp, RunsComp];
+
+function HR() {
+    return <div style={{ width: "100%", height: "var(--bw)", backgroundColor: "white" }} />
+}
 
 export function Slides() {
     const [index, setIndex] = useState(0);
@@ -136,34 +146,37 @@ export function Slides() {
     const [custom,] = useReplicant<CustomBreakText>("customBreakText", {});
 
     const args = { total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding };
-    console.log(custom);
 
     // Rotate through pages
     useEffect(() => {
         const interval = setInterval(() => {
-            var newIndex = index + 1;
+            const args = { total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding };
+            var newIndex = (index + 1) % pages.length;
             for (let i = 1; i < pages.length + 1; i++) {
                 newIndex = (index + i) % pages.length;
-                const NewFunc = pages[newIndex];
-                if (<NewFunc {...args} /> !== null) break;
+                const newFunc = pages[newIndex];
+                const result = newFunc(args);
+                if (result && result.props.children) break;
             }
             setIndex(newIndex);
             setFunc(() => pages[newIndex]);
         }, 5000);
         return () => clearInterval(interval);
-    }, [index]);
+    }, [index, total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding]);
 
     const runId = runDataActiveRunSurrounding?.next;
     const run = runDataArray && runId ? runDataArray.find(r => r.id === runId) : undefined;
-    console.log("rid", runId, run);
-    return <div className="p-5 w-100 h-100 d-flex flex-column next-run">
-        <div>
-            <h1>{run ? "Up Next:" : "That's It!"}</h1>
+
+    const page = <Func {...args} />;
+    console.log("PAGE", page);
+    return <div className="w-100 h-100 d-flex flex-column next-run">
+        <div className="p-5">
+            <h1 className="fw-bold">{run ? "Up Next:" : "That's It!"}</h1>
             {run ? <RunCard run={run} /> : "Thanks for watching! Tune back in next year:\nSame Bat Time, same Bat Channel"}
         </div>
-        <hr />
-        <div style={{ flex: "1 1 0" }}>
-            {<Func {...args} />}
+        <HR />
+        <div className="p-5" style={{ flex: "1 1 0" }}>
+            {page}
         </div>
     </div >
 }
