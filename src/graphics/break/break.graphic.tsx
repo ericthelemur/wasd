@@ -20,7 +20,7 @@ export function Break() {
             <CurrentSong />
         </div>
         <VR />
-        <div className="main">
+        <div className="main" style={{fontSize: "0.9em"}}>
             <Slides />
         </div>
     </div>

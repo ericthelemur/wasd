@@ -4,6 +4,9 @@ import { Camera, SceneInfoContext } from './cam';
 import { Game, TimerComp } from './game';
 import { People } from './people';
 
+import SpecialEffect from '../../assets/specialeffect-white.png';
+import WASDKeys from '../../assets/wasd-keys.svg';
+
 interface SidebarArgs extends React.HTMLAttributes<HTMLDivElement> {
     camWidth?: number | string;
     vertical?: boolean;
@@ -24,6 +27,7 @@ export function Sidebar(props: SidebarArgs) {
                     <People cat="commentators" />
                     <People cat="tech" />
                 </div>
+                <img src={SpecialEffect} style={{width: "90%"}} />
                 {vertical && <><Game vertical={vertical} /><TimerComp /></>}
             </div>
         </div>

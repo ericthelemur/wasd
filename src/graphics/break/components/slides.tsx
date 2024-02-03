@@ -15,9 +15,6 @@ import { RunDataActiveRunSurrounding } from 'speedcontrol-util/types/speedcontro
 import { CustomBreakText } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
-import SpecialEffect from '../../assets/specialeffect-white.png';
-import WASDKeys from '../../assets/wasd-keys.svg';
-
 interface PageArgs {
     total?: Total;
     milestones?: Milestones;
@@ -115,7 +112,7 @@ function RunCard({ run }: { run: RunData }) {
         <Card.Body>
             <div className="game">
                 <h2>
-                    <Textfit mode="single" max={60}>
+                    <Textfit mode="single" max={55}>
                         <span className="fw-bold">{run.game}</span>{" at "}<span className="fw-bold">{dateStr}</span>
                     </Textfit>
                     <Textfit mode="single" max={60}>
@@ -153,8 +150,8 @@ function RunsComp({ runDataArray, runDataActiveRunSurrounding }: PageArgs) {
     </>
 }
 
-// const pages = [AboutComp, MilestonesComp, RunsComp, CharityComp, PollsComp, TargetsComp, RunsComp];
-const pages = [PollsComp];
+const pages = [AboutComp, MilestonesComp, RunsComp, CharityComp, PollsComp, TargetsComp, RunsComp];
+// const pages = [PollsComp];
 
 function HR() {
     return <div style={{ width: "100%", height: "var(--bw)", backgroundColor: "white" }} />
@@ -212,7 +209,7 @@ export function Slides({ side }: { side?: boolean }) {
         </div>
             <HR />
         </>}
-        <div className={"vstack fb " + (side ? "ps-5" : "p-5")}>
+        <div className={"vstack fb " + (side ? "ps-5" : "p-5")} style={{fontSize: "0.9em"}}>
             {page}
         </div>
     </div >
