@@ -11,7 +11,7 @@ export interface Socials {
 }
 export interface Icon {
 	iconType: 'svg';
-	name: string;
+	name?: string;
 	icon: string;
 	[k: string]: unknown;
 }
