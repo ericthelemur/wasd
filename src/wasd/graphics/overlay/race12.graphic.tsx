@@ -1,6 +1,6 @@
 import 'wasd-common/shared/uwcs-bootstrap.css';
 import './overlay.graphic.scss';
-import "./components/people.scss";
+import './components/people.scss';
 
 import clone from 'clone';
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -56,16 +56,16 @@ function Overlay({ aspect }: { aspect: [number, number] }) {
                 <Camera camName="GAME-2" aspectRatio={`${aspect[0]} / ${aspect[1]}`} />
             </div>
         </div>
-        <div style={{position: "absolute", bottom: 0, height: "calc(287px + var(--bw))", left: 0, right: 0}} className="d-flex flex-row">
-            <div style={{aspectRatio: "4 / 3", height: "100%"}}>
+        <div style={{ position: "absolute", bottom: 0, height: "calc(287px + var(--bw))", left: 0, right: 0 }} className="d-flex flex-row">
+            <div style={{ aspectRatio: "4 / 3", height: "100%" }}>
                 <Camera camName="CAM-1" aspectRatio="4 / 3" />
             </div>
-            <div className="d-flex vcentre mx-4 my-2 gap-3"  style={{flex: "1 1 0"}}>
-                    <Game />
-                    <div style={{ width: 10 }}/>
-                    <TimerComp />
+            <div className="d-flex vcentre mx-4 my-2 gap-3" style={{ flex: "1 1 0" }}>
+                <Game />
+                <div style={{ width: 10 }} />
+                <TimerComp />
             </div>
-            <div style={{aspectRatio: "4 / 3", height: "100%"}}>
+            <div style={{ aspectRatio: "4 / 3", height: "100%" }}>
                 <Camera camName="CAM-2" aspectRatio="4 / 3" />
             </div>
         </div>
