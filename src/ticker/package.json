@@ -30,6 +30,7 @@
     "dev": "concurrently --kill-others \"npm run watch -- --types\" \"npm run watch -- --browser\" \"npm run nodemon\""
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.1.0",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-bootstrap": "^2.9.1",
@@ -52,10 +53,10 @@
     "@types/react-dom": "^18.2.0",
     "@types/react-textfit": "^1.1.4",
     "concurrently": "*",
+    "cross-env": "*",
     "nodemon": "*",
     "trash-cli": "*",
-    "typescript": "^5.1.3",
-    "cross-env": "*"
+    "typescript": "^5.1.3"
   },
   "license": "MIT"
 }
