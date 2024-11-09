@@ -1,0 +1,57 @@
+{
+  "name": "nodecg-people-control",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "",
+  "author": {
+    "name": "ericthelemur",
+    "email": "owenconnors1@gmail.com",
+    "url": ""
+  },
+  "nodecg": {
+    "compatibleRange": "^2.0.0",
+    "dashboardPanels": [
+      {
+        "name": "people-control",
+        "title": "People Control",
+        "width": 4,
+        "file": "people.dashboard.html",
+        "headerColor": "#525F78"
+      }
+    ]
+  },
+  "scripts": {
+    "start": "cd .. && npm run start",
+    "build": "cross-env-shell node ../wasd-common/shared/scripts/build.mjs $npm_package_name",
+    "watch": "npm run build -- --watch",
+    "clean": "npm run build -- --clean-only",
+    "types": "nodecg schema-types",
+    "nodemon": "nodemon --config ../wasd-common/shared/nodemon.json",
+    "dev": "concurrently --kill-others \"npm run watch -- --types\" \"npm run watch -- --browser\" \"npm run nodemon\""
+  },
+  "dependencies": {
+    "clone": "^2.1.2",
+    "get-current-line": "^7.4.0",
+    "react": "^18.2.0",
+    "react-beautiful-dnd": "^13.1.1",
+    "react-bootstrap": "^2.9.1",
+    "react-bootstrap-icons": "^1.10.3",
+    "react-contenteditable": "^3.3.7",
+    "react-dom": "^18.2.0",
+    "ts-node": "^10.9.1",
+    "use-nodecg": "github:ericthelemur/use-nodecg",
+    "speedcontrol-util": "^0.6.1"
+  },
+  "devDependencies": {
+    "@nodecg/types": "^2.0.0",
+    "@types/clone": "^2.1.4",
+    "@types/node": "^18",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "concurrently": "*",
+    "nodemon": "*",
+    "typescript": "^5.1.3",
+    "cross-env": "*"
+  },
+  "license": "MIT"
+}
