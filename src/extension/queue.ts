@@ -1,6 +1,7 @@
 import type NodeCG from '@nodecg/types';
-import { MsgRef, Message } from 'types/schemas';
-import { current, pools, bank, queue } from "./replicants";
+import { Message, MsgRef } from 'types/schemas';
+
+import { bank, current, pools, queue } from './replicants';
 import { getNodeCG } from './utils';
 
 const QUEUE_LEN = 12;
@@ -44,7 +45,7 @@ queue.on("change", (val) => {
         const dispTime = Date.now() + DISPLAY_TIME * (val.msgs.length + 1);
         const next = pickNext(dispTime);
         if (next) {
-            nodecg.log.info("Queueing", next);
+            // nodecg.log.debug("Queueing", next);
             val.msgs.push({ id: next.id, time: Date.now() })
         }
     }
@@ -64,7 +65,7 @@ bank.on("change", (val) => {
 
 var interval: NodeJS.Timeout;
 function playNext() {
-    nodecg.log.info("Moving to next donation");
+    // nodecg.log.debug("Moving to next donation");
     if (queue.value.msgs) {
         const newRef = queue.value.msgs[0];
         if (!newRef) return nodecg.log.warn("Reading null value on queue");

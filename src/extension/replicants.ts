@@ -1,6 +1,8 @@
-import NodeCG from "@nodecg/types";
-import { getNodeCG } from "./utils";
-import { Bank, Pools, Queue, Current } from "types/schemas";
+import { Bank, Current, Pools, Queue } from 'types/schemas';
+
+import NodeCG from '@nodecg/types';
+
+import { getNodeCG } from './utils';
 
 const nodecg = getNodeCG();
 export const bank = nodecg.Replicant("bank") as unknown as NodeCG.ServerReplicantWithSchemaDefault<Bank>;

@@ -1,10 +1,9 @@
-import { getNodeCG } from "./utils";
-import { current, pools, bank, queue } from "./replicants";
+import { Message, MsgRef, Pool, Queue } from 'types/schemas';
 
-import { Pool, Queue, MsgRef, Message } from "types/schemas";
-import NodeCG from "@nodecg/types";
-import { listenTo, sendError } from "../common/listeners";
-import type * as LT from "../common/listenerTypes";
+import { listenTo, sendError } from '../common/listeners';
+import { bank, current, pools, queue } from './replicants';
+import { getNodeCG } from './utils';
+
 const nodecg = getNodeCG();
 
 // Utilities
@@ -54,7 +53,7 @@ function removeFromPool(ref: MsgRef | string, pool: Pool) {
     return rem;
 }
 
-function addToPool(ref: MsgRef, pool: Pool, before: MsgRef | null) {
+function addToPool(ref: MsgRef, pool: Pool, before: MsgRef | null): boolean {
     if (before === null) pool.msgs.push(ref);
     else {
         const dstIndex = findQueueMsgRefIndex(pool, before);
