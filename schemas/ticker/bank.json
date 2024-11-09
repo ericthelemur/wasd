@@ -1,0 +1,25 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "additionalProperties": {
+        "$ref": "components/message.json"
+    },
+    "default": {
+        "wasd": {
+            "text": "Warwick's Awesome Speedruns & Demos 2024",
+            "priority": 1
+        },
+        "donate": {
+            "text": "Donate now at warwickspeed.run/donate",
+            "priority": 1
+        },
+        "schedule": {
+            "text": "See the full schedule at warwickspeed.run/schedule",
+            "priority": 1
+        },
+        "specialeffect": {
+            "text": "WASD 2024 is raising money for SpecialEffect",
+            "priority": 1
+        }
+    }
+}

@@ -1,0 +1,28 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "priority": {
+            "type": "number"
+        },
+        "msgs": {
+            "type": "array",
+            "items": {
+                "$ref": "msgRef.json"
+            }
+        }
+    },
+    "required": [
+        "name",
+        "priority",
+        "msgs"
+    ],
+    "default": {
+        "name": "New",
+        "priority": 0,
+        "msgs": []
+    }
+}

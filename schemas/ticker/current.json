@@ -1,0 +1,41 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "text": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "msgID": {
+            "oneOf": [
+                {
+                    "$ref": "components/msgID.json"
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "endTime": {
+            "type": "number"
+        },
+        "time": {
+            "type": "number"
+        },
+        "pause": {
+            "type": "boolean"
+        }
+    },
+    "required": [
+        "text",
+        "msgID",
+        "endTime"
+    ],
+    "default": {
+        "text": null,
+        "msgID": null,
+        "endTime": 0
+    }
+}

@@ -1,0 +1,32 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "additionalProperties": {
+        "$ref": "components/pool.json"
+    },
+    "default": {
+        "base": {
+            "name": "Base",
+            "priority": 1,
+            "msgs": [
+                {
+                    "id": "wasd"
+                },
+                {
+                    "id": "donate"
+                },
+                {
+                    "id": "schedule"
+                },
+                {
+                    "id": "specialeffect"
+                }
+            ]
+        },
+        "archive": {
+            "name": "Archive",
+            "priority": 0,
+            "msgs": []
+        }
+    }
+}
