@@ -1,9 +1,9 @@
+import { getNodeCG } from 'common/utils';
 import SpeedcontrolUtil from 'speedcontrol-util';
 import { NodeCGServer } from 'speedcontrol-util/types/nodecg/lib/nodecg-instance';
 
 import { listenTo } from '../common/listeners';
 import { people, peopleBank } from './replicants';
-import { getNodeCG } from './utils';
 
 const nodecg = getNodeCG();
 

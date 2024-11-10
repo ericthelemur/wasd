@@ -1,9 +1,9 @@
+import { getNodeCG, Replicant } from 'common/utils';
 import { EventEmitter } from 'events';
 import { duration } from 'moment';
 import { Countdown } from 'types/schemas';
 
 import { listenTo } from '../common/listeners';
-import { getNodeCG, Replicant } from './utils';
 
 const nodecg = getNodeCG();
 

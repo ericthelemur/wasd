@@ -75,15 +75,16 @@
   },
   "scripts": {
     "start": "cd .. && npm run start",
-    "build": "cross-env-shell node ../wasd-common/shared/scripts/build.mjs $npm_package_name",
+    "build": "cross-env-shell node scripts/build.mjs $npm_package_name",
     "watch": "npm run build -- --watch",
     "clean": "npm run build -- --clean-only",
-    "types": "nodecg schema-types",
+    "types": "node scripts/types.mjs",
     "nodemon": "nodemon --config ../wasd-common/shared/nodemon.json",
     "dev": "concurrently --kill-others \"npm run watch -- --types\" \"npm run watch -- --browser\" \"npm run nodemon\""
   },
   "dependencies": {
     "clone": "^2.1.2",
+    "get-current-line": "^7.4.0",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-bootstrap": "^2.9.1",

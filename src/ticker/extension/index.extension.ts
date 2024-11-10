@@ -1,12 +1,6 @@
-import type NodeCG from '@nodecg/types';
-import { Configschema } from 'types/schemas';
+export { };
 
-import { storeNodeCG } from './utils';
+const replicants = require("./replicants");
+const queue = require("./queue");
+const listeners = require("./listeners");
 
-module.exports = function (nodecg: NodeCG.ServerAPI<Configschema>) {
-	storeNodeCG(nodecg);
-	const replicants = require("./replicants");
-
-	const queue = require("./queue");
-	const listeners = require("./listeners");
-};

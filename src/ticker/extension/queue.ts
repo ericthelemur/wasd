@@ -1,8 +1,8 @@
 import type NodeCG from '@nodecg/types';
+import { getNodeCG } from 'common/utils';
 import { Message, MsgRef } from 'types/schemas';
 
 import { bank, current, pools, queue } from './replicants';
-import { getNodeCG } from './utils';
 
 const QUEUE_LEN = 12;
 const DISPLAY_TIME = 5000;

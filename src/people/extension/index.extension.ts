@@ -1,9 +1,4 @@
-import type NodeCG from '@nodecg/types';
-import { storeNodeCG } from './utils';
+export { };
 
-module.exports = async function (nodecg: NodeCG.ServerAPI) {
-	storeNodeCG(nodecg);
-
-	require("./replicants");
-	require("./listeners");
-};
+require("./replicants");
+require("./listeners");
