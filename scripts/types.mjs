@@ -102,30 +102,37 @@ function action(inDir) {
     return Promise.all([indexPromise, ...compilePromises]);
 }
 
-// Build definitions for all sub dirs
-const processCwd = process.cwd();
-const schemasDir = path.resolve(processCwd, 'schemas');
 
-const promises = fs.readdirSync(schemasDir, { withFileTypes: true })
-    .filter(dirent => dirent.isDirectory())
-    .map(dirent => action(dirent.name));
+export default function main() {
+    // Build definitions for all sub dirs
+    const processCwd = process.cwd();
+    const schemasDir = path.resolve(processCwd, 'schemas');
 
-// Build config definition
-promises.push(config());
+    const promises = fs.readdirSync(schemasDir, { withFileTypes: true })
+        .filter(dirent => dirent.isDirectory())
+        .map(dirent => action(dirent.name));
 
-// Build root index file
-const rootPath = path.resolve(targetDir, 'index.d.ts');
-const rootPromise = writeFilePromise(rootPath, `${rootIndexFile.join('\n')}\n`);
-newFiles.push(rootPath);
-promises.push(rootPromise);
+    // Build config definition
+    promises.push(config());
 
-// Remove outdated files
-const existingFiles = fs.readdirSync(targetDir, { recursive: true })
-    .filter(n => n.endsWith(".d.ts")).map(n => path.resolve(targetDir, n));
+    // Build root index file
+    const rootPath = path.resolve(targetDir, 'index.d.ts');
+    const rootPromise = writeFilePromise(rootPath, `${rootIndexFile.join('\n')}\n`);
+    newFiles.push(rootPath);
+    promises.push(rootPromise);
 
-const diff = existingFiles.filter(x => !newFiles.includes(x));
-diff.map(f => deleteFilePromise(f).then(_ => console.log("Removed", f)));
-promises.concat(diff);
+    // Remove outdated files
+    const existingFiles = fs.readdirSync(targetDir, { recursive: true })
+        .filter(n => n.endsWith(".d.ts")).map(n => path.resolve(targetDir, n));
 
-// Wait for all promises
-Promise.all(promises).then(() => process.emit('schema-types-done'));
+    const diff = existingFiles.filter(x => !newFiles.includes(x));
+    diff.map(f => deleteFilePromise(f).then(_ => console.log("Removed", f)));
+    promises.concat(diff);
+
+    // Wait for all promises
+    return Promise.all(promises).then(() => process.emit('schema-types-done'));
+}
+
+if (typeof module !== 'undefined' && require.main === module) {
+    main();
+}

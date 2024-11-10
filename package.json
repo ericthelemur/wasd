@@ -83,8 +83,19 @@
     "dev": "concurrently --kill-others \"npm run watch -- --types\" \"npm run watch -- --browser\" \"npm run nodemon\""
   },
   "dependencies": {
+    "@parcel/config-default": "^2.12.0",
+    "@parcel/core": "^2.12.0",
+    "@parcel/reporter-cli": "^2.12.0",
+    "@parcel/transformer-sass": "^2.12.0",
+    "@parcel/validator-typescript": "^2.12.0",
+    "chalk": "3.0.0",
     "clone": "^2.1.2",
+    "fs-extra": "7.0.1",
     "get-current-line": "^7.4.0",
+    "json-schema-defaults": "0.4.0",
+    "json-schema-to-typescript": "11.0.3",
+    "markdown-to-jsx": "^7.4.1",
+    "moment": "^2.30.0",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-bootstrap": "^2.9.1",
@@ -93,17 +104,11 @@
     "react-css-transition-replace": "^5.0.1",
     "react-dom": "^18.2.0",
     "react-fitty": "^1.0.1",
-    "markdown-to-jsx": "^7.4.1",
     "react-textfit": "git+http://github.com/ericthelemur/react-textfit.git",
     "react-transition-group": "^4.4.5",
-    "ts-node": "^10.9.1",
-    "moment": "^2.30.0",
-    "use-nodecg": "github:ericthelemur/use-nodecg",
     "speedcontrol-util": "^0.6.1",
-    "chalk": "3.0.0",
-    "fs-extra": "7.0.1",
-    "json-schema-defaults": "0.4.0",
-    "json-schema-to-typescript": "11.0.3"
+    "ts-node": "^10.9.1",
+    "use-nodecg": "github:ericthelemur/use-nodecg"
   },
   "devDependencies": {
     "@nodecg/types": "^2.0.0",
@@ -116,10 +121,29 @@
     "@types/react-dom": "^18.2.0",
     "@types/react-textfit": "^1.1.4",
     "concurrently": "*",
+    "cross-env": "*",
     "glob": "^10.2.7",
     "nodemon": "*",
-    "typescript": "^5.1.3",
-    "cross-env": "*"
+    "typescript": "^5.1.3"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "@parcel/bundler-default": {
+    "minBundles": 1,
+    "minBundleSize": 3000,
+    "maxParallelRequests": 20,
+    "manualSharedBundles": [
+      {
+        "name": "vendor",
+        "root": "./shared.ts",
+        "assets": [
+          "**/*"
+        ],
+        "types": [
+          "js",
+          "ts"
+        ],
+        "split": 1
+      }
+    ]
+  }
 }
