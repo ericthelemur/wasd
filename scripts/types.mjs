@@ -19,7 +19,7 @@ const style = {
 
 const newFiles = [];
 const rootIndexFile = [];
-const targetDir = "src/types/schema";
+const targetDir = "src/types/schemas";
 
 
 // Generate configschema.json
