@@ -8,7 +8,7 @@
         "run": {
             "oneOf": [
                 {
-                    "$ref": "../../../nodecg-speedcontrol/schemas/reused/RunData.json"
+                    "$ref": "../../../../nodecg-speedcontrol/schemas/reused/RunData.json"
                 },
                 {
                     "type": "null"
