@@ -2,15 +2,15 @@ import 'wasd-common/shared/uwcs-bootstrap.css';
 import './bar.scss';
 import 'wasd-common/shared/custom.d';
 
-import { AnimTextFit } from 'graphics/components/animtext';
-import { Current } from 'nodecg-ticker-control/src/types/schemas';
 import { Total } from 'nodecg-tiltify/src/types/schemas';
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { Current } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
 import specialeffect from '../assets/specialeffect-small.png';
 import logo from '../assets/wasd-w.svg';
+import { AnimTextFit } from '../components/animtext';
 import { formatAmount, timeFormat } from '../utils';
 
 function VR() {

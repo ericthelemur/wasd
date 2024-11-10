@@ -1,5 +1,4 @@
 
-import { sendTo } from 'common/listeners';
 import { useEffect } from 'react';
 import { DragDropContext, DraggableProvided, DropResult } from 'react-beautiful-dnd';
 import { At, GripVertical, XLg } from 'react-bootstrap-icons';
@@ -12,6 +11,8 @@ import { Icon, Person, Social, Socials } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 import { DnDTransitionsList, InsertHandle } from 'wasd-common/shared/components/dndlist';
 import Editable from 'wasd-common/shared/components/editable';
+
+import { sendTo } from '../../common/listeners';
 
 export function SocialIcon({ icon }: { icon: Icon }) {
     if (icon) {

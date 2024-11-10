@@ -7,14 +7,12 @@ import { Pause, Play, PlusLg, Trash } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { createRoot } from 'react-dom/client';
+import { Bank, Configschema, Current, Message, MsgRef, Pool, Pools, Queue } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
 import NodeCG from '@nodecg/types';
 
 import { sendTo, sendToF } from '../../common/listeners';
-import {
-    Bank, Configschema, Current, Message, MsgRef, Pool, Pools, Queue
-} from '../../types/schemas';
 import { PoolComp } from './components/msgpool';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;

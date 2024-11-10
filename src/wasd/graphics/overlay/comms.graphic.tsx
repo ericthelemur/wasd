@@ -1,11 +1,11 @@
 import 'wasd-common/shared/uwcs-bootstrap.css';
 import './overlay.graphic.scss';
 
-import { Slides, UpNext } from 'graphics/break/components/slides';
 import { createContext } from 'react';
 import { createRoot } from 'react-dom/client';
 import { SceneInfo } from 'types/schemas';
 
+import { Slides, UpNext } from '../break/components/slides';
 import { Camera, SceneInfoContext } from './components/cam';
 
 function Comms() {
