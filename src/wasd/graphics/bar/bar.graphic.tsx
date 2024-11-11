@@ -1,6 +1,6 @@
-import 'wasd-common/shared/uwcs-bootstrap.css';
+import '../../../common/uwcs-bootstrap.css';
 import './bar.scss';
-import 'wasd-common/shared/custom.d';
+import '../../../common/custom.d';
 
 import { Total } from 'nodecg-tiltify/src/types/schemas';
 import { useEffect, useState } from 'react';

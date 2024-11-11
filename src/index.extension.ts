@@ -1,6 +1,6 @@
 
 import type NodeCG from '@nodecg/types';
-import { storeNodeCG } from 'common/utils';
+import { storeNodeCG } from './common/utils';
 
 module.exports = function (nodecg: NodeCG.ServerAPI) {
     storeNodeCG(nodecg);

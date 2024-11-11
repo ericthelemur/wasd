@@ -1,7 +1,7 @@
 import type NodeCG from '@nodecg/types';
-import { getNodeCG } from 'common/utils';
 import { Message, MsgRef } from 'types/schemas';
 
+import { getNodeCG } from '../../common/utils';
 import { bank, current, pools, queue } from './replicants';
 
 const QUEUE_LEN = 12;
@@ -41,12 +41,14 @@ function pickNext(time: number) {
 
 // Add new to queue when below min length
 queue.on("change", (val) => {
-    while (val.msgs.length < QUEUE_LEN) {
-        const dispTime = Date.now() + DISPLAY_TIME * (val.msgs.length + 1);
-        const next = pickNext(dispTime);
-        if (next) {
-            // nodecg.log.debug("Queueing", next);
-            val.msgs.push({ id: next.id, time: Date.now() })
+    if (val) {
+        while (val.msgs.length < QUEUE_LEN) {
+            const dispTime = Date.now() + DISPLAY_TIME * (val.msgs.length + 1);
+            const next = pickNext(dispTime);
+            if (next) {
+                // nodecg.log.debug("Queueing", next);
+                val.msgs.push({ id: next.id, time: Date.now() })
+            }
         }
     }
 });
@@ -89,4 +91,4 @@ function playNextPause() {
 }
 
 const now = Date.now();
-if (!current.value.pause && current.value.endTime < now) playNext();
+if (current.value && !current.value.pause && current.value.endTime < now) playNext();

@@ -1,7 +1,7 @@
-import 'wasd-common/shared/uwcs-bootstrap.css';
+import '../../../common/uwcs-bootstrap.css';
 import './break.scss';
 import '../overlay/overlay.graphic.scss';
-import 'wasd-common/shared/custom.d';
+import '../../../common/custom.d';
 
 import { createRoot } from 'react-dom/client';
 
@@ -20,7 +20,7 @@ export function Break() {
             <CurrentSong />
         </div>
         <VR />
-        <div className="main" style={{fontSize: "0.9em"}}>
+        <div className="main" style={{ fontSize: "0.9em" }}>
             <Slides />
         </div>
     </div>

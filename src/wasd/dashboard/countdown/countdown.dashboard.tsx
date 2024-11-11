@@ -1,3 +1,5 @@
+import '../../../common/uwcs-bootstrap.css';
+
 import { FormEvent, useRef } from 'react';
 import { PauseFill, PlayFill } from 'react-bootstrap-icons';
 import Badge from 'react-bootstrap/Badge';
@@ -8,10 +10,10 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import { createRoot } from 'react-dom/client';
 import { Configschema, Countdown } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
-import Editable from 'wasd-common/shared/components/editable';
 
 import NodeCG from '@nodecg/types';
 
+import Editable from '../../../common/components/editable';
 import { sendTo } from '../../common/listeners';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;

@@ -9,9 +9,9 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import Modal from 'react-bootstrap/Modal';
 import { Icon, Person, Social, Socials } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
-import { DnDTransitionsList, InsertHandle } from 'wasd-common/shared/components/dndlist';
-import Editable from 'wasd-common/shared/components/editable';
 
+import { DnDTransitionsList, InsertHandle } from '../../../common/components/dndlist';
+import Editable from '../../../common/components/editable';
 import { sendTo } from '../../common/listeners';
 
 export function SocialIcon({ icon }: { icon: Icon }) {

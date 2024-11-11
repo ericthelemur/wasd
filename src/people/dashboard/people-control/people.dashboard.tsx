@@ -1,4 +1,4 @@
-import 'wasd-common/shared/uwcs-bootstrap.css';
+import '../../../common/uwcs-bootstrap.css';
 import './people.scss';
 
 import { useState } from 'react';
@@ -9,10 +9,10 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import { createRoot } from 'react-dom/client';
 import { Category, Configschema, People, PeopleBank, Person } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
-import { GroupProps, TwoColDnD } from 'wasd-common/shared/components/dndlist';
 
 import NodeCG from '@nodecg/types';
 
+import { GroupProps, TwoColDnD } from '../../../common/components/dndlist';
 import { sendToF } from '../../common/listeners';
 import { EditModal } from './editPerson';
 

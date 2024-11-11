@@ -2,9 +2,9 @@ import './pool.scss';
 
 import { ThreeDots } from 'react-bootstrap-icons';
 import { Message, MsgRef, Pool } from 'types/schemas';
-import { DnDTransitionsList } from 'wasd-common/shared/components/dndlist';
-import Editable from 'wasd-common/shared/components/editable';
 
+import { DnDTransitionsList } from '../../../../common/components/dndlist';
+import Editable from '../../../../common/components/editable';
 import { InsertHandle, QueueMsg } from './msgqueue';
 
 import type { PreludeInfo } from '../tickercontrol.dashboard';
@@ -61,7 +61,7 @@ export function PoolComp(props: PoolProps) {
                 <DnDTransitionsList id={pid}
                     ids={refs.map(makeID(queue))}
                     data={data}
-                    content={(id, index, msg, provided) => {
+                    content={(index, id, msg, provided) => {
                         const ref = pool.msgs[index - prel];
                         return <QueueMsg id={ref} pid={pid} message={msg} provided={provided}
                             queue={queue} strike={index < prel} />

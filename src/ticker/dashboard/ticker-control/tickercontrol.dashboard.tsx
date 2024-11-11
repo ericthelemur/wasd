@@ -1,4 +1,4 @@
-import 'wasd-common/shared/uwcs-bootstrap.css';
+import '../../../common/uwcs-bootstrap.css';
 
 import { klona } from 'klona';
 import { createRef, ReactElement, ReactNode, useEffect, useState } from 'react';

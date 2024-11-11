@@ -5,10 +5,10 @@ import { FastForward, GripVertical, Link45deg, Pen, XLg } from 'react-bootstrap-
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { Message, MsgRef } from 'types/schemas';
-import Editable from 'wasd-common/shared/components/editable';
 
+import add from '../../../../common/components/add.svg';
+import Editable from '../../../../common/components/editable';
 import { sendTo, sendToF } from '../../../common/listeners';
-import add from '../../assets/add.svg';
 
 interface MessageProps {
     id: MsgRef;

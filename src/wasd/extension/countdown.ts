@@ -1,9 +1,10 @@
-import { getNodeCG, Replicant } from 'common/utils';
 import { EventEmitter } from 'events';
 import { duration } from 'moment';
 import { Countdown } from 'types/schemas';
 
+import { getNodeCG, Replicant } from '../../common/utils';
 import { listenTo } from '../common/listeners';
+import { countdown } from './replicants';
 
 const nodecg = getNodeCG();
 
@@ -86,9 +87,8 @@ class CountdownTimer extends EventEmitter {
     }
 }
 
-const countdownRep = Replicant<Countdown>('countdown');
 const instance = new CountdownTimer();
-instance.on('tick', (display, state) => { countdownRep.value = { msg: countdownRep.value.msg, display, state } });
+instance.on('tick', (display, state) => { countdown.value = { msg: countdown.value?.msg, display, state } });
 instance.update(); //Broadcast paused state on startup
 
 listenTo("countdown.start", ({ timeStr }) => instance.start(timeStr));

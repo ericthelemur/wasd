@@ -1,8 +1,7 @@
-import { getNodeCG } from 'common/utils';
-
 import NodeCG from '@nodecg/types';
 import { NodeCGAPIClient } from '@nodecg/types/client/api/api.client';
 
+import { getNodeCG } from '../../common/utils';
 import { ListenerTypes } from './listenerTypes';
 
 var ncg: NodeCGAPIClient | NodeCG.ServerAPI;

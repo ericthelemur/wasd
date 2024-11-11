@@ -1,9 +1,9 @@
-import { getNodeCG } from 'common/utils';
 import { MsgRef } from 'types/schemas';
 
 import NodeCG from '@nodecg/types';
 import { NodeCGAPIClient } from '@nodecg/types/client/api/api.client';
 
+import { getNodeCG } from '../../common/utils';
 import { LTs } from './listenerTypes';
 
 var ncg: NodeCGAPIClient | NodeCG.ServerAPI;

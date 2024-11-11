@@ -1,4 +1,4 @@
-import 'wasd-common/shared/uwcs-bootstrap.css';
+import '../../../common/uwcs-bootstrap.css';
 import './overlay.graphic.scss';
 
 import { createContext } from 'react';
