@@ -1,11 +1,30 @@
 {
-	"extends": "../wasd-common/shared/tsconfig.build.json",
 	"compilerOptions": {
-		"baseUrl": "./src"
+		// Required for parcel
+		"isolatedModules": true,
+		"jsx": "preserve",
+		// Output related
+		"target": "es2021",
+		"outDir": "./build",
+		"module": "esnext",
+		// Module resolution
+		"moduleResolution": "node",
+		"esModuleInterop": true,
+		"resolveJsonModule": true,
+		// Type checking
+		"strict": true,
+		// Extra output
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+		"inlineSourceMap": false,
+		"baseUrl": "./src",
+		"lib": [
+			"esnext"
+		]
 	},
 	"include": [
 		"./src/**/*.ts",
-		"./src/**/*.tsx",
-		"../wasd-common/shared/custom.d.ts"
+		"./src/**/*.tsx"
 	]
 }

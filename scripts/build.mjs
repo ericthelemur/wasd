@@ -157,8 +157,6 @@ if (build.extension) {
   );
 }
 
-console.log(build, bundlers);
-
 try {
   if (build.watch) {
     if (build.schemas) {
@@ -185,7 +183,7 @@ try {
 
     const buildPromises = [];
     for (const bundler of bundlers.values()) {
-      buildPromises.push(bundler.run().then(({ bundleGraph, buildTime }) => console.log(`Built ${bundleGraph.getBundles().length} bundles`)));
+      buildPromises.push(bundler.run()); //.then(({ bundleGraph, buildTime }) => console.log(`Built ${bundleGraph.getBundles().length} bundles`)));
     }
 
     await Promise.all(buildPromises);
@@ -193,7 +191,7 @@ try {
 
   console.log('Bundle build completed successfully');
 } catch (e) {
-  throw e;
+  // throw e;
   // the reporter-cli package will handle printing errors to the user
   process.exit(1);
 }
