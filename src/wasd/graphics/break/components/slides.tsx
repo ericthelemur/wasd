@@ -1,12 +1,12 @@
-import 'nodecg-dono-control/src/dashboard/reader/reader.graphic.css';
+// import 'nodecg-dono-control/src/dashboard/reader/reader.graphic.css';
 import './slides.scss';
 
 import Markdown from 'markdown-to-jsx';
-import {
-    findMilestones, MilestoneCard, PollCard, RewardCard, TargetCard
-} from 'nodecg-dono-control/src/dashboard/reader/components/incentives';
-import { sortMapSingle } from 'nodecg-dono-control/src/dashboard/reader/utils';
-import { Milestones, Polls, Rewards, Targets, Total } from 'nodecg-tiltify/src/types/schemas';
+// import {
+//     findMilestones, MilestoneCard, PollCard, RewardCard, TargetCard
+// } from 'nodecg-dono-control/src/dashboard/reader/components/incentives';
+// import { sortMapSingle } from 'nodecg-dono-control/src/dashboard/reader/utils';
+// import { Milestones, Polls, Rewards, Targets, Total } from 'nodecg-tiltify/src/types/schemas';
 import React, { useEffect, useState } from 'react';
 import Card from 'react-bootstrap/Card';
 import { Textfit } from 'react-textfit';
@@ -27,47 +27,47 @@ interface PageArgs {
 }
 type PageComp = (a: PageArgs) => JSX.Element | null;
 
-function MilestonesComp({ milestones, total }: PageArgs) {
-    if (!milestones || total === undefined) return null;
-    const chosen = findMilestones(milestones, total, 3);
-    if (!chosen) return null;
-    return <>
-        <h3>Donation Milestones:</h3>
-        <div className="upcoming vstack fb">
-            {chosen.map(m => <MilestoneCard key={m.id} milestone={m} total={total} />)}
-        </div>
-    </>
-}
+// function MilestonesComp({ milestones, total }: PageArgs) {
+//     if (!milestones || total === undefined) return null;
+//     const chosen = findMilestones(milestones, total, 3);
+//     if (!chosen) return null;
+//     return <>
+//         <h3>Donation Milestones:</h3>
+//         <div className="upcoming vstack fb">
+//             {chosen.map(m => <MilestoneCard key={m.id} milestone={m} total={total} />)}
+//         </div>
+//     </>
+// }
 
-function PollsComp({ polls }: PageArgs) {
-    if (!polls) return null;
-    return <>
-        <h3>Donation Polls:</h3>
-        <div className="upcoming vstack fb">
-            {sortMapSingle(polls, t => Number(t.amount_raised.value), p => <PollCard key={p.id} poll={p} />, true, 2)}
-        </div>
-    </>
-}
+// function PollsComp({ polls }: PageArgs) {
+//     if (!polls) return null;
+//     return <>
+//         <h3>Donation Polls:</h3>
+//         <div className="upcoming vstack fb">
+//             {sortMapSingle(polls, t => Number(t.amount_raised.value), p => <PollCard key={p.id} poll={p} />, true, 2)}
+//         </div>
+//     </>
+// }
 
-function TargetsComp({ targets }: PageArgs) {
-    if (!targets) return null;
-    return <>
-        <h3>Donation Targets:</h3>
-        <div className="upcoming vstack fb">
-            {sortMapSingle(targets, t => Number(t.amount_raised.value) - 0.1 * Number(t.amount.value), t => <TargetCard key={t.id} target={t} />, false, 3)}
-        </div>
-    </>
-}
+// function TargetsComp({ targets }: PageArgs) {
+//     if (!targets) return null;
+//     return <>
+//         <h3>Donation Targets:</h3>
+//         <div className="upcoming vstack fb">
+//             {sortMapSingle(targets, t => Number(t.amount_raised.value) - 0.1 * Number(t.amount.value), t => <TargetCard key={t.id} target={t} />, false, 3)}
+//         </div>
+//     </>
+// }
 
-function RewardComp({ rewards }: PageArgs) {
-    if (!rewards) return null;
-    return <>
-        <h3>Donation Rewards:</h3>
-        <div className="upcoming vstack fb">
-            {sortMapSingle(rewards, t => Number(t.highlighted), r => <RewardCard key={r.id} reward={r} />, false, 3)}
-        </div>
-    </>
-}
+// function RewardComp({ rewards }: PageArgs) {
+//     if (!rewards) return null;
+//     return <>
+//         <h3>Donation Rewards:</h3>
+//         <div className="upcoming vstack fb">
+//             {sortMapSingle(rewards, t => Number(t.highlighted), r => <RewardCard key={r.id} reward={r} />, false, 3)}
+//         </div>
+//     </>
+// }
 
 function MarkdownPage({ md, title }: { md?: string, title?: string }) {
     if (!md) return null;
@@ -150,7 +150,8 @@ function RunsComp({ runDataArray, runDataActiveRunSurrounding }: PageArgs) {
     </>
 }
 
-const pages = [AboutComp, MilestonesComp, RunsComp, CharityComp, PollsComp, TargetsComp, RunsComp];
+// const pages = [AboutComp, MilestonesComp, RunsComp, CharityComp, PollsComp, TargetsComp, RunsComp];
+const pages = [AboutComp, RunsComp, CharityComp, RunsComp];
 // const pages = [PollsComp];
 
 function HR() {
@@ -174,21 +175,23 @@ export function Slides({ side }: { side?: boolean }) {
     const [index, setIndex] = useState(0);
     const [Func, setFunc] = useState<PageComp>(() => AboutComp);
 
-    const [total,] = useReplicant<Total>("total", { "currency": "GBP", "value": 0 }, { namespace: "nodecg-tiltify" });
-    const [milestones,] = useReplicant<Milestones>("milestones", [], { namespace: "nodecg-tiltify" });
-    const [polls,] = useReplicant<Polls>("polls", [], { namespace: "nodecg-tiltify" });
-    const [targets,] = useReplicant<Targets>("targets", [], { namespace: "nodecg-tiltify" });
-    const [rewards,] = useReplicant<Rewards>("rewards", [], { namespace: "nodecg-tiltify" });
+    // const [total,] = useReplicant<Total>("total", { "currency": "GBP", "value": 0 }, { namespace: "nodecg-tiltify" });
+    // const [milestones,] = useReplicant<Milestones>("milestones", [], { namespace: "nodecg-tiltify" });
+    // const [polls,] = useReplicant<Polls>("polls", [], { namespace: "nodecg-tiltify" });
+    // const [targets,] = useReplicant<Targets>("targets", [], { namespace: "nodecg-tiltify" });
+    // const [rewards,] = useReplicant<Rewards>("rewards", [], { namespace: "nodecg-tiltify" });
     const [runDataArray,] = useReplicant<RunDataArray>("runDataArray", [], { namespace: "nodecg-speedcontrol" });
     const [runDataActiveRunSurrounding,] = useReplicant<RunDataActiveRunSurrounding>("runDataActiveRunSurrounding", { previous: undefined, current: undefined, next: undefined }, { namespace: "nodecg-speedcontrol" });
     const [custom,] = useReplicant<CustomBreakText>("customBreakText", {});
 
-    const args = { total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding };
+    // const args = { total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding };
+    const args = { custom, runDataArray, runDataActiveRunSurrounding };
 
     // Rotate through pages
     useEffect(() => {
         const interval = setInterval(() => {
-            const args = { total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding };
+            // const args = { total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding };
+            const args = { custom, runDataArray, runDataActiveRunSurrounding };
             var newIndex = (index + 1) % pages.length;
             for (let i = 1; i < pages.length + 1; i++) {
                 newIndex = (index + i) % pages.length;
@@ -200,7 +203,9 @@ export function Slides({ side }: { side?: boolean }) {
             setFunc(() => pages[newIndex]);
         }, 5000);
         return () => clearInterval(interval);
-    }, [index, total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding]);
+        // }, [index, total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding]);
+    }, [index, custom, runDataArray, runDataActiveRunSurrounding]);
+
 
     const page = <Func {...args} />
     return <div className="w-100 h-100 d-flex flex-column next-run">
@@ -209,7 +214,7 @@ export function Slides({ side }: { side?: boolean }) {
         </div>
             <HR />
         </>}
-        <div className={"vstack fb " + (side ? "ps-5" : "p-5")} style={{fontSize: "0.9em"}}>
+        <div className={"vstack fb " + (side ? "ps-5" : "p-5")} style={{ fontSize: "0.9em" }}>
             {page}
         </div>
     </div >
