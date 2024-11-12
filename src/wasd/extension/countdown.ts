@@ -1,5 +1,4 @@
 import { EventEmitter } from 'events';
-import { duration } from 'moment';
 import { Countdown } from 'types/schemas';
 
 import { getNodeCG, Replicant } from '../../common/utils';
@@ -9,75 +8,35 @@ import { countdown } from './replicants';
 const nodecg = getNodeCG();
 
 class CountdownTimer extends EventEmitter {
-    state: "paused" | "running" | "ended";
-    remainingMs: number;
+    state: "paused" | "running" | "ended" = "ended";
+    remainingMs: number = 0;
     endTime: number = 0;
     interval: NodeJS.Timeout | undefined = undefined;
 
     constructor() {
         super();
-        this.state = 'paused';
-        this.remainingMs = 300000; // 5 min
-    }
-
-    timeStringToMs(timeString: string) {
-        if (typeof timeString !== 'string') {
-            throw new TypeError('Expected string');
-        }
-
-        const format = /^(\d{1,2}:){0,2}\d{1,2}$/;
-        if (!format.test(timeString)) {
-            throw new Error(`Bad timeString format ${timeString}`);
-        }
-
-        const parts = timeString.split(':').map(part => parseInt(part, 10)).reverse();
-
-        return duration({ seconds: parts[0], minutes: parts[1], hours: parts[2] }).asMilliseconds();
-    }
-
-    msToTimeString(ms: number) {
-        if (typeof ms !== 'number') {
-            throw new TypeError('Expected number');
-        }
-
-        // const mins = Math.ceil(ms / (1000 * 60));
-        // return `${mins} mins`
-
-        const d = duration({ milliseconds: ms });
-
-        return [(d.hours() || null), d.minutes(), d.seconds()]
-            .filter(d => d !== null)
-            .map(d => String(d).padStart(2, '0'))
-            .join(':');
+        this._reset();
     }
 
     update() {
-        this.emit('tick', this.msToTimeString(this.remainingMs), this.state);
+        this.emit('tick', this.remainingMs, this.state);
+    }
+
+    setRemaining(val: number) {
+        this.remainingMs = val;
+        this.endTime = Date.now() + val;
+        console.log(`Setting timer to ${this.remainingMs}ms (${Math.round(this.remainingMs / 1000)}s) ending at ${new Date(this.endTime).toLocaleTimeString()}`);
+        this.update();
     }
 
     tick() {
         this.remainingMs = Math.max(this.endTime - Date.now(), 0);
+
+        console.log("tick", this.state, this.endTime, this.remainingMs);
+        if (this.remainingMs <= 0) {
+            this._reset();
+        }
         this.update();
-
-        if (this.remainingMs === 0) {
-            clearInterval(this.interval);
-            this.remainingMs = 300000;
-            this.state = 'ended';
-            this.update();
-        }
-    }
-
-    start(timeString: string) {
-        try {
-            this.endTime = this.timeStringToMs(timeString) + Date.now();
-        } catch (e) {
-            nodecg.log.info(e);
-            this.endTime = Date.now();
-        }
-
-        clearInterval(this.interval);
-        this.state = 'running';
-        this.interval = setInterval(this.tick.bind(this), 100);
     }
 
     pause() {
@@ -85,12 +44,33 @@ class CountdownTimer extends EventEmitter {
         this.state = 'paused';
         this.update();
     }
+
+    start() {
+        this.state = 'running';
+        this.setRemaining(this.remainingMs);
+        this.interval = setInterval(this.tick.bind(this), 100);
+        this.update();
+    }
+
+    _reset() {
+        clearInterval(this.interval);
+        this.state = "ended";
+        this.setRemaining(5 * 60 * 1000);
+    }
+
+    add(ms: number) {
+        this.setRemaining(this.remainingMs + ms);
+    }
 }
 
 const instance = new CountdownTimer();
-instance.on('tick', (display, state) => { countdown.value = { msg: countdown.value?.msg, display, state } });
-instance.update(); //Broadcast paused state on startup
+instance.on('tick', (value, state) => { countdown.value = { msg: countdown.value?.msg, display: "##:##", value, state } });
+instance.update();
 
-listenTo("countdown.start", ({ timeStr }) => instance.start(timeStr));
+listenTo("countdown.start", () => instance.start());
+listenTo("countdown.reset", () => instance._reset());
 listenTo("countdown.pause", () => instance.pause());
+listenTo("countdown.unpause", () => instance.start());
+listenTo("countdown.add", (ms) => instance.add(ms));
+listenTo("countdown.set", (ms) => instance.setRemaining(ms));
 

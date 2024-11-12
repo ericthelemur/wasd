@@ -2,8 +2,8 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "display": {
-      "type": "string"
+    "value": {
+      "type": "number"
     },
     "state": {
       "enum": [
@@ -17,12 +17,12 @@
     }
   },
   "required": [
-    "display",
+    "value",
     "state",
     "msg"
   ],
   "default": {
-    "display": "00:00",
+    "value": 0,
     "state": "ended",
     "msg": "Back Soon"
   }

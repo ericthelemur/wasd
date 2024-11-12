@@ -39,6 +39,6 @@ export function sendToF<T extends keyof ListenerTypes>(name: T, data: ListenerTy
     }
 }
 
-export function sendTo<T extends keyof ListenerTypes>(name: T, data: ListenerTypes[T], prefix: string | undefined = undefined) {
+export function sendTo<T extends keyof ListenerTypes>(name: T, data: ListenerTypes[T] = undefined, prefix: string | undefined = undefined) {
     return sendToF(name, data, prefix)();
 }
