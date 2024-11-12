@@ -132,7 +132,3 @@ export default function main() {
     // Wait for all promises
     return Promise.all(promises).then(() => process.emit('schema-types-done'));
 }
-
-if (typeof module !== 'undefined' && require.main === module) {
-    main();
-}

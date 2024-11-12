@@ -16,7 +16,7 @@ import chokidar from 'chokidar';
 
 // Ours
 import debounce from './debounce.mjs';
-import types from "./types.mjs";
+import types from "./typesLib.mjs";
 
 
 // Parse cmd line flags
