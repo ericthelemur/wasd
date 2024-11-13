@@ -24,7 +24,7 @@ function updateSceneRuns() {
         checkRun(upcomingRuns[i], assigned);
         // if (Object.values(assigned).every(v => v)) break;
     }
-    getNodeCG().log.warn(assigned);
+    // getNodeCG().log.warn(assigned);
     if (JSON.stringify(sceneData.value) !== JSON.stringify(assigned)) {
         sceneData.value = clone(assigned);
     }

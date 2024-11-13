@@ -18,7 +18,6 @@ export function prefixName(prefix: string | undefined, name: string) {
 
 function buildSchemaPath(parent: string, schemaName: string) {
     const p = path.resolve(process.cwd(), 'bundles', 'wasd', 'schemas', parent, `${encodeURIComponent(schemaName)}.json`);
-    console.log(p);
     return p;
 }
 

@@ -1,7 +1,6 @@
 import { EventEmitter } from 'events';
-import { Countdown } from 'types/schemas';
 
-import { getNodeCG, Replicant } from '../../common/utils';
+import { getNodeCG } from '../../common/utils';
 import { listenTo } from '../common/listeners';
 import { countdown } from './replicants';
 
