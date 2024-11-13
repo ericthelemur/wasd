@@ -1,4 +1,4 @@
-import { People, PeopleBank, Socials } from 'types/schemas';
+import { People, PeopleBank, Socials } from 'types/schemas/people';
 
 import { Replicant } from '../../common/utils';
 

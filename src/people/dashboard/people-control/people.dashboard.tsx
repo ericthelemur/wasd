@@ -1,13 +1,14 @@
 import '../../../common/uwcs-bootstrap.css';
 import './people.scss';
 
+import Editable from 'common/components/editable';
 import { useState } from 'react';
 import { DragStart, DropResult } from 'react-beautiful-dnd';
 import { PenFill } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { createRoot } from 'react-dom/client';
-import { Category, Configschema, People, PeopleBank, Person } from 'types/schemas';
+import { Category, Config, Configschema, People, PeopleBank, Person } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
 import NodeCG from '@nodecg/types';
@@ -19,11 +20,14 @@ import { EditModal } from './editPerson';
 declare const nodecg: NodeCG.ClientAPI<Configschema>;
 
 function ControlButtons() {
-	const [v,] = useReplicant<boolean>("timerChangesDisabled", false, { namespace: "nodecg-speedcontrol" })
+	const [v,] = useReplicant<boolean>("timerChangesDisabled", false, { namespace: "nodecg-speedcontrol" });
+	const [config,] = useReplicant<Config>("config", { "oengusShortcode": "code" });
+
 	if (v === undefined) return null;
-	return <InputGroup className="m-2">
-		<Button onClick={sendToF("loadRunners", {})}>Add all runners to pool</Button>
-	</InputGroup>
+	return <InputGroup className="p-2 w-50 bg-body" style={{ position: "absolute", bottom: 0, zIndex: 999 }} >
+		<Button onClick={sendToF("loadRunners", { code: config!.oengusShortcode })}>Refresh Runners</Button>
+		<Editable textClasses="input-group-text" text={config?.oengusShortcode ?? ""} setText={(v) => config!.oengusShortcode = v} type="multi" />
+	</InputGroup >
 }
 
 function remove(src: Category, srcIndex: number) {

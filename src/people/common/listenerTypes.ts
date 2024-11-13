@@ -6,5 +6,7 @@ export type ListenerTypes = {
         id: string,
         person: Person
     },
-    loadRunners: {}
+    loadRunners: {
+        code: string
+    }
 }

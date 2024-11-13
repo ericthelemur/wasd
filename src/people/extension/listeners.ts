@@ -2,6 +2,7 @@ import SpeedcontrolUtil from 'speedcontrol-util';
 import { NodeCGServer } from 'speedcontrol-util/types/nodecg/lib/nodecg-instance';
 
 import { getNodeCG } from '../../common/utils';
+import { config } from '../../wasd/extension/replicants';
 import { listenTo } from '../common/listeners';
 import { people, peopleBank } from './replicants';
 
@@ -11,12 +12,17 @@ listenTo("setPerson", ({ id, person }) => {
     peopleBank.value[id] = person;
 });
 
-nodecg.listenFor("importOengusSchedule", "nodecg-speedcontrol", async (data, ack) => {
+async function loadOengusPeople() {
     try {
-        const code = data.marathonShort;
+        const code = config.value.oengusShortcode;
+        if (!code) return;
         const schList = await fetch(`https://oengus.io/api/v1/marathons/${code}/schedule`, { headers: { accept: "application/json" } });
+        if (schList.status == 404) return nodecg.log.error("Marathon code", code, "does not exist");
         const lines = await schList.json();
+        nodecg.log.info("Loaded schedule JSON");
 
+        let updatedRunners = 0;
+        let newRunners = 0;
         lines.lines.map((line: any) => {
             line.runners.map((p: any) => {
                 if (p.displayName) {
@@ -26,54 +32,31 @@ nodecg.listenFor("importOengusSchedule", "nodecg-speedcontrol", async (data, ack
                         socials: p.connections.map((c: any) => ({ id: c.id.toString(), social: c.platform.toLowerCase(), name: c.username }))
                     }
                     const id = p.id.toString();
+                    updatedRunners++;
                     peopleBank.value[id] = newP;
-                    if (people.value.all.people.includes(id)) {
+                    if (!people.value.all.people.includes(id)) {
                         people.value.all.people.push(id);
+                        newRunners++;
                     }
                 }
             })
         });
+        nodecg.log.info("Loading runners complete.", updatedRunners, "runners updated, of which", newRunners, "were created")
     } catch (e) {
         nodecg.log.error(e);
     }
+}
+
+// Since speedcontrol doesn't expose the marathon code nicely
+nodecg.listenFor("importOengusSchedule", "nodecg-speedcontrol", async (data, ack) => {
+    config.value.oengusShortcode = data.marathonShort;
+    loadOengusPeople();
 });
 
-
-
-// Load runners into all list
-// listenTo("loadRunners", ({ }) => {
-//     if (nodecg.extensions["nodecg-speedcontrol"]) {
-//         nodecg.log.info("SC enabled");
-//         const sc = new SpeedcontrolUtil(nodecg as unknown as NodeCGServer);
-//         const runs = sc.runDataArray;
-//         nodecg.log.info("Starting runner import");
-//         for (const r of runs.value) {
-//             for (const t of r.teams) {
-//                 for (const p of t.players) {
-//                     if (p.id in peopleBank.value) {
-//                         // Update existing person
-//                         nodecg.log.info("Updating runner", p.name, p);
-//                         const existing = peopleBank.value[p.id];
-//                         existing.name = p.name;
-//                         existing.pronouns = p.pronouns ?? "";
-//                         const twitch = existing.socials.find(s => s.social === "twitch");
-//                         if (twitch) twitch.name = p.social.twitch ?? "";
-//                         else existing.socials.push({ id: "twitch", social: "twitch", name: p.social.twitch ?? "" });
-//                     } else {
-//                         // Add new
-//                         nodecg.log.info("Creating runner", p.name, p);
-//                         peopleBank.value[p.id] = {
-//                             "name": p.name,
-//                             "pronouns": p.pronouns ?? "",
-//                             "socials": [
-//                                 { id: "twitch", social: "twitch", name: p.social.twitch ?? "" }
-//                             ]
-//                         }
-//                         people.value.all.people.push(p.id);
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// });
+listenTo("loadRunners", ({ code }) => {
+    if (code) {
+        config.value.oengusShortcode = code;
+        loadOengusPeople();
+    }
+});
 
