@@ -36,6 +36,7 @@ function sendDragAndDropMove(source: DraggableLocation, destination: DraggableLo
 
 	if (source.droppableId !== "queue" && destination.droppableId !== "queue") {
 		// Moving pools (pool to pool)
+		if ("title-" + source.droppableId === destination.droppableId) return;
 		if (source.index === destination.index) return;
 
 		let destID = destination.droppableId;
@@ -85,7 +86,7 @@ function CurrentMsg({ current }: { current: Current }) {
 function Pools({ pools, bank, showBin }: { pools: Pools, bank: Bank, showBin: boolean }) {
 	return <div className="vstack w-50">
 		<h2>Messages Pools</h2>
-		<Button className="d-inline" onClick={sendToF("addPool", {})}><PlusLg /> Add Pool</Button>
+		<Button className="d-inline mb-2" onClick={sendToF("addPool", {})}><PlusLg /> Add Pool</Button>
 		<Accordion className="pools overflow-auto" alwaysOpen>
 			{Object.entries(pools).map(([pid, pool]) => {
 				if (pool === undefined) return <Accordion.Item eventKey="0"><h3 key={pid}>Error: Corresponding Pool does not exist for pool id {pid}</h3></Accordion.Item>

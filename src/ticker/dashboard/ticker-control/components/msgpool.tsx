@@ -85,9 +85,9 @@ export function PoolComp(props: PoolProps) {
                 {!queue && <Droppable droppableId={`title-${pid}`}>
                     {(provided) => (
                         <Accordion.Header {...provided.droppableProps} ref={provided.innerRef}>
-                            <h2 className="accordion-header m-1 d-flex gap-2" >
-                                <Editable text={pool.name} className="flex-grow-1" setText={(v) => pool.name = v} />
-                                <Editable type="number" className='priority' text={pool.priority.toString()} setText={v => pool.priority = Number(v)} />
+                            <h2 className="accordion-header m-1 d-flex flex-grow-1 gap-2 me-3 justify-content-between" >
+                                <Editable text={pool.name} setText={(v) => pool.name = v} container={true} />
+                                <Editable type="number" className='priority' text={pool.priority.toString()} setText={v => pool.priority = Number(v)} container={true} />
                             </h2>
                         </Accordion.Header>
                     )}
