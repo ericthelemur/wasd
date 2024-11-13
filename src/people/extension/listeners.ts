@@ -1,6 +1,3 @@
-import SpeedcontrolUtil from 'speedcontrol-util';
-import { NodeCGServer } from 'speedcontrol-util/types/nodecg/lib/nodecg-instance';
-
 import { getNodeCG } from '../../common/utils';
 import { config } from '../../wasd/extension/replicants';
 import { listenTo } from '../common/listeners';
@@ -11,6 +8,9 @@ const nodecg = getNodeCG();
 listenTo("setPerson", ({ id, person }) => {
     peopleBank.value[id] = person;
 });
+
+
+// Pull people from Oengus
 
 async function loadOengusPeople() {
     try {
@@ -60,3 +60,13 @@ listenTo("loadRunners", ({ code }) => {
     }
 });
 
+// Update runners category with speedcontrol
+
+nodecg.listenFor("changeToNextRun", "nodecg-speedcontrol", async (data, ack) => {
+    // Update runners category
+    // or do this in control panel? - probably?
+});
+
+nodecg.listenFor("changeActiveRun", "nodecg-speedcontrol", async (data, ack) => {
+    // Also here
+});
