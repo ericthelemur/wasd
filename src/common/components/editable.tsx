@@ -60,6 +60,6 @@ export default function Editable(props: EditableProps) {
             <Button variant="primary" type="submit" onClick={submit}><CheckLg /></Button>
             <Button variant="outline-primary" onClick={resetEditVal}><XLg /></Button>
         </>
-        return props.container ? <InputGroup>{content}</InputGroup> : content
+        return props.container ? <div className="input-group editable-outer">{content}</div> : content
     }
 }

@@ -25,6 +25,12 @@ div.editable:not(.input) {
     }
 }
 
+.editable-outer {
+    & .btn {
+        padding: 0.1em 0.25em !important;
+    }
+}
+
 input.editable,
 .input.editable {
     font-size: inherit;

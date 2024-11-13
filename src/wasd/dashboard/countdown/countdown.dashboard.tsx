@@ -135,19 +135,19 @@ function CountdownForm() {
 		<Form onSubmit={resetCountdown} className="vstack gap-3 m-3">
 			{editing && <TimerEditModal countdown={countdown} setEditing={setEditing} />}
 			<Status state={countdown.state} />
+			<Editable className="flex-grow-1 flex-shrink-1" text={countdown.msg} setText={(v) => countdown.msg = v} type="multi" container={true} />
 			<InputGroup>
 				<Form.Control readOnly disabled value={msToTimeString(countdown.value)} />
 				<Button type="button" variant="outline-primary" onClick={() => setEditing(true)}><PenFill /></Button>
 			</InputGroup>
 			<InputGroup>
-				<Button className="flex-grow-1" type="button" onClick={playPauseCountdown}>{countdown?.state == "running" ? <PauseFill /> : <PlayFill />}</Button>
-				<Button className="flex-grow-1" type="submit" disabled={countdown?.state == "running"} onClick={resetCountdown}><ArrowCounterclockwise /></Button>
+				<Button className="flex-grow-1" type="submit" onClick={playPauseCountdown}>{countdown?.state == "running" ? <PauseFill /> : <PlayFill />}</Button>
+				<Button className="flex-grow-1" type="button" variant="outline-primary" disabled={countdown?.state == "running"} onClick={resetCountdown}><ArrowCounterclockwise /></Button>
 			</InputGroup>
-			<Editable className="flex-grow-1 flex-shrink-1" text={countdown.msg} setText={(v) => countdown.msg = v} type="multi" container={true} />
 			<InputGroup>
-				<Button className="flex-grow-1" type="button" variant="outline-secondary" onClick={addTime(30)}>+30s</Button>
-				<Button className="flex-grow-1" type="button" variant="outline-secondary" onClick={addTime(60)}>+1 min</Button>
-				<Button className="flex-grow-1" type="button" variant="outline-secondary" onClick={addTime(5 * 60)}>+5 min</Button>
+				<Button className="flex-grow-1" type="button" variant="outline-primary" onClick={addTime(30)}>+30s</Button>
+				<Button className="flex-grow-1" type="button" variant="outline-primary" onClick={addTime(60)}>+1 min</Button>
+				<Button className="flex-grow-1" type="button" variant="outline-primary" onClick={addTime(5 * 60)}>+5 min</Button>
 			</InputGroup>
 		</Form>
 	)
