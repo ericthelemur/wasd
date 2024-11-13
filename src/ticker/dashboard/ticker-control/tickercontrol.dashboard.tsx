@@ -4,6 +4,7 @@ import { klona } from 'klona';
 import { createRef, ReactElement, ReactNode, useEffect, useState } from 'react';
 import { DragDropContext, DraggableLocation, DragStart, DropResult } from 'react-beautiful-dnd';
 import { Pause, Play, PlusLg, Trash } from 'react-bootstrap-icons';
+import Accordion from 'react-bootstrap/Accordion';
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { createRoot } from 'react-dom/client';
@@ -32,16 +33,21 @@ export interface PreludeInfo {
 }
 
 function sendDragAndDropMove(source: DraggableLocation, destination: DraggableLocation, queue: Queue, pools: Pools, preludeLength: number) {
+
 	if (source.droppableId !== "queue" && destination.droppableId !== "queue") {
 		// Moving pools (pool to pool)
 		if (source.index === destination.index) return;
-		const da = pools![destination.droppableId].msgs;
+
+		let destID = destination.droppableId;
+		if (destination.droppableId.startsWith("title-")) destID = destination.droppableId.slice(6);
+
+		const da = pools![destID].msgs;
 		// Adjust for removal of old changing index of drop location
-		const ind = source.droppableId === destination.droppableId && source.index < destination.index ? destination.index + 1 : destination.index;
+		const ind = source.droppableId === destID && source.index < destination.index ? destination.index + 1 : destination.index;
 		sendTo("movePool", {
 			aref: klona(pools![source.droppableId].msgs[source.index]),
 			oldpid: source.droppableId,
-			newpid: destination.droppableId,
+			newpid: destID,
 			before: klona(destination.index === da.length ? null : da[ind])
 		})
 	} else if (source.droppableId === "queue" && destination.droppableId === "queue") {
@@ -80,14 +86,14 @@ function Pools({ pools, bank, showBin }: { pools: Pools, bank: Bank, showBin: bo
 	return <div className="vstack w-50">
 		<h2>Messages Pools</h2>
 		<Button className="d-inline" onClick={sendToF("addPool", {})}><PlusLg /> Add Pool</Button>
-		<div className="pools overflow-auto vstack gap-3 p-2">
+		<Accordion className="pools overflow-auto" alwaysOpen>
 			{Object.entries(pools).map(([pid, pool]) => {
-				if (pool === undefined) return <h3 key={pid}>Error: Corresponding Pool does not exist for pool id {pid}</h3>
+				if (pool === undefined) return <Accordion.Item eventKey="0"><h3 key={pid}>Error: Corresponding Pool does not exist for pool id {pid}</h3></Accordion.Item>
 				const contents = pool.msgs.map(mid => bank![mid.id]);
 				return <PoolComp id={pid} key={pid} pool={pool} contents={contents} />
 			})}
 			{showBin && <div className="trash"><Trash className="queue-trash" /></div>}
-		</div>
+		</Accordion>
 	</div>
 }
 
@@ -103,8 +109,9 @@ function BarIframe() {
 		}, 100);
 		return () => clearInterval(interval);
 	})
+
 	return <div ref={parRef} style={{ transform: `scale(${scale})`, transformOrigin: "top left" }} className='w-100 overflow-none'>
-		<iframe ref={iframeRef} src={nodecg.bundleConfig.barURL} height="70" width="1920" className="sticky-top" />
+		<iframe ref={iframeRef} src={nodecg.bundleConfig.barURL ?? "/bundles/wasd/graphics/wasd/graphics/bar/bar.graphic.html"} height="70" width="1920" className="sticky-top" />
 	</div>
 }
 

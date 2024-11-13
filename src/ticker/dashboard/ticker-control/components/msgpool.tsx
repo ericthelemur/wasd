@@ -1,6 +1,8 @@
 import './pool.scss';
 
+import { Droppable } from 'react-beautiful-dnd';
 import { ThreeDots } from 'react-bootstrap-icons';
+import Accordion from 'react-bootstrap/Accordion';
 import { Message, MsgRef, Pool } from 'types/schemas';
 
 import { DnDTransitionsList } from '../../../../common/components/dndlist';
@@ -54,23 +56,47 @@ export function PoolComp(props: PoolProps) {
         data = props.contents;
     }
 
-    return (
-        <div className={"card my-1" + (pool.priority === 0 && !queue ? " opacity-50" : "")}>
+    const body = <>
+        <DnDTransitionsList id={pid}
+            ids={refs.map(makeID(queue))}
+            data={data}
+            content={(index, id, msg, provided) => {
+                const ref = pool.msgs[index - prel];
+                return <QueueMsg id={ref} pid={pid} message={msg} provided={provided}
+                    queue={queue} strike={index < prel} />
+            }} />
+        <div className="position-relative mt-2">
+            <InsertHandle pid={pid} before={null} />
+        </div>
+        {prel > 0 && <ThreeDots className="d-block m-auto" />}
+    </>
+
+    if (queue) {
+        return <div className={"card my-1" + (pool.priority === 0 && !queue ? " opacity-50" : "")}>
             <div className="card-body">
-                {!queue && <PoolTitle {...props} />}
-                <DnDTransitionsList id={pid}
-                    ids={refs.map(makeID(queue))}
-                    data={data}
-                    content={(index, id, msg, provided) => {
-                        const ref = pool.msgs[index - prel];
-                        return <QueueMsg id={ref} pid={pid} message={msg} provided={provided}
-                            queue={queue} strike={index < prel} />
-                    }} />
-                <div className="position-relative mt-2">
-                    <InsertHandle pid={pid} before={null} />
-                </div>
-                {prel > 0 && <ThreeDots className="d-block m-auto" />}
+                {body}
             </div>
         </div>
-    )
+
+    } else {
+        return (
+            <Accordion.Item eventKey={pid} className={(pool.priority === 0 && !queue ? " opacity-50" : "")}>
+
+                {!queue && <Droppable droppableId={`title-${pid}`}>
+                    {(provided) => (
+                        <Accordion.Header {...provided.droppableProps} ref={provided.innerRef}>
+                            <h2 className="accordion-header m-1 d-flex gap-2" >
+                                <Editable text={pool.name} className="flex-grow-1" setText={(v) => pool.name = v} />
+                                <Editable type="number" className='priority' text={pool.priority.toString()} setText={v => pool.priority = Number(v)} />
+                            </h2>
+                        </Accordion.Header>
+                    )}
+                </Droppable>
+                }
+                <Accordion.Body>
+                    {body}
+                </Accordion.Body>
+            </Accordion.Item>
+        )
+    }
 }

@@ -1,7 +1,7 @@
 
 import './editable.scss';
 
-import { ElementType, useRef, useState } from 'react';
+import React, { ElementType, useRef, useState } from 'react';
 import { CheckLg, PenFill, XLg } from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -18,6 +18,17 @@ export interface EditableProps {
     container?: boolean;
 }
 
+interface SP {
+    stopPropagation: () => void;
+}
+
+function sp<T extends SP>(f: (e: T) => void) {
+    return (e: T) => {
+        e.stopPropagation();
+        return f(e);
+    }
+}
+
 export default function Editable(props: EditableProps) {
     const { text, setText } = props;
     const [wasText, setWasText] = useState(false);
@@ -28,7 +39,7 @@ export default function Editable(props: EditableProps) {
     if (editVal === null) {
         if (wasText) setWasText(false);
         return <div className={`editable ${props.className || ""} ${props.textClasses || ""}`}
-            onClick={() => setEditVal(text)}>
+            onClick={sp(() => setEditVal(text))}>
             {props.prefix} {text} <PenFill className="icon" />
         </div>
     } else {
@@ -50,15 +61,15 @@ export default function Editable(props: EditableProps) {
         const content = <>
             {props.type === "multi" ?
                 <ContentEditable innerRef={editBox} className={classes} html={editVal}
-                    onKeyDown={keyPress} onChange={(e) => { setEditVal(e.target.value) }}
+                    onKeyDown={keyPress} onChange={sp((e) => setEditVal(e.target.value))}
                     onFocus={e => window.getSelection()!.selectAllChildren(e.target)}
                 /> :
                 <Form.Control ref={editBox} className={classes} defaultValue={editVal}
                     onKeyDown={keyPress} autoFocus onFocus={e => e.target.select()}
                 />
             }
-            <Button variant="primary" type="submit" onClick={submit}><CheckLg /></Button>
-            <Button variant="outline-primary" onClick={resetEditVal}><XLg /></Button>
+            <Button variant="primary" type="submit" onClick={sp(submit)}><CheckLg /></Button>
+            <Button variant="outline-primary" onClick={sp(resetEditVal)}><XLg /></Button>
         </>
         return props.container ? <div className="input-group editable-outer">{content}</div> : content
     }
