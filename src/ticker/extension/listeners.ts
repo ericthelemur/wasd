@@ -15,7 +15,7 @@ function genID(prefix: string, exclusions: string[]) {
     return id;
 }
 
-function findMsgIDIndex(pool: Pool, id: string | null | undefined) {
+export function findMsgIDIndex(pool: Pool, id: string | null | undefined) {
     if (!id) return -1;
     return pool.msgs.findIndex(m => m.id === id);
 }
@@ -53,7 +53,7 @@ function removeFromPool(ref: MsgRef | string, pool: Pool) {
     return rem;
 }
 
-function addToPool(ref: MsgRef, pool: Pool, before: MsgRef | null): boolean {
+export function addToPool(ref: MsgRef, pool: Pool, before: MsgRef | null): boolean {
     if (before === null) pool.msgs.push(ref);
     else {
         const dstIndex = findQueueMsgRefIndex(pool, before);
@@ -88,7 +88,7 @@ listenTo("addMessage", ({ pid, before }, ack) => {
 })
 
 listenTo("removeMessage", ({ mid, noArchive }, ack) => {
-    if (!(mid in bank.value)) return sendError(ack, "Message does not exist");
+    // if (!(mid in bank.value)) return sendError(ack, "Message does not exist");
     queue.value.msgs = queue.value.msgs.filter(m => m.id !== mid);
     const wasIn = Object.keys(pools.value).filter((name) => removeFromPool(mid, pools.value[name]));
     if (noArchive || (wasIn.length == 1 && wasIn[0] == "archive")) {

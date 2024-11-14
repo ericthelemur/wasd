@@ -25,6 +25,7 @@ function pickNext(time: number) {
     for (const pool of Object.values(pools.value)) {
         for (const ref of pool.msgs) {
             const msg = bank.value[ref.id];
+            if (!msg) continue;
             const age = lastQueuedTimes[ref.id] || msg.lastShown || time - 5 * 60 * 10000;
             const timeSince = (time - age) / 1000;
             const weight = pool.priority * msg.priority * timeSince;
