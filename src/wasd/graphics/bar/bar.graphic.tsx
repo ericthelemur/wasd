@@ -43,10 +43,9 @@ export function Bar() {
 }
 
 export function BarAnnouncement() {
-    const [currentMsg, _] = useReplicant<Current>("current", { "text": "", "msgID": null, "endTime": 0 }, { namespace: "nodecg-ticker-control" });
-
-    return <AnimTextFit transitionName='fade-wait' enterTimeout={400} animKey={currentMsg?.msgID ?? ""} className="ticker">
-        <h2>{currentMsg?.text || ""}</h2>
+    const [current,] = useReplicant<Current>("current", { "text": "", "msgID": null, "endTime": 0 });
+    return <AnimTextFit transitionName='fade-wait' enterTimeout={400} animKey={current?.msgID ?? ""} className="ticker">
+        <h2>{current?.text || ""}</h2>
     </AnimTextFit>
 }
 
