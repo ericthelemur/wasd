@@ -1,4 +1,4 @@
-import { MsgRef } from "types/schemas";
+import { MsgRef } from 'types/schemas';
 
 export type LTs = {
     addPool: {}
@@ -14,6 +14,7 @@ export type LTs = {
 
     removeMessage: {
         mid: string;
+        noArchive?: boolean;
     }
 
     reorderQueue: {

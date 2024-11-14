@@ -84,13 +84,18 @@ listenTo("addMessage", ({ pid, before }, ack) => {
 
     bank.value[id] = msg;
     addToPool({ id: id }, pool, before);
+    if (pools.value["archive"]) addToPool({ id: id }, pools.value["archive"], null);
 })
 
-listenTo("removeMessage", ({ mid }, ack) => {
+listenTo("removeMessage", ({ mid, noArchive }, ack) => {
     if (!(mid in bank.value)) return sendError(ack, "Message does not exist");
-    Object.values(pools.value).forEach(pool => removeFromPool(mid, pool));
     queue.value.msgs = queue.value.msgs.filter(m => m.id !== mid);
-    delete bank.value[mid];
+    const wasIn = Object.keys(pools.value).filter((name) => removeFromPool(mid, pools.value[name]));
+    if (noArchive || (wasIn.length == 1 && wasIn[0] == "archive")) {
+        delete bank.value[mid];
+    } else if (pools.value["archive"]) {
+        addToPool({ id: mid }, pools.value["archive"], null);
+    }
 })
 
 listenTo("movePool", ({ aref: mid, oldpid, newpid, before }) => {

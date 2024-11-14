@@ -82,12 +82,13 @@ function CurrentMsg({ current }: { current: Current }) {
 	</>
 }
 
-function Pools({ pools, bank, showBin }: { pools: Pools, bank: Bank, showBin: boolean }) {
+function Pools({ pools, order, bank, showBin }: { pools: Pools, order: string[], bank: Bank, showBin: boolean }) {
 	return <div className="vstack w-50">
 		<h2>Messages Pools</h2>
 		<Button className="d-inline mb-2" onClick={sendToF("addPool", {})}><PlusLg /> Add Pool</Button>
 		<Accordion className="pools overflow-auto" alwaysOpen>
-			{Object.entries(pools).map(([pid, pool]) => {
+			{order.map((pid) => {
+				const pool = pools[pid];
 				if (pool === undefined) return <Accordion.Item eventKey="0"><h3 key={pid}>Error: Corresponding Pool does not exist for pool id {pid}</h3></Accordion.Item>
 				const contents = pool.msgs.map(mid => bank![mid.id]);
 				return <PoolComp id={pid} key={pid} pool={pool} contents={contents} />
@@ -126,6 +127,9 @@ export function MsgControlPanel() {
 	const [current,] = useReplicant<Current>("current", { "text": "", "msgID": null, "endTime": 0 });
 	// console.log(pools);
 	if (!pools) return <h2>Not loaded messages</h2>;
+
+	let poolsOrder = Object.keys(pools).filter(p => p != "archive");
+	if ("archive" in pools) poolsOrder.push("archive");
 
 	// Maintain prelude list
 	if ((hv.dragging || hv.hoverQueue) && current !== undefined && current.text !== "") {
@@ -186,7 +190,7 @@ export function MsgControlPanel() {
 								<PoolComp id="queue" pool={queue} contents={queueContents} preludeInfo={prelude} prelude={queuePreludeMsgs} />
 							</div>)}
 						</div>
-						<Pools pools={pools} bank={bank!} showBin={hv.showBin} />
+						<Pools pools={pools} order={poolsOrder} bank={bank!} showBin={hv.showBin} />
 					</div>
 				</DragDropContext >
 			</div>

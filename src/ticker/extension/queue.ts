@@ -66,13 +66,18 @@ bank.on("change", (val) => {
 });
 
 var interval: NodeJS.Timeout;
-function playNext() {
+function playNext(): void {
     // nodecg.log.debug("Moving to next donation");
     if (queue.value.msgs) {
         const newRef = queue.value.msgs[0];
         if (!newRef) return nodecg.log.warn("Reading null value on queue");
         const newMsg = bank.value[newRef.id];
         if (!newMsg) return nodecg.log.warn("No message found for ref", newRef.id);
+        if (newMsg.text == "New Message") {
+            queue.value.msgs.splice(0, 1);
+            return playNext();
+        }
+
         current.value = {
             ...current.value,
             text: newMsg.text,
