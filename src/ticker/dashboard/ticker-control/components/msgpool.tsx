@@ -72,7 +72,7 @@ export function PoolComp(props: PoolProps) {
     </>
 
     if (queue) {
-        return <div className={"card my-1" + (pool.priority === 0 && !queue ? " opacity-50" : "")}>
+        return <div className="card my-1">
             <div className="card-body">
                 {body}
             </div>
@@ -83,14 +83,18 @@ export function PoolComp(props: PoolProps) {
             <Accordion.Item eventKey={pid} className={(pool.priority === 0 && !queue ? " opacity-50" : "")}>
 
                 {!queue && <Droppable droppableId={`title-${pid}`}>
-                    {(provided) => (
+                    {(provided) => (<>
                         <Accordion.Header {...provided.droppableProps} ref={provided.innerRef}>
                             <h2 className="accordion-header m-1 d-flex flex-grow-1 gap-2 me-3 justify-content-between" >
-                                <Editable text={pool.name} setText={(v) => pool.name = v} container={true} />
-                                <Editable type="number" className='priority' text={pool.priority.toString()} setText={v => pool.priority = Number(v)} container={true} />
+                                {pid != "archive" ? <>
+                                    <Editable text={pool.name} setText={(v) => pool.name = v} container={true} />
+                                    <Editable type="number" className='priority' text={pool.priority.toString()} setText={v => pool.priority = Number(v)} container={true} />
+                                </> : pool.name
+                                }
                             </h2>
                         </Accordion.Header>
-                    )}
+                        {provided.placeholder}
+                    </>)}
                 </Droppable>
                 }
                 <Accordion.Body>

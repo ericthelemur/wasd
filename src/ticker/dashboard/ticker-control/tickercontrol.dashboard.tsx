@@ -33,14 +33,13 @@ export interface PreludeInfo {
 }
 
 function sendDragAndDropMove(source: DraggableLocation, destination: DraggableLocation, queue: Queue, pools: Pools, preludeLength: number) {
-
+	console.log(source, destination);
 	if (source.droppableId !== "queue" && destination.droppableId !== "queue") {
 		// Moving pools (pool to pool)
-		if ("title-" + source.droppableId === destination.droppableId) return;
-		if (source.index === destination.index) return;
 
 		let destID = destination.droppableId;
 		if (destination.droppableId.startsWith("title-")) destID = destination.droppableId.slice(6);
+		if (source.droppableId === destID) return;
 
 		const da = pools![destID].msgs;
 		// Adjust for removal of old changing index of drop location
@@ -131,7 +130,7 @@ export function MsgControlPanel() {
 	// Maintain prelude list
 	if ((hv.dragging || hv.hoverQueue) && current !== undefined && current.text !== "") {
 		if (prelude.length === 0) {
-			console.log("Setting length", queue!.msgs.length);
+			// console.log("Setting length", queue!.msgs.length);
 			setPrelude({ ...prelude, length: queue!.msgs.length });
 		}
 		if (prelude.lastCA === null) {	// Record current message as last if just started
