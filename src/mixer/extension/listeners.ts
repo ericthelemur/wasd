@@ -1,14 +1,12 @@
+import { getNodeCG, Replicant, storeNodeCG } from 'common/utils';
 import { Channels, Login, Muted, TechMuted } from 'types/schemas';
 
 import { listenTo } from '../common/listeners';
-import { getNodeCG, getX32, Replicant, storeNodeCG } from './utils';
+import { getX32 } from './index.extension';
+import { channels, login, muted, techMuted } from './replicants';
 
 const x32 = getX32();
 
-const login = Replicant<Login>("login");
-const muted = Replicant<Muted>("muted");
-const techMuted = Replicant<TechMuted>("techMuted");
-const channels = Replicant<Channels>("channels");
 var mutesMap: { [address: string]: string } = {}
 
 function genReverseMap(chls?: Channels) {

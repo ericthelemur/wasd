@@ -1,7 +1,8 @@
-import NodeCG from "@nodecg/types";
-import { ListenerTypes } from "./listenerTypes";
-import { getNodeCG } from "../extension/utils";
-import { NodeCGAPIClient } from "@nodecg/types/client/api/api.client";
+import NodeCG from '@nodecg/types';
+import { NodeCGAPIClient } from '@nodecg/types/client/api/api.client';
+
+import { getNodeCG } from '../../common/utils';
+import { ListenerTypes } from './listenerTypes';
 
 var ncg: NodeCGAPIClient | NodeCG.ServerAPI;
 declare var nodecg: NodeCGAPIClient;

@@ -12,10 +12,10 @@
     "compatibleRange": "^2.0.0",
     "dashboardPanels": [
       {
-        "name": "XR18-control",
-        "title": "XR18 Control",
+        "name": "mixer-control",
+        "title": "Mixer Control",
         "width": 3,
-        "file": "xr18.dashboard.html",
+        "file": "mixer.dashboard.html",
         "headerColor": "#525F78"
       },
       {

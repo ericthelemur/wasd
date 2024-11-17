@@ -1,4 +1,5 @@
-import './xr18.scss';
+import '../../common/uwcs-bootstrap.css';
+import './mixer.scss';
 
 import { sendTo, sendToF } from 'common/listeners';
 import { FormEvent, useRef } from 'react';

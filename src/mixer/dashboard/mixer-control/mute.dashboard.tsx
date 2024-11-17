@@ -1,6 +1,6 @@
-import './xr18.scss';
+import '../../common/uwcs-bootstrap.css';
+import './mixer.scss';
 
-import { sendTo, sendToF } from 'common/listeners';
 import { useEffect, useState } from 'react';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
@@ -10,6 +10,8 @@ import { Channels, Configschema, Muted, TechMuted, XrStatus } from 'types/schema
 import { useReplicant } from 'use-nodecg';
 
 import NodeCG from '@nodecg/types';
+
+import { sendTo, sendToF } from '../../common/listeners';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;
 

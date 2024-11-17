@@ -12,6 +12,20 @@
     "compatibleRange": "^2.0.0",
     "dashboardPanels": [
       {
+        "name": "mixer-control",
+        "title": "Mixer Control",
+        "width": 3,
+        "file": "mixer/dashboard/mixer-control/mixer.dashboard.html",
+        "headerColor": "#525F78"
+      },
+      {
+        "name": "mute-control",
+        "title": "Commentator Mute Control",
+        "width": 3,
+        "file": "mixer/dashboard/mixer-control/mute.dashboard.html",
+        "headerColor": "#525F78"
+      },
+      {
         "name": "people",
         "title": "People",
         "width": 4,
@@ -116,6 +130,7 @@
     "json-schema-to-typescript": "15.0.3",
     "markdown-to-jsx": "^7.4.1",
     "moment": "^2.30.0",
+    "osc": "2.4.4",
     "path-browserify": "^1.0.1",
     "react": "^18.2.0",
     "react-beautiful-dnd": "13.1.1",
@@ -128,6 +143,7 @@
     "react-textfit": "git+http://github.com/ericthelemur/react-textfit.git",
     "react-transition-group": "^4.4.5",
     "speedcontrol-util": "^0.6.1",
+    "tiny-typed-emitter": "2.1.0",
     "ts-node": "^10.9.1",
     "use-nodecg": "github:ericthelemur/use-nodecg"
   },
