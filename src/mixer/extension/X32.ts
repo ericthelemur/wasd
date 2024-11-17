@@ -115,36 +115,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
             }, t ?? 5000);
         }
 
-        this.conn.on('message', (message) => {
-            // I don't trust myself with all posibilities, so wrapping this up.
-            if (!message.address.endsWith("/status")) this.nodecg.log.info("[X32] Message recieved", message);
-
-            this.emit("message", message);
-
-            try {
-                // Clear countdown to disconnect
-                clearTimeout(this.connectionTimeout);
-                if (message.address.endsWith("/status")) {
-                    // Only transfer to connected on a response to initial status ping
-                    if (status.value.connection === "connecting") {
-                        status.value.connection = "connected";
-
-                        this._ignoreConnectionClosedEvents = false;
-                        clearInterval(this._reconnectInterval!);
-                        this._reconnectInterval = undefined;
-                        this.emit('ready');
-                    }
-                }
-
-                // Smooth faders
-                if (message.address.endsWith('/fader') || message.address.endsWith('/level')) {
-                    this.checkFaders(message);
-                }
-            } catch (err) {
-                this.nodecg.log.warn('[X32] Error parsing message');
-                this.nodecg.log.debug('[X32] Error parsing message:', err);
-            }
-        });
+        this.conn.on('message', this.processMessage);
 
         var renewInterval: NodeJS.Timeout;
         this.conn.on('ready', () => {
@@ -183,6 +154,44 @@ export class X32Utility extends TypedEmitter<X32Events> {
     connected() {
         return login.value.enabled && status.value.connection === "connected" && this.conn;
     }
+
+
+    processMessage(message: osc.OscMessage) {
+        if (!message.address.endsWith("/status")) this.nodecg.log.info("[X32] Message recieved", message);
+
+        this.emit("message", message);
+
+        try {
+            // Clear countdown to disconnect
+            clearTimeout(this.connectionTimeout);
+            if (message.address.endsWith("/status")) {
+                // Only transfer to connected on a response to initial status ping
+                if (status.value.connection === "connecting") {
+                    status.value.connection = "connected";
+
+                    this._ignoreConnectionClosedEvents = false;
+                    clearInterval(this._reconnectInterval!);
+                    this._reconnectInterval = undefined;
+                    this.emit('ready');
+                }
+            }
+
+            if (message.address.endsWith('/fader') || message.address.endsWith('/level')) {
+                // Record fader
+                const args = (message.args as { type: 'f', value: number }[])[0];
+                this.faders[message.address] = args.value;
+
+                // Smooth faders
+                if (this.fadersExpected[message.address]) {
+                    this.fadeCheck(message.address, args.value);
+                }
+            }
+        } catch (err) {
+            this.nodecg.log.warn('[X32] Error parsing message');
+            this.nodecg.log.debug('[X32] Error parsing message:', err);
+        }
+    }
+
 
     sendMethod(msg: OscMessage) {
         this.pendingReplies[msg.address] = msg;
@@ -232,7 +241,8 @@ export class X32Utility extends TypedEmitter<X32Events> {
         }
 
         if (!startValue) {
-            throw new Error('No Start Value');
+            this.nodecg.log.info(`No start value for ${name}, defaulting to fader value of ${this.faders[name]}`)
+            startValue = this.faders[name];
         }
 
         // Will stop doing a fade if we receive another one while the old one is running, for safety.
@@ -267,31 +277,26 @@ export class X32Utility extends TypedEmitter<X32Events> {
         }, 100);
     }
 
-    checkFaders(message: osc.OscMessage) {
-        const args = (message.args as { type: 'f', value: number }[])[0];
-        this.faders[message.address] = args.value;
+    fadeCheck(address: string, value: number) {
+        // Check if fading has finished
+        const exp = this.fadersExpected[address];
 
-        // Check if we're done fading and clear intervals if needed.
-        if (this.fadersExpected[message.address]) {
-            const exp = this.fadersExpected[message.address];
-
-            // Sometimes we receive a delayed message, so we wait until
-            // we've at least seen 1 value in the correct range.
-            if ((exp.increase && exp.value > args.value)
-                || (!exp.increase && exp.value < args.value)) {
-                exp.seenOnce = true;
+        // Sometimes we receive a delayed message, so we wait until
+        // we've at least seen 1 value in the correct range.
+        if ((exp.increase && exp.value > value)
+            || (!exp.increase && exp.value < value)) {
+            exp.seenOnce = true;
+        }
+        if (exp.seenOnce && ((exp.increase && exp.value <= value)
+            || (!exp.increase && exp.value >= value))) {
+            if (this.conn) {
+                this.conn.send({
+                    address: address,
+                    args: [{ type: 'f', value: exp.value }],
+                });
             }
-            if (exp.seenOnce && ((exp.increase && exp.value <= args.value)
-                || (!exp.increase && exp.value >= args.value))) {
-                if (this.conn) {
-                    this.conn.send({
-                        address: message.address,
-                        args: [{ type: 'f', value: exp.value }],
-                    });
-                }
-                clearInterval(this.fadersInterval[message.address]);
-                delete this.fadersExpected[message.address];
-            }
+            clearInterval(this.fadersInterval[address]);
+            delete this.fadersExpected[address];
         }
     }
 }
