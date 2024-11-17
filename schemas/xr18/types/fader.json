@@ -1,0 +1,21 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {},
+    "type": "object",
+    "properties": {
+        "type": {
+            "enum": [
+                "dca",
+                "fader",
+                "mutegroup"
+            ]
+        },
+        "index": {
+            "type": "number"
+        }
+    },
+    "required": [
+        "type",
+        "index"
+    ]
+}

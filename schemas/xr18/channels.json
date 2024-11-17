@@ -1,0 +1,90 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {},
+    "type": "object",
+    "properties": {
+        "dcas": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
+        },
+        "mics": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
+        },
+        "buses": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
+        },
+        "tech": {
+            "type": "integer"
+        },
+        "scenes": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "required": [
+        "dcas",
+        "tech",
+        "mics",
+        "scenes"
+    ],
+    "default": {
+        "dcas": {
+            "RUN-1": 1,
+            "RUN-2": 2,
+            "COMMS": 3,
+            "MUSIC": 4
+        },
+        "mics": {
+            "COM-1": 1,
+            "COM-2": 2,
+            "COM-3": 3,
+            "RUN-1": 4,
+            "RUN-2": 5,
+            "TECH": 6,
+            "RODE-1": 7,
+            "RODE-2": 8
+        },
+        "buses": {
+            "MAIN": 0,
+            "RUN-1": 1,
+            "RUN-2": 3,
+            "COMM": 5
+        },
+        "tech": 6,
+        "scenes": {
+            "RUN-1": [
+                "RUN-1",
+                "COMMS"
+            ],
+            "RUN-2": [
+                "RUN-2",
+                "COMMS"
+            ],
+            "RUN-RACE": [
+                "RUN-1",
+                "RUN-2",
+                "COMMS"
+            ],
+            "COMMS": [
+                "COMMS",
+                "MUSIC"
+            ],
+            "BREAK": [
+                "MUSIC"
+            ]
+        }
+    }
+}
