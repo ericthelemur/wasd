@@ -1,4 +1,4 @@
-import '../../common/uwcs-bootstrap.css';
+import '../../../common/uwcs-bootstrap.css';
 import './mixer.scss';
 
 import { useEffect, useState } from 'react';

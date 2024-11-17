@@ -1,7 +1,6 @@
-import '../../common/uwcs-bootstrap.css';
+import '../../../common/uwcs-bootstrap.css';
 import './mixer.scss';
 
-import { sendTo, sendToF } from 'common/listeners';
 import { FormEvent, useRef } from 'react';
 import { ExclamationTriangleFill, InfoCircleFill, RecordFill, Wifi } from 'react-bootstrap-icons';
 import Alert from 'react-bootstrap/Alert';
@@ -15,6 +14,8 @@ import { Configschema, Login, XrStatus } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
 import NodeCG from '@nodecg/types';
+
+import { sendTo, sendToF } from '../../common/listeners';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;
 

@@ -119,6 +119,7 @@
     "@parcel/config-default": "^2.12.0",
     "@parcel/core": "^2.12.0",
     "@parcel/reporter-cli": "^2.12.0",
+    "@parcel/resolver-glob": "^2.13.0",
     "@parcel/transformer-sass": "2.12.0",
     "@parcel/validator-typescript": "^2.12.0",
     "chalk": "5.3.0",

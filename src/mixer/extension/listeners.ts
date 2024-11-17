@@ -1,9 +1,9 @@
-import { getNodeCG, Replicant, storeNodeCG } from 'common/utils';
 import { Channels, Login, Muted, TechMuted } from 'types/schemas';
 
+import { getNodeCG, Replicant, storeNodeCG } from '../../common/utils';
 import { listenTo } from '../common/listeners';
-import { getX32 } from './index.extension';
 import { channels, login, muted, techMuted } from './replicants';
+import { getX32 } from './utils';
 
 const x32 = getX32();
 
