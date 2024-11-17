@@ -1,5 +1,6 @@
 import type NodeCG from '@nodecg/types';
 import type { Configschema } from '../types/schemas';
+import fs from 'fs';
 import path from 'path';
 import SpeedcontrolUtil from 'speedcontrol-util';
 import { NodeCGServer } from 'speedcontrol-util/types/nodecg/lib/nodecg-instance';
@@ -24,12 +25,14 @@ export function prefixName(prefix: string | undefined, name: string) {
     return prefix ? `${prefix}:${name}` : name;
 }
 
-function buildSchemaPath(parent: string, schemaName: string) {
+export function buildSchemaPath(parent: string, schemaName: string) {
     const p = path.resolve(process.cwd(), 'bundles', 'wasd', 'schemas', parent, `${encodeURIComponent(schemaName)}.json`);
     return p;
 }
 
 export function Replicant<T>(name: string, component: string, args: NodeCG.Replicant.OptionsNoDefault = {}) {
-    return nodecg.Replicant<T>(name, { "schemaPath": buildSchemaPath(component, name), ...args }) as unknown as NodeCG.ServerReplicantWithSchemaDefault<T>;
+    const path = args["schemaPath"] ? args["schemaPath"] : buildSchemaPath(component, name);
+    if (!fs.existsSync(path)) nodecg.log.error(`Cannot find schema ${path} for replicant ${component}/${name}`);
+    return nodecg.Replicant<T>(name, { "schemaPath": path, ...args }) as unknown as NodeCG.ServerReplicantWithSchemaDefault<T>;
 }
 

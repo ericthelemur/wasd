@@ -31,6 +31,14 @@
         "width": 2,
         "file": "wasd/dashboard/countdown/countdown.dashboard.html",
         "headerColor": "#525F78"
+      },
+      {
+        "name": "editor",
+        "title": "Replicant Editor",
+        "width": 4,
+        "file": "dev/dashboard/dev.dashboard.html",
+        "headerColor": "#525F78",
+        "workspace": "ZZZ - Dev"
       }
     ],
     "graphics": [
@@ -103,6 +111,7 @@
     "clone": "^2.1.2",
     "fs-extra": "11.2.0",
     "get-current-line": "^7.4.0",
+    "json-edit-react": "^1.17.1",
     "json-schema-defaults": "0.4.0",
     "json-schema-to-typescript": "15.0.3",
     "markdown-to-jsx": "^7.4.1",
@@ -136,8 +145,7 @@
     "cross-env": "*",
     "glob": "^11.0.0",
     "nodemon": "*",
-    "typescript": "^5.1.3",
-    "nodecg-dono-control": "1.0.0"
+    "typescript": "^5.1.3"
   },
   "license": "MIT",
   "@parcel/bundler-default": {

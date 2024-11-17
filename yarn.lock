@@ -2331,6 +2331,14 @@ js-yaml@^4.1.0:
   dependencies:
     argparse "^2.0.1"
 
+json-edit-react@^1.17.1:
+  version "1.17.1"
+  resolved "https://registry.yarnpkg.com/json-edit-react/-/json-edit-react-1.17.1.tgz#4a4c10a3c1c7e4046e175e414a5b6eb784936639"
+  integrity sha512-UDGkBpgPoJplyT2MaPbGbKQhQjgvswaDWNbKCEkorq3r72DVm5qQErvribrc/ioZsqSnzCeDT8EwzMi4L2Az1g==
+  dependencies:
+    object-property-assigner "^1.3.0"
+    object-property-extractor "^1.0.11"
+
 json-parse-even-better-errors@^2.3.0:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/json-parse-even-better-errors/-/json-parse-even-better-errors-2.3.1.tgz#7c47805a94319928e05777405dc12e1f7a4ee02d"
@@ -2706,6 +2714,16 @@ object-assign@^4, object-assign@^4.0.1, object-assign@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/object-assign/-/object-assign-4.1.1.tgz#2109adc7965887cfc05cbbd442cac8bfbb360863"
   integrity sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==
+
+object-property-assigner@^1.3.0:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/object-property-assigner/-/object-property-assigner-1.3.1.tgz#3f6be71be5fcfdaf2053bd11c08e745a57d38809"
+  integrity sha512-3R6x1l1sQA4jQBOqxkxH3DHw0PMh7K5UY4x1Yc5QYbbkzZpAJ8l9w+Trq/64ZRe2thiOsa8JpB4M7D61hnkjRA==
+
+object-property-extractor@^1.0.11:
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/object-property-extractor/-/object-property-extractor-1.0.12.tgz#d3824be4a01e8d4489d3cdcbd1dfc45828d1ad97"
+  integrity sha512-X6rMK1O6O3EU4O06BtATezWKr+5idX6Yo0PndVqr8NlED3Eoa2YE+VKQgQL4EK0+vh+YA83Sjj9Nsi/PuXXeDQ==
 
 on-headers@~1.0.2:
   version "1.0.2"

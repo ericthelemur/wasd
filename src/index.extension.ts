@@ -8,4 +8,5 @@ module.exports = function (nodecg: NodeCG.ServerAPI) {
     require("./people/extension/index.extension");
     require("./ticker/extension/index.extension");
     require("./wasd/extension/index.extension");
+    require("./dev/extension/index.extension");
 };
