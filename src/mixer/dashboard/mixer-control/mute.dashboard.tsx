@@ -12,6 +12,7 @@ import { useReplicant } from 'use-nodecg';
 import NodeCG from '@nodecg/types';
 
 import { sendTo, sendToF } from '../../common/listeners';
+import { Status } from './mixer.dashboard';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;
 
@@ -28,17 +29,6 @@ function copyToParams(mic: string | null) {
 	if (mic) params.set("mic", mic);
 	else params.delete("mic");
 	history.replaceState(null, "", url.href);
-}
-
-function Status() {
-	const [status,] = useReplicant<XrStatus>("xrStatus", { "connection": "disconnected" });
-	switch (status?.connection) {
-		case "connected": return <Badge bg="success">Connected</Badge>
-		case "connecting": return <Badge bg="info">Connecting</Badge>
-		case "disconnected": return <Badge bg="danger">Disconnected</Badge>
-		case "error": return <Badge bg="danger">Error</Badge>
-	}
-	return null;
 }
 
 function MicChoice({ setMic }: { setMic: (m: string) => void }) {

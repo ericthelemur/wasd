@@ -19,7 +19,7 @@ import { sendTo, sendToF } from '../../common/listeners';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;
 
-function Status() {
+export function Status() {
 	const [status,] = useReplicant<XrStatus>("xrStatus", { "connection": "disconnected" });
 	switch (status?.connection) {
 		case "connected": return <Badge bg="success">Connected</Badge>

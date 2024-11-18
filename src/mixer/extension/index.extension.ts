@@ -1,4 +1,4 @@
-import { storeX32 } from './utils';
+import { storeX32 } from './mixer/utils';
 
 const x32 = require("./X32");
 const x32u = new x32.X32Utility();
