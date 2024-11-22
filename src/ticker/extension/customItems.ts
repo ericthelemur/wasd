@@ -6,7 +6,8 @@ import { bank, pools } from './replicants';
 
 const nodecg = getNodeCG();
 
-try {
+
+function upcoming() {
     if (nodecg.extensions["nodecg-speedcontrol"]) {
         const sc = getSpeedControlUtil();
 
@@ -20,23 +21,27 @@ try {
             const runners = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
             const term = ["next", "2nd", "3rd"][i];
 
-            const msg = `${run.game} with ${runners} coming up ${term} at ${dateStr}`;
-            const bid = "run-" + run.id;
+            const bid = "upcoming-" + i;
             const existing = bank.value[bid];
-            nodecg.log.info(bid, msg, Boolean(existing), findMsgIDIndex(pools.value.runs, bid));
-            if (existing) {
+            const msg = `${run.game} ${runners ? "with " : ""}${runners} coming up ${term} at ${dateStr}`;
+
+            if (existing && (existing.text != msg)) {
                 existing.text = msg;
             } else {
-                const newVal = { text: msg, priority: Math.pow(2, 2 - i), lastShown: Date.now() + i * 60 * 1000 };
+                const newVal = { text: msg, priority: Math.pow(2, 2 - i), lastShown: Date.now() + i * 10 * 1000 };
                 bank.value[bid] = newVal;
             }
-
 
             if (findMsgIDIndex(pools.value.runs, bid) == -1) {
                 addToPool({ id: bid }, pools.value.runs, null);
             }
         });
     }
+}
+
+try {
+    upcoming();
+    setInterval(upcoming, 10 * 1000);
 } catch (e) {
     nodecg.log.error(e);
 }
