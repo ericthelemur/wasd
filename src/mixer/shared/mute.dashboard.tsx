@@ -1,5 +1,5 @@
-import '../../../common/uwcs-bootstrap.css';
-import './mixer.scss';
+import '../../common/uwcs-bootstrap.css';
+import '../dashboard/mixer-control/mixer.scss';
 
 import { useEffect, useState } from 'react';
 import Badge from 'react-bootstrap/Badge';
@@ -11,10 +11,18 @@ import { useReplicant } from 'use-nodecg';
 
 import NodeCG from '@nodecg/types';
 
-import { sendTo, sendToF } from '../../common/listeners';
-import { Status } from './mixer.dashboard';
+import { sendTo, sendToF } from '../common/listeners';
 
-declare const nodecg: NodeCG.ClientAPI<Configschema>;
+export function Status() {
+	const [status,] = useReplicant<XrStatus>("xrStatus", { "connection": "disconnected" });
+	switch (status?.connection) {
+		case "connected": return <Badge bg="success">Connected</Badge>
+		case "connecting": return <Badge bg="info">Connecting</Badge>
+		case "disconnected": return <Badge bg="danger">Disconnected</Badge>
+		case "error": return <Badge bg="danger">Error</Badge>
+	}
+	return null;
+}
 
 function fetchFromParams() {
 	const url = new URL(window.location.href);

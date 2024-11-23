@@ -29,6 +29,7 @@ function argParse(def) {
     extension: argv.includes('--extension') || buildAll || buildDefault,
     dashboard: argv.includes('--dashboard') || buildAll || buildDefault || buildBrowser,
     graphics: argv.includes('--graphics') || buildAll || buildDefault || buildBrowser,
+    shared: argv.includes('--shared') || buildAll || buildDefault || buildBrowser,
     schemas: argv.includes('--schemas') || argv.includes('--types') || buildAll,
     nodeModules: argv.includes('--node-modules'),
     production: argv.includes('--production'),
@@ -60,6 +61,7 @@ if (build.cleanOnly || build.clean) {
   if (build.schemas) deleteDir("src/types/schemas");
   if (build.extension) deleteDir("extension");
   if (build.dashboard) deleteDir("dashboard");
+  if (build.shared) deleteDir("shared");
   if (build.graphics) deleteDir("graphics");
   if (build.all || build.nodeModules) deleteDir(".parcel-cache");
   if (build.nodeModules) deleteDir("node_modules");
@@ -98,13 +100,6 @@ if (build.dashboard) {
       ],
       validators: {
         "*.{ts,tsx}": ["@parcel/validator-typescript"]
-      },
-      unstable_manualSharedBundles: {
-        "name": "vendor",
-        "root": "./shared.ts",
-        "assets": ["**/*"],
-        "types": ["js", "ts"],
-        "split": 1
       }
     }),
   );
@@ -119,6 +114,31 @@ if (build.graphics) {
           ...commonBrowserTargetProps,
           distDir: './graphics',
           publicUrl: `/bundles/wasd/graphics`,
+        },
+      },
+      defaultConfig: '@parcel/config-default',
+      additionalReporters: [
+        {
+          packageName: '@parcel/reporter-cli',
+          resolveFrom: fileURLToPath(import.meta.url),
+        },
+      ],
+      validators: {
+        "*.{ts,tsx}": ["@parcel/validator-typescript"]
+      }
+    }),
+  );
+}
+
+if (build.shared) {
+  bundlers.add(
+    new Parcel({
+      entries: glob.sync('src/*/shared/**/*.html'),
+      targets: {
+        default: {
+          ...commonBrowserTargetProps,
+          distDir: './shared',
+          publicUrl: `/bundles/wasd/shared`,
         },
       },
       defaultConfig: '@parcel/config-default',

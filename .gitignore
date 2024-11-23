@@ -4,5 +4,6 @@ bower_components
 .parcel-cache
 /dashboard
 /graphics
+/shared
 /extension
-/yarn-error.log
+*.log
