@@ -100,18 +100,9 @@ oengusImportStatus.on("change", (newVal, oldVal) => {
 
 
 
-
-
 // Update runners category with speedcontrol
-
-nodecg.listenFor("changeToNextRun", "nodecg-speedcontrol", async (data, ack) => {
-    // Update runners category
-    // or do this in control panel? - probably?
-});
-
+// nodecg.listenFor("changeToNextRun", "nodecg-speedcontrol", async (data, ack) => {
 // nodecg.listenFor("changeActiveRun", "nodecg-speedcontrol", async (data, ack) => {
-//     // Also here
-// });
 
 sc.runDataActiveRun.on("change", (run) => {
     let runners: RunDataPlayer[] = [];
@@ -124,9 +115,7 @@ sc.runDataActiveRun.on("change", (run) => {
         return;
     }
 
-
     let allRunners: [string, Person][] = [];
-
 
     run.teams.forEach((team, i) => {
         runners = team.players;
@@ -137,11 +126,35 @@ sc.runDataActiveRun.on("change", (run) => {
             let person = Object.entries(peopleBank.value).find(([k, p]) => p.scID == runner.id);
             if (!person) person = Object.entries(peopleBank.value).find(([k, p]) => p.name == runner.name);
 
+            if (!person) {
+                // Create dummy person if not existing
+                nodecg.log.warn(`Person not found for runner ${runner.name} (${runner.id})`);
+                let id = runner.name || runner.id.toString();
+                const socials = [];
+
+                if (runner.social.twitch) socials.push({ id: "twitch", social: "twitch", name: runner.social.twitch });
+                if ((runner.social as any).youtube) socials.push({ id: "youtube", social: "youtube", name: (runner.social as any) });
+
+                const p = {
+                    id: id,
+                    name: runner.name,
+                    pronouns: runner.pronouns || "",
+                    socials: socials
+                }
+                peopleBank.value[id] = p;
+                person = [id, p];
+
+                if (!people.value.all.people.includes(id)) {
+                    people.value.all.people.push(id);
+                }
+            }
+
             if (person) {
                 allRunners.push(person);
                 teamPeople.push(person);
+            } else {
+                nodecg.log.error(`Person not found or created for runner ${runner.name} (${runner.id})`);
             }
-            else nodecg.log.warn(`Person not found for runner ${runner.name} (${runner.id})`);
         }
 
         if (run.teams.length > 1) {
