@@ -6,6 +6,7 @@ import { people, peopleBank } from './replicants';
 import { OengusImportStatus } from 'speedcontrol-util/types/speedcontrol/schemas';
 import NodeCG from '@nodecg/types';
 import { Person } from 'types/schemas';
+import { klona } from 'klona';
 
 const nodecg = getNodeCG();
 
@@ -101,14 +102,6 @@ oengusImportStatus.on("change", (newVal, oldVal) => {
 
 
 
-
-
-
-
-
-
-
-
 // Update runners category with speedcontrol
 
 nodecg.listenFor("changeToNextRun", "nodecg-speedcontrol", async (data, ack) => {
@@ -123,19 +116,43 @@ nodecg.listenFor("changeToNextRun", "nodecg-speedcontrol", async (data, ack) => 
 sc.runDataActiveRun.on("change", (run) => {
     let runners: RunDataPlayer[] = [];
 
-    if (run) {
-        if (run.teams.length <= 1) {
-            runners = run.teams[0].players;
+    const teamKeys = Object.keys(people.value).filter(n => n.startsWith("team"));
+    teamKeys.forEach(t => delete people.value[t]);
 
-            if (people.value.runners) people.value.runners.hide = false;
-            if (people.value.team1) people.value.team1.hide = true;
-            if (people.value.team2) people.value.team2.hide = true;
+    if (!run || run.teams.length == 0) {
+        people.value.runners.people = [];
+        return;
+    }
 
-            people.value.runners.people = []
+
+    let allRunners: [string, Person][] = [];
+
+
+    run.teams.forEach((team, i) => {
+        runners = team.players;
+
+        let teamPeople = [];
+
+        for (let runner of runners) {
+            let person = Object.entries(peopleBank.value).find(([k, p]) => p.scID == runner.id);
+            if (!person) person = Object.entries(peopleBank.value).find(([k, p]) => p.name == runner.name);
+
+            if (person) {
+                allRunners.push(person);
+                teamPeople.push(person);
+            }
+            else nodecg.log.warn(`Person not found for runner ${runner.name} (${runner.id})`);
         }
 
-        // for (let team in run.teams) {
-        //     teams
-        // }
-    }
+        if (run.teams.length > 1) {
+            const tid = `team${i + 1}`;
+            people.value[tid] = {
+                "name": team.name ?? `Team ${i + 1}`,
+                "icon": klona(people.value.runners?.icon),
+                "people": teamPeople.map(([k, p]) => k)
+            }
+        }
+    });
+
+    people.value.runners.people = allRunners.map(([k, p]) => k);
 });
