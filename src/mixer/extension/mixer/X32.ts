@@ -26,7 +26,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
     faders: { [k: string]: number } = {};
     fadersExpected: {
         [k: string]: {
-            value: number, increase: boolean, seenOnce: boolean,
+            value: number, increase: boolean, seenOnce: boolean
         }
     } = {};
     private fadersInterval: { [k: string]: NodeJS.Timeout } = {};
@@ -57,7 +57,8 @@ export class X32Utility extends TypedEmitter<X32Events> {
                 this._ignoreConnectionClosedEvents = true;
                 clearTimeout(this.connectionTimeout);
                 try {
-                    this.conn.close();
+                    if (!this.conn) status.value.connection = "disconnected";
+                    else this.conn.close();
                 } catch (e) { this.nodecg.log.error(e) }
                 if (ack && !ack.handled) ack();
             });
@@ -95,34 +96,38 @@ export class X32Utility extends TypedEmitter<X32Events> {
 
         this.conn.on('error', (err) => {
             if (!err.message.startsWith("A malformed type tag string was found while reading the arguments of an OSC message.")) {
-                this.nodecg.log.warn('[X32] Error on connection');
+                this.nodecg.log.warn('[X32] Error on connection', err);
                 this.nodecg.log.debug('[X32] Error on connection:', err);
                 // status.value.connection = "error";
             }
         });
 
         const startTimeout = (t?: number) => {
-            clearTimeout(this.connectionTimeout);
-            this.conn.send({ address: '/xremote', args: [] });
-            this.conn.send({ address: '/status', args: [] });
-            this.connectionTimeout = setTimeout(() => {
-                if (status.value.connection === "connected" || status.value.connection == "connecting") {
-                    this.nodecg.log.info("[X32] Connection timed out");
-                    try {
-                        this.conn.close();
-                    } catch (e) { this.nodecg.log.error(e) }
-                }
-            }, t ?? 5000);
+            try {
+                clearTimeout(this.connectionTimeout);
+                this.conn.send({ address: '/xremote', args: [] });
+                this.conn.send({ address: '/status', args: [] });
+                this.connectionTimeout = setTimeout(() => {
+                    if (status.value.connection === "connected" || status.value.connection == "connecting") {
+                        this.nodecg.log.info("[X32] Connection timed out");
+                        try {
+                            this.conn.close();
+                        } catch (e) { this.nodecg.log.error(e) }
+                    }
+                }, t ?? 5000);
+            } catch (e) {
+                this.nodecg.log.error(e);
+            }
         }
 
-        this.conn.on('message', this.processMessage);
+        this.conn.on('message', this.processMessage.bind(this));
 
         var renewInterval: NodeJS.Timeout;
         this.conn.on('ready', () => {
             this.nodecg.log.info('[X32] Connection ready');
 
             // Subscribe/renew to updates (must be done every <10 seconds).
-            if (this.conn) startTimeout(3000);
+            if (this.conn) startTimeout(8000);
             renewInterval = setInterval(() => {
                 if (this.conn) startTimeout();
             }, 8 * 1000);
@@ -241,7 +246,6 @@ export class X32Utility extends TypedEmitter<X32Events> {
         }
 
         if (!startValue) {
-            this.nodecg.log.info(`No start value for ${name}, defaulting to fader value of ${this.faders[name]}`)
             startValue = this.faders[name];
         }
 
@@ -253,6 +257,29 @@ export class X32Utility extends TypedEmitter<X32Events> {
 
         this.nodecg.log.debug(`[X32] Attempting to fade ${name} `
             + `(${startValue} => ${endValue}) for ${length}ms`);
+
+        if (startValue) this.runFade(name, startValue, endValue, length);
+        else {
+            this.nodecg.log.info(`No start value for ${name}, looking up fader`);
+            const msg = { address: name, args: [] };
+            this.pendingReplies[name] = msg;
+            this.conn.send(msg);
+
+            const process = (m: OscMessage) => {
+                if (m.address === msg.address) {
+                    this.removeListener("message", process);
+                    startValue = (m.args as { type: 'f', value: number }[])[0].value;
+                    this.nodecg.log.info(`Looked up value ${startValue} for ${name}, starting fade`);
+                    this.runFade(name, startValue, endValue, length);
+                }
+            };
+            this.addListener("message", process);
+        }
+    }
+
+
+    runFade(name: string, startValue: number, endValue: number, length: number) {
+        if (startValue == endValue) return;
         let currentValue = startValue;
         const increase = startValue < endValue;
         const stepCount = length / 100;
@@ -264,6 +291,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
         });
         this.fadersInterval[name] = setInterval(() => {
             if ((increase && currentValue >= endValue) || (!increase && currentValue <= endValue)) {
+                // if ((increase && currentValue >= endValue - 0.05) || (!increase && currentValue <= endValue + 0.05)) {
                 clearInterval(this.fadersInterval[name]);
                 delete this.fadersExpected[name];
             }
@@ -289,6 +317,8 @@ export class X32Utility extends TypedEmitter<X32Events> {
         }
         if (exp.seenOnce && ((exp.increase && exp.value <= value)
             || (!exp.increase && exp.value >= value))) {
+            // if (exp.seenOnce && ((exp.increase && exp.value <= value - 0.05)
+            //     || (!exp.increase && exp.value >= value + 0.05))) {
             if (this.conn) {
                 this.conn.send({
                     address: address,

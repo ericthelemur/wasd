@@ -9,6 +9,12 @@
                 "type": "integer"
             }
         },
+        "mutegroups": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
+        },
         "mics": {
             "type": "object",
             "additionalProperties": {
@@ -36,6 +42,7 @@
     },
     "required": [
         "dcas",
+        "mutegroups",
         "tech",
         "mics",
         "scenes"
@@ -46,6 +53,10 @@
             "RUN-2": 2,
             "COMMS": 3,
             "MUSIC": 4
+        },
+        "mutegroups": {
+            "GAME": 3,
+            "RODES": 4
         },
         "mics": {
             "COM-1": 1,
@@ -67,16 +78,19 @@
         "scenes": {
             "RUN-1": [
                 "RUN-1",
-                "COMMS"
+                "COMMS",
+                "GAME"
             ],
             "RUN-2": [
                 "RUN-2",
-                "COMMS"
+                "COMMS",
+                "GAME"
             ],
             "RUN-RACE": [
                 "RUN-1",
                 "RUN-2",
-                "COMMS"
+                "COMMS",
+                "GAME"
             ],
             "COMMS": [
                 "COMMS",

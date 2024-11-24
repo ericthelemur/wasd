@@ -9,6 +9,9 @@ export interface Channels {
 	dcas: {
 		[k: string]: number;
 	};
+	mutegroups: {
+		[k: string]: number;
+	};
 	mics: {
 		[k: string]: number;
 	};

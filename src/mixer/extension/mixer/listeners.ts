@@ -19,19 +19,42 @@ genReverseMap();
 
 const nodecg = getNodeCG();
 // Update DCAs with OBS scene
-nodecg.listenFor("transitioning", "nodecg-obs-control", (data: { transitionName: string; fromScene?: string; toScene?: string; }) => {
-    if (!x32.connected() || login.value.suppress) return;
-    if (!data.toScene) return;
-    const newActiveDCAs = channels.value.scenes[data.toScene]
+// nodecg.listenFor("transitioning", "nodecg-obs-control", (data: { transitionName: string; fromScene?: string; toScene?: string; }) => {
+
+function setDCAs(toScene?: string) {
+    if (!x32.connected()) return;
+    if (!toScene) return;
+    const newActiveDCAs = channels.value.scenes[toScene];
     nodecg.log.info("Settings DCAs to", newActiveDCAs);
     if (!newActiveDCAs) return;
+
     for (const [name, number] of Object.entries(channels.value.dcas)) {
         const enabledDCA = newActiveDCAs.includes(name);
         const address = `/dca/${number}/fader`;
         // x32.setFader(address, enabledDCA ? 0.75 : 0);
-        x32.sendMethod({ address: address, args: [{ type: 'f', value: enabledDCA ? 0.75 : 0 }] });
+        // x32.sendMethod({ address: address, args: [{ type: 'f', value: enabledDCA ? 0.75 : 0 }] });
+        x32.fade(address, null, enabledDCA ? 0.75 : 0, enabledDCA ? 1000 : 500);
     }
-})
+
+    // for (const [name, number] of Object.entries(channels.value.mutegroups)) {
+    //     const enabledDCA = newActiveDCAs.includes(name);
+    //     const address = `/config/mute/${number}`;
+    //     x32.sendMethod({ address: address, args: [{ type: 'i', value: enabledDCA ? 0 : 1 }] });
+    // }
+}
+
+nodecg.listenFor("transitioning", "nodecg-obs-control", (data: { transitionName: string; fromScene?: string; toScene?: string; }) => {
+    if (!x32.connected() || login.value.suppress) return;
+    if (!data.toScene) return;
+    setDCAs(data.toScene);
+});
+
+
+nodecg.listenFor("setDCAs", (data: { toScene?: string; }) => {
+    if (!x32.connected() || login.value.suppress) return;
+    if (!data.toScene) return;
+    setDCAs(data.toScene);
+});
 
 // Mute initialization
 x32.on("ready", () => {
@@ -51,8 +74,8 @@ listenTo("setMute", ({ mic, muted }) => {
     if (!channels.value || !channels.value.mics) return;
     const chIndex = channels.value.mics[mic];
     const chStr = String(chIndex).padStart(2, "0");
-    const address = `/ch/${chStr}/mix/on`
-    return x32.sendMethod({ address: address, args: [{ type: 'i', value: Number(!muted) }] })
+    const address = `/ch/${chStr}/mix/on`;
+    return x32.sendMethod({ address: address, args: [{ type: 'i', value: Number(!muted) }] });
 })
 
 // Mute toggle response
