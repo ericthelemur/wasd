@@ -12,6 +12,7 @@ import { useReplicant } from 'use-nodecg';
 import { Camera, SceneInfoContext } from './components/cam';
 import { Game, TimerComp } from './components/game';
 import { Sidebar } from './components/sidebar';
+import SpecialEffect from '../assets/specialeffect-white.png';
 
 declare const defaultScene: string | undefined;
 
@@ -46,24 +47,33 @@ function Overlay({ aspect }: { aspect: [number, number] }) {
     const infoInSidebar = 9 * aspect[0] < 16 * aspect[1];
     console.log(aspect, infoInSidebar);
 
-    return <div className="fill d-flex outer flex-column h-100" style={{ fontFamily: "Montserrat", fontWeight: "600" }}>
+    return <div className="fill d-flex outer flex-column h-100 justify-content-between" style={{ fontFamily: "Montserrat", fontWeight: "600" }}>
         {/* <Sidebar className="flex-gs" vertical={infoInSidebar} /> */}
         <div className="d-flex">
-            <div className="w-50">
+            <div style={{ width: "calc(50% + 0.5 * var(--bw))", marginRight: "calc(-1 * var(--bw))" }}>
                 <Camera camName="GAME-1" aspectRatio={`${aspect[0]} / ${aspect[1]}`} />
             </div>
-            <div className="w-50">
+            <div style={{ width: "calc(50% + 0.5 * var(--bw))" }}>
                 <Camera camName="GAME-2" aspectRatio={`${aspect[0]} / ${aspect[1]}`} />
             </div>
         </div>
-        <div style={{ position: "absolute", bottom: 0, height: "calc(287px + var(--bw))", left: 0, right: 0 }} className="d-flex flex-row">
+        {/* <div style={{ position: "absolute", bottom: 0, height: "calc(287px + var(--bw))", left: 0, right: 0 }} className="d-flex flex-row"> */}
+        <div className="d-flex flex-row flex-grow-1 flex-shrink-1" style={{ height: 300, marginTop: "calc(-1 * var(--bw))", maxHeight: 400 }}>
             <div style={{ aspectRatio: "4 / 3", height: "100%" }}>
                 <Camera camName="CAM-1" aspectRatio="4 / 3" />
             </div>
-            <div className="d-flex vcentre mx-4 my-2 gap-3" style={{ flex: "1 1 0" }}>
-                <Game />
-                <div style={{ width: 10 }} />
-                <TimerComp />
+            <div className="d-flex vcentre mx-3 my-3 gap-3 position-relative" style={{ flex: "1 1 0", paddingTop: "var(--bw)" }}>
+                <div className="h-100 m-3 position-relative d-flex" style={{ width: "60%" }}>
+                    <Game />
+                </div>
+                <div className="position-relative vstack" style={{ width: "40%" }}>
+                    <div className="w-100 position-relative" style={{ height: "50%", flexShrink: 1 }}>
+                        <TimerComp textfit={true} />
+                    </div>
+                    <div className="w-100 position-relative" style={{ height: "50%" }}>
+                        <img src={SpecialEffect} className="h-100 w-100 object-fit-contain" />
+                    </div>
+                </div>
             </div>
             <div style={{ aspectRatio: "4 / 3", height: "100%" }}>
                 <Camera camName="CAM-2" aspectRatio="4 / 3" />
