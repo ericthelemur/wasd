@@ -56,6 +56,8 @@ export class X32Utility extends TypedEmitter<X32Events> {
             listenTo("disconnect", (li, ack) => {
                 this._ignoreConnectionClosedEvents = true;
                 clearTimeout(this.connectionTimeout);
+                clearInterval(this._reconnectInterval);
+                console.log("Disconnect", this._ignoreConnectionClosedEvents, this.connectionTimeout, this._reconnectInterval);
                 try {
                     if (!this.conn) status.value.connection = "disconnected";
                     else this.conn.close();

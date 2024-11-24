@@ -56,7 +56,8 @@
             },
             "people": [
                 "owen"
-            ]
+            ],
+            "hide": true
         }
     }
 }

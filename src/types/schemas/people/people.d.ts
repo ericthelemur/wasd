@@ -13,6 +13,7 @@ export interface Category {
 	name: string;
 	people: string[];
 	icon?: Icon;
+	hide?: boolean;
 	[k: string]: unknown;
 }
 export interface Icon {

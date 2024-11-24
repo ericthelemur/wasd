@@ -13,6 +13,9 @@
         },
         "icon": {
             "$ref": "icon.json"
+        },
+        "hide": {
+            "type": "boolean"
         }
     },
     "required": [

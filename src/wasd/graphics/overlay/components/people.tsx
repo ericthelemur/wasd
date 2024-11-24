@@ -3,7 +3,7 @@ import './people.scss';
 import clone from 'clone';
 import {
     Category, Icon, People, PeopleBank, Person, Social, Socials
-} from 'nodecg-people-control/src/types/schemas';
+} from 'types/schemas';
 import { useEffect, useState } from 'react';
 import { At } from 'react-bootstrap-icons';
 import Badge from 'react-bootstrap/badge';
@@ -147,7 +147,7 @@ export function CategoryComp({ cat }: { cat: Category }) {
     </div>
 }
 
-export function People({ cat }: { cat?: string }) {
+export function PeopleComp({ cat }: { cat?: string }) {
     const [people,] = useReplicant<People>("people", { all: { name: "All", people: [] } }, { namespace: "nodecg-people-control" })
     if (!people) return <></>;
     const category = people[cat ?? "all"];

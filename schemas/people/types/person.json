@@ -13,6 +13,9 @@
             "items": {
                 "$ref": "social.json"
             }
+        },
+        "scID": {
+            "type": "string"
         }
     },
     "required": [

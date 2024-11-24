@@ -2,7 +2,7 @@ import { useContext } from 'react';
 
 import { Camera, SceneInfoContext } from './cam';
 import { Game, TimerComp } from './game';
-import { People } from './people';
+import { PeopleComp } from './people';
 
 import SpecialEffect from '../../assets/specialeffect-white.png';
 import WASDKeys from '../../assets/wasd-keys.svg';
@@ -23,11 +23,11 @@ export function Sidebar(props: SidebarArgs) {
             <Camera camName={sceneInfo.name === "RUN-1" ? "CAM-1" : "CAM-2"} aspectRatio={"4 / 3"} dims={["100%", null]} />
             <div className={`flex-gs d-flex flex-column align-items-center gap-3`} style={{ margin: "1rem calc(1rem + 0.5 * var(--bw)) 1rem 1rem" }}>
                 <div className='w-100'>
-                    <People cat="runners" />
-                    <People cat="commentators" />
-                    <People cat="tech" />
+                    <PeopleComp cat="runners" />
+                    <PeopleComp cat="commentators" />
+                    {/* <People cat="tech" /> */}
                 </div>
-                <img src={SpecialEffect} style={{width: "90%"}} />
+                <img src={SpecialEffect} style={{ width: "90%" }} />
                 {vertical && <><Game vertical={vertical} /><TimerComp /></>}
             </div>
         </div>

@@ -12,6 +12,7 @@ export interface Person {
 	name: string;
 	pronouns: string;
 	socials: Social[];
+	scID?: string;
 	[k: string]: unknown;
 }
 export interface Social {
