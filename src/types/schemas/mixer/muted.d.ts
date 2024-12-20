@@ -6,5 +6,8 @@
  */
 
 export interface Muted {
-	[k: string]: boolean;
+	[k: string]: {
+		muted: boolean;
+		soloed: boolean;
+	};
 }

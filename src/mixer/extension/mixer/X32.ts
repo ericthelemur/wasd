@@ -96,6 +96,12 @@ export class X32Utility extends TypedEmitter<X32Events> {
             metadata: true,
         });
 
+        const origSend = this.conn.send.bind(this.conn);
+        this.conn.send = (msg, address, port) => {
+            this.nodecg.log.info(`Sending ${JSON.stringify(msg)}`);
+            origSend(msg, address, port);
+        }
+
         this.conn.on('error', (err) => {
             if (!err.message.startsWith("A malformed type tag string was found while reading the arguments of an OSC message.")) {
                 this.nodecg.log.warn('[X32] Error on connection', err);
@@ -279,30 +285,40 @@ export class X32Utility extends TypedEmitter<X32Events> {
         }
     }
 
+    lerp(v1: number, v2: number, w: number) {
+        return v1 * (1 - w) + v2 * w;
+    }
 
     runFade(name: string, startValue: number, endValue: number, length: number) {
-        if (startValue == endValue) return;
+        if (Math.abs(startValue - endValue) < 0.01) {
+            this.conn.send({ address: name, args: [{ type: 'f', value: endValue }] });
+            this.nodecg.log.info("Start and end values are too close together, no fade!");
+            return;
+        }
         let currentValue = startValue;
         const increase = startValue < endValue;
-        const stepCount = length / 100;
-        const stepSize = (endValue - startValue) / stepCount;
+        const stepCount = length / 100;     // 10 steps per sec
         this.fadersExpected[name] = { value: endValue, increase, seenOnce: false };
         this.conn.send({
             address: '/subscribe',
             args: [{ type: 's', value: name }, { type: 'i', value: 0 }],
         });
+
+        let stepIndex = 0;
         this.fadersInterval[name] = setInterval(() => {
-            if ((increase && currentValue >= endValue) || (!increase && currentValue <= endValue)) {
+            stepIndex++;
+            if (stepIndex >= stepCount || (increase && currentValue >= endValue) || (!increase && currentValue <= endValue)) {
                 // if ((increase && currentValue >= endValue - 0.05) || (!increase && currentValue <= endValue + 0.05)) {
                 clearInterval(this.fadersInterval[name]);
                 delete this.fadersExpected[name];
-            }
-            if (this.conn) {
-                this.conn.send({ address: name, args: [{ type: 'f', value: currentValue }] });
-            }
-            currentValue += stepSize;
-            if ((increase && currentValue > endValue) || (!increase && currentValue < endValue)) {
-                currentValue = endValue;
+
+                this.conn.send({ address: name, args: [{ type: 'f', value: endValue }] });
+            } else {
+                currentValue = this.lerp(startValue, endValue, stepIndex / stepCount);
+
+                if (this.conn) {
+                    this.conn.send({ address: name, args: [{ type: 'f', value: currentValue }] });
+                }
             }
         }, 100);
     }

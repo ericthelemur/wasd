@@ -62,8 +62,13 @@ x32.on("ready", () => {
         const adStr = String(ch).padStart(2, "0");
         // Poll muted for each on startup
         x32.sendMethod({ address: `/ch/${adStr}/mix/on`, args: [] }).then((r) => {
-            // const args = r.args as [{ type: "i", value: number }];
-            // muted.value[k] = !Boolean(args[0].value);
+            const args = r.args as [{ type: "i", value: number }];
+            muted.value[k].muted = !Boolean(args[0].value);
+        });
+
+        x32.sendMethod({ address: `/-stat/solosw/${adStr}`, args: [] }).then((r) => {
+            const args = r.args as [{ type: "i", value: number }];
+            muted.value[k].soloed = Boolean(args[0].value);
         });
     })
 })
@@ -78,14 +83,35 @@ listenTo("setMute", ({ mic, muted }) => {
     return x32.sendMethod({ address: address, args: [{ type: 'i', value: Number(!muted) }] });
 })
 
+// Mute toggle send
+listenTo("setTalkback", ({ mic, talkback, muted }) => {
+    if (!x32.connected()) return;
+    if (!channels.value || !channels.value.mics) return;
+    const chIndex = channels.value.mics[mic];
+    const chStr = String(chIndex).padStart(2, "0");
+
+    const address = `/-stat/solosw/${chStr}`;
+    const muteAddress = `/ch/${chStr}/mix/on`;
+    return Promise.all([
+        x32.sendMethod({ address: address, args: [{ type: 'i', value: Number(talkback) }] }),
+        x32.sendMethod({ address: muteAddress, args: [{ type: 'i', value: Number(muted === undefined ? !talkback : !muted) }] })
+    ])
+})
+
 // Mute toggle response
 const muteRegex = new RegExp(/^\/ch\/(\d+)\/mix\/on$/);
+const soloRegex = new RegExp(/^\/-stat\/solosw\/(\d+)$/);
 x32.on("message", ({ address, args }) => {
     const typedArgs = args as [{ type: "i", value: number }];
     const m = muteRegex.exec(address);
     if (m) { // Is mute toggle
         const key = mutesMap[Number(m[1])];
-        if (key) muted.value[key] = !Boolean(typedArgs[0].value);
+        if (key) muted.value[key].muted = !Boolean(typedArgs[0].value);
+    }
+    const s = soloRegex.exec(address);
+    if (s) { // Is mute toggle
+        const key = mutesMap[Number(s[1])];
+        if (key) muted.value[key].soloed = Boolean(typedArgs[0].value);
     }
 });
 

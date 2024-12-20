@@ -22,7 +22,7 @@
         "name": "mute-control",
         "title": "Commentator Mute Control",
         "width": 3,
-        "file": "mixer/dashboard/mixer-control/mute.dashboard.html",
+        "file": "mixer/dashboard/mute/mute.dashboard.html",
         "headerColor": "#525F78"
       },
       {

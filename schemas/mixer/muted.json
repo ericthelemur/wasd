@@ -1,18 +1,54 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "definitions": {},
     "type": "object",
     "additionalProperties": {
-        "type": "boolean"
+        "type": "object",
+        "properties": {
+            "muted": {
+                "type": "boolean"
+            },
+            "soloed": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "muted",
+            "soloed"
+        ]
     },
     "default": {
-        "COM-1": false,
-        "COM-2": false,
-        "COM-3": false,
-        "RUN-1": false,
-        "RUN-2": false,
-        "TECH": false,
-        "RODE-1": false,
-        "RODE-2": false
+        "COM-1": {
+            "muted": false,
+            "soloed": false
+        },
+        "COM-2": {
+            "muted": false,
+            "soloed": false
+        },
+        "COM-3": {
+            "muted": false,
+            "soloed": false
+        },
+        "RUN-1": {
+            "muted": false,
+            "soloed": false
+        },
+        "RUN-2": {
+            "muted": false,
+            "soloed": false
+        },
+        "TECH": {
+            "muted": false,
+            "soloed": false
+        },
+        "RODE-1": {
+            "muted": false,
+            "soloed": false
+        },
+        "RODE-2": {
+            "muted": false,
+            "soloed": false
+        }
     }
 }
