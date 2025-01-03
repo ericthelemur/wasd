@@ -1,14 +1,9 @@
-import { getNodeCG } from 'extension/utils';
 import React, { Ref, useContext } from 'react';
 import { RunData, Timer } from 'speedcontrol-util/types/speedcontrol';
 import { useReplicant } from 'use-nodecg';
 
-import { NodeCGAPIClient } from '@nodecg/types/client/api/api.client';
-
 import { SceneInfoContext } from './cam';
 import { FittingText } from './FittingText';
-
-declare var nodecg: NodeCGAPIClient;
 
 export function Game({ vertical }: { vertical?: boolean }) {
     // const [activeRun,] = useReplicant<RunData | undefined>("runDataActiveRun", undefined, { namespace: "nodecg-speedcontrol" })
@@ -17,7 +12,7 @@ export function Game({ vertical }: { vertical?: boolean }) {
     const info = [run?.category, run?.system, run?.release].filter(v => v);
 
     return <div className={"position-relative flex-gs mb-0 " + (vertical ? "h-0 w-100" : "h-100 w-0")}>
-        {run?.game && <FittingText className='text-center lh-1 text-wrap-balance'>
+        {run?.game && <FittingText className='text-center lh-1 text-wrap-balance' max={72}>
             {run?.game}
             <div style={{ marginTop: 6, fontSize: "60%" }}>{info.join(" / ")}</div>
         </FittingText>}

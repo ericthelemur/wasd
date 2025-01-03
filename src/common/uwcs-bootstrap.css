@@ -62,6 +62,6 @@ svg[class*=" bi-"] {
 
 @font-face {
   font-family: "Montserrat";
-  src: url("./fonts/montserrat-v26-latin-700.woff2");
+  src: url("./fonts/montserrat-v26-latin-600.woff2");
   font-style: bold;
 }
