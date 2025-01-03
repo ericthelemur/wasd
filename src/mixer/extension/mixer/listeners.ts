@@ -43,7 +43,7 @@ function setDCAs(toScene?: string) {
     // }
 }
 
-nodecg.listenFor("transitioning", "nodecg-obs-control", (data: { transitionName: string; fromScene?: string; toScene?: string; }) => {
+nodecg.listenFor("transitioning", (data: { transitionName: string; fromScene?: string; toScene?: string; }) => {
     if (!x32.connected() || login.value.suppress) return;
     if (!data.toScene) return;
     setDCAs(data.toScene);

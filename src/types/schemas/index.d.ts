@@ -3,6 +3,8 @@ export * from './common';
 // @ts-ignore
 export * from './mixer';
 // @ts-ignore
+export * from './obs';
+// @ts-ignore
 export * from './people';
 // @ts-ignore
 export * from './ticker';

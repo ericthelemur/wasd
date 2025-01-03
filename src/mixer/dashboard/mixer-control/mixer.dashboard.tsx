@@ -70,7 +70,7 @@ function ConnectForm() {
 }
 
 
-function DisconnectForm({status}: {status: string}) {
+function DisconnectForm({ status }: { status: string }) {
 	const [login, setLogin] = useReplicant<Login>("login", { "enabled": false, "ip": "", "xr18": true, "suppress": false });
 
 	function disconnect(e: FormEvent) {
@@ -98,7 +98,9 @@ function DisconnectForm({status}: {status: string}) {
 
 function ControlForms() {
 	const [status,] = useReplicant<XrStatus>("xrStatus", { "connection": "disconnected" });
+	console.log("HERE2", status);
 	if (status) {
+		console.log("HERE");
 		if (status.connection === "disconnected" || status.connection === "error") {
 			return <ConnectForm />
 		} else {

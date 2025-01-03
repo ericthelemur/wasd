@@ -26,6 +26,13 @@
         "headerColor": "#525F78"
       },
       {
+        "name": "obs-control",
+        "title": "OBS Control",
+        "width": 3,
+        "file": "/obs/dashboard/obs-control/obscontrol.dashboard.html",
+        "headerColor": "#525F78"
+      },
+      {
         "name": "people",
         "title": "People",
         "width": 4,
@@ -131,6 +138,7 @@
     "json-schema-to-typescript": "15.0.3",
     "markdown-to-jsx": "^7.4.1",
     "moment": "^2.30.0",
+    "obs-websocket-js": "^5.0.3",
     "osc": "2.4.4",
     "path-browserify": "^1.0.1",
     "react": "^18.2.0",

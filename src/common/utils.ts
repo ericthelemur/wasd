@@ -21,10 +21,6 @@ export function getSpeedControlUtil(): SpeedcontrolUtil {
     return speedcontrolUtil;
 }
 
-export function prefixName(prefix: string | undefined, name: string) {
-    return prefix ? `${prefix}:${name}` : name;
-}
-
 export function buildSchemaPath(parent: string, schemaName: string) {
     const p = path.resolve(process.cwd(), 'bundles', 'wasd', 'schemas', parent, `${encodeURIComponent(schemaName)}.json`);
     return p;
@@ -36,3 +32,8 @@ export function Replicant<T>(name: string, component: string, args: NodeCG.Repli
     return nodecg.Replicant<T>(name, { "schemaPath": path, ...args }) as unknown as NodeCG.ServerReplicantWithSchemaDefault<T>;
 }
 
+
+export function PrefixedReplicant<T>(prefix: string, name: string, component: string, args: NodeCG.Replicant.OptionsNoDefault = {}) {
+    const prefixed = prefix ? `${prefix}:${name}` : name;
+    return Replicant<T>(name, component, { schemaPath: buildSchemaPath(component, name), ...args });
+}

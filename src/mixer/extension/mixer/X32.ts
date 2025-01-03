@@ -23,6 +23,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
     private _ignoreConnectionClosedEvents = false;
     private _reconnectInterval: NodeJS.Timeout | undefined = undefined;
     private connectionTimeout: NodeJS.Timeout | undefined = undefined;
+    private renewInterval: NodeJS.Timeout | undefined = undefined;
 
     faders: { [k: string]: number } = {};
     fadersExpected: {
@@ -59,13 +60,14 @@ export class X32Utility extends TypedEmitter<X32Events> {
                 this._ignoreConnectionClosedEvents = true;
                 clearTimeout(this.connectionTimeout);
                 clearInterval(this._reconnectInterval);
-                this.log("Disconnecting");
+                clearInterval(this.renewInterval);
+                this.log.info("Disconnecting");
                 try {
                     if (!this.conn) status.value.connection = "disconnected";
                     else this.conn.close();
                 } catch (e) { this.log.error(e) }
                 if (ack && !ack.handled) ack();
-                this.log("Disconnected");
+                this.log.info("Disconnected");
             });
 
             listenTo("DEBUG:callOSC", (msg, ack) => {
@@ -133,13 +135,12 @@ export class X32Utility extends TypedEmitter<X32Events> {
 
         this.conn.on('message', this.processMessage.bind(this));
 
-        var renewInterval: NodeJS.Timeout;
         this.conn.on('ready', () => {
             this.log.info('Connection ready');
 
             // Subscribe/renew to updates (must be done every <10 seconds).
             if (this.conn) startTimeout(8000);
-            renewInterval = setInterval(() => {
+            this.renewInterval = setInterval(() => {
                 if (this.conn) startTimeout();
             }, 8 * 1000);
         });
@@ -147,7 +148,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
         this.conn.on('close', () => {
             this.log.info('Connection closed');
             status.value.connection = "disconnected";
-            clearInterval(renewInterval);
+            clearInterval(this.renewInterval);
             this._reconnect();
         });
 
