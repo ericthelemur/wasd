@@ -30,14 +30,14 @@ export function Bar() {
     return (
         <div className='bar border-top'>
             <img className="logo" src={logo} />
-            <h2>WASD 2024</h2>
+            <span>WASD 2024</span>
             <VR />
             <img className="logo" src={specialeffect} />
-            <h2 className="tabnum">{total && formatAmount(total)}</h2>
+            <span className="tabnum">{total && formatAmount(total)}</span>
             <VR />
             <BarAnnouncement />
             <VR />
-            <h2 className="tabnum">{time}</h2>
+            <span className="tabnum">{time}</span>
         </div >
     )
 }
@@ -45,7 +45,7 @@ export function Bar() {
 export function BarAnnouncement() {
     const [current,] = useReplicant<Current>("current", { "text": "", "msgID": null, "endTime": 0 });
     return <AnimTextFit transitionName='fade-wait' enterTimeout={400} animKey={current?.msgID ?? ""} className="ticker">
-        <h2>{current?.text || ""}</h2>
+        <span>{current?.text || ""}</span>
     </AnimTextFit>
 }
 
