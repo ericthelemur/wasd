@@ -70,12 +70,12 @@ function ConnectForm() {
 }
 
 
-function DisconnectForm() {
+function DisconnectForm({status}: {status: string}) {
 	const [login, setLogin] = useReplicant<Login>("login", { "enabled": false, "ip": "", "xr18": true, "suppress": false });
 
 	function disconnect(e: FormEvent) {
 		e.preventDefault();
-		if (confirm("Are you sure you want to disconnect from Mixer?")) {
+		if (status != "connected" || confirm("Are you sure you want to disconnect from Mixer?")) {
 			nodecg.log.info('Attempting to disconnect');
 			(sendTo("disconnect", {}) as unknown as Promise<void>
 			).then(() => nodecg.log.info('successfully disconnected from xr18'))
@@ -90,7 +90,7 @@ function DisconnectForm() {
 				<Form.Check type="switch" className="d-inline-block ms-3" disabled={login === undefined} defaultChecked={login.suppress}
 					label="Suppress DCA updates" onChange={(e) => { console.log(e); setLogin({ ...login, suppress: e.target.checked }) }} />
 			</Alert>}
-			<Button variant="outline-danger" type="submit">Disconnect</Button>
+			<Button variant="outline-danger" type="submit">{status == "connected" ? "Disconnect" : "Cancel"}</Button>
 		</Form>
 	)
 }
@@ -103,7 +103,7 @@ function ControlForms() {
 			return <ConnectForm />
 		} else {
 			return <>
-				<DisconnectForm />
+				<DisconnectForm status={status.connection} />
 			</>
 		}
 	}

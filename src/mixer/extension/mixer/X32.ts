@@ -18,6 +18,7 @@ interface X32Events {
 export class X32Utility extends TypedEmitter<X32Events> {
     private conn!: osc.UDPPort;
     private nodecg: NodeCG.ServerAPI;
+    private log: NodeCG.Logger;
 
     private _ignoreConnectionClosedEvents = false;
     private _reconnectInterval: NodeJS.Timeout | undefined = undefined;
@@ -36,12 +37,13 @@ export class X32Utility extends TypedEmitter<X32Events> {
     constructor() {
         super();
         this.nodecg = getNodeCG();
+        this.log = new this.nodecg.Logger("XR18");
 
         if (login.value.enabled) {
             status.once('change', newVal => {
                 // If we were connected last time, try connecting again now.
                 if (newVal && (newVal.connection === 'connected' || newVal.connection === 'connecting')) {
-                    this.nodecg.log.info("NodeCG was previously connected to XR18, reconnect");
+                    this.log.info("NodeCG was previously connected to XR18, reconnect");
                     status.value.connection = 'connecting';
                     setTimeout(() => this.connect(), 10);
                 }
@@ -57,12 +59,13 @@ export class X32Utility extends TypedEmitter<X32Events> {
                 this._ignoreConnectionClosedEvents = true;
                 clearTimeout(this.connectionTimeout);
                 clearInterval(this._reconnectInterval);
-                console.log("Disconnect", this._ignoreConnectionClosedEvents, this.connectionTimeout, this._reconnectInterval);
+                this.log("Disconnecting");
                 try {
                     if (!this.conn) status.value.connection = "disconnected";
                     else this.conn.close();
-                } catch (e) { this.nodecg.log.error(e) }
+                } catch (e) { this.log.error(e) }
                 if (ack && !ack.handled) ack();
+                this.log("Disconnected");
             });
 
             listenTo("DEBUG:callOSC", (msg, ack) => {
@@ -71,7 +74,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
 
                 const process = (m: OscMessage) => {
                     if (m.address === msg.address) {
-                        this.nodecg.log.info("Responding to DEBUG:callOSC of", m.address);
+                        this.log.info("Responding to DEBUG:callOSC of", m.address);
                         this.removeListener("message", process);
                         if (ack && !ack.handled) ack(null, m);
                     }
@@ -85,7 +88,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
     }
 
     connect() {
-        this.nodecg.log.info('[X32] Setting up connection');
+        this.log.info('Setting up connection');
         status.value.connection = "connecting";
 
         this.conn = new osc.UDPPort({
@@ -98,14 +101,14 @@ export class X32Utility extends TypedEmitter<X32Events> {
 
         const origSend = this.conn.send.bind(this.conn);
         this.conn.send = (msg, address, port) => {
-            this.nodecg.log.info(`Sending ${JSON.stringify(msg)}`);
+            this.log.info(`Sending ${JSON.stringify(msg)}`);
             origSend(msg, address, port);
         }
 
         this.conn.on('error', (err) => {
             if (!err.message.startsWith("A malformed type tag string was found while reading the arguments of an OSC message.")) {
-                this.nodecg.log.warn('[X32] Error on connection', err);
-                this.nodecg.log.debug('[X32] Error on connection:', err);
+                this.log.warn('Error on connection', err);
+                this.log.debug('Error on connection:', err);
                 // status.value.connection = "error";
             }
         });
@@ -117,14 +120,14 @@ export class X32Utility extends TypedEmitter<X32Events> {
                 this.conn.send({ address: '/status', args: [] });
                 this.connectionTimeout = setTimeout(() => {
                     if (status.value.connection === "connected" || status.value.connection == "connecting") {
-                        this.nodecg.log.info("[X32] Connection timed out");
+                        this.log.info("Connection timed out");
                         try {
                             this.conn.close();
-                        } catch (e) { this.nodecg.log.error(e) }
+                        } catch (e) { this.log.error(e) }
                     }
                 }, t ?? 5000);
             } catch (e) {
-                this.nodecg.log.error(e);
+                this.log.error(e);
             }
         }
 
@@ -132,7 +135,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
 
         var renewInterval: NodeJS.Timeout;
         this.conn.on('ready', () => {
-            this.nodecg.log.info('[X32] Connection ready');
+            this.log.info('Connection ready');
 
             // Subscribe/renew to updates (must be done every <10 seconds).
             if (this.conn) startTimeout(8000);
@@ -142,7 +145,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
         });
 
         this.conn.on('close', () => {
-            this.nodecg.log.info('[X32] Connection closed');
+            this.log.info('Connection closed');
             status.value.connection = "disconnected";
             clearInterval(renewInterval);
             this._reconnect();
@@ -160,7 +163,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
             return;
         }
 
-        this.nodecg.log.warn('Connection closed, will attempt to reconnect every 10 seconds.');
+        this.log.warn('Connection closed, will attempt to reconnect every 10 seconds.');
         this._reconnectInterval = setInterval(() => this.connect(), 10000);
     }
 
@@ -170,7 +173,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
 
 
     processMessage(message: osc.OscMessage) {
-        if (!message.address.endsWith("/status")) this.nodecg.log.info("[X32] Message recieved", message);
+        if (!message.address.endsWith("/status")) this.log.info("Message recieved", message);
 
         this.emit("message", message);
 
@@ -200,8 +203,8 @@ export class X32Utility extends TypedEmitter<X32Events> {
                 }
             }
         } catch (err) {
-            this.nodecg.log.warn('[X32] Error parsing message');
-            this.nodecg.log.debug('[X32] Error parsing message:', err);
+            this.log.warn('Error parsing message');
+            this.log.debug('Error parsing message:', err);
         }
     }
 
@@ -233,7 +236,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
             throw new Error('No connection available');
         }
 
-        this.nodecg.log.debug(`[X32] Attempting to set fader on ${name} to ${value}`);
+        this.log.debug(`Attempting to set fader on ${name} to ${value}`);
         this.conn.send({
             address: '/subscribe',
             args: [{ type: 's', value: name }, { type: 'i', value: 0 }],
@@ -263,12 +266,12 @@ export class X32Utility extends TypedEmitter<X32Events> {
             delete this.fadersExpected[name];
         }
 
-        this.nodecg.log.debug(`[X32] Attempting to fade ${name} `
+        this.log.debug(`Attempting to fade ${name} `
             + `(${startValue} => ${endValue}) for ${length}ms`);
 
         if (startValue) this.runFade(name, startValue, endValue, length);
         else {
-            this.nodecg.log.info(`No start value for ${name}, looking up fader`);
+            this.log.info(`No start value for ${name}, looking up fader`);
             const msg = { address: name, args: [] };
             this.pendingReplies[name] = msg;
             this.conn.send(msg);
@@ -277,7 +280,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
                 if (m.address === msg.address) {
                     this.removeListener("message", process);
                     startValue = (m.args as { type: 'f', value: number }[])[0].value;
-                    this.nodecg.log.info(`Looked up value ${startValue} for ${name}, starting fade`);
+                    this.log.info(`Looked up value ${startValue} for ${name}, starting fade`);
                     this.runFade(name, startValue, endValue, length);
                 }
             };
@@ -292,7 +295,7 @@ export class X32Utility extends TypedEmitter<X32Events> {
     runFade(name: string, startValue: number, endValue: number, length: number) {
         if (Math.abs(startValue - endValue) < 0.01) {
             this.conn.send({ address: name, args: [{ type: 'f', value: endValue }] });
-            this.nodecg.log.info("Start and end values are too close together, no fade!");
+            this.log.info("Start and end values are too close together, no fade!");
             return;
         }
         let currentValue = startValue;
