@@ -143,6 +143,7 @@
     "react-fitty": "^1.0.1",
     "react-textfit": "git+http://github.com/ericthelemur/react-textfit.git",
     "react-transition-group": "^4.4.5",
+    "server-text-width": "^1.0.2",
     "speedcontrol-util": "^0.6.1",
     "tiny-typed-emitter": "2.1.0",
     "ts-node": "^10.9.1",

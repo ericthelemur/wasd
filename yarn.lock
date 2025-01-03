@@ -3414,6 +3414,11 @@ serialport@10.5.0:
     "@serialport/stream" "10.5.0"
     debug "^4.3.3"
 
+server-text-width@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/server-text-width/-/server-text-width-1.0.2.tgz#e2a7074dfd7a63a72034712b77785bb13aa459f6"
+  integrity sha512-FRdhfYNUc0eFhelW60dHeD6PjJrBdzZcygki9j7K9TfbDn8tewkuiggHrxTSFDmrxqET991+XOUSovvjmyZCNQ==
+
 sha.js@^2.4.11:
   version "2.4.11"
   resolved "https://registry.yarnpkg.com/sha.js/-/sha.js-2.4.11.tgz#37a5cf0b81ecbc6943de109ba2960d1b26584ae7"

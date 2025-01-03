@@ -9,6 +9,7 @@ export interface Current {
 	text: string | null;
 	msgID: string | null;
 	endTime: number;
+	startTime: number;
 	time?: number;
 	pause?: boolean;
 	[k: string]: unknown;

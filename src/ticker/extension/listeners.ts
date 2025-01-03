@@ -3,6 +3,7 @@ import { Message, MsgRef, Pool, Queue } from 'types/schemas';
 import { getNodeCG } from '../../common/utils';
 import { listenTo, sendError } from '../common/listeners';
 import { bank, current, pools, queue } from './replicants';
+import { DISPLAY_TIME } from './queue';
 
 const nodecg = getNodeCG();
 
@@ -104,7 +105,7 @@ listenTo("movePool", ({ aref: mid, oldpid, newpid, before }) => {
 
 // Queue
 listenTo("reorderQueue", ({ aref: mid, before }) => movePool(queue.value, queue.value, mid, before));
-listenTo("enqueue", ({ mid, before }) => (addToPool({ id: mid, time: Date.now() }, queue.value, before)));
+listenTo("enqueue", ({ mid, before }) => (addToPool({ id: mid, time: Date.now(), duration: DISPLAY_TIME }, queue.value, before)));
 listenTo("dequeue", ({ aref }) => removeFromPool(aref, queue.value));
 listenTo("skipTo", ({ aref }) => {
     const index = findQueueMsgRefIndex(queue.value, aref);

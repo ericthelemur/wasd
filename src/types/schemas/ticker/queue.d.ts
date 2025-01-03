@@ -14,5 +14,6 @@ export interface Queue {
 export interface MsgRef {
 	id: string;
 	time?: number;
+	duration?: number;
 	[k: string]: unknown;
 }

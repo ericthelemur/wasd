@@ -22,6 +22,7 @@
 
     // background-color: #351344;
     font-size: 32px;
+    white-space: nowrap;
 
     --bs-border-color: var(--bs-emphasis-color);
 
@@ -43,33 +44,33 @@
         font-size: 32px;
     }
 
-    & .ticker {
-        text-align: center;
-        width: 10px;
-        height: fit-content;
-        // height: 100%;
-        flex-grow: 1;
-        flex-shrink: 1;
-        position: relative;
-        overflow: hidden;
+    // & .ticker {
+    //     text-align: center;
+    //     width: 10px;
+    //     height: fit-content;
+    //     // height: 100%;
+    //     flex-grow: 1;
+    //     flex-shrink: 1;
+    //     position: relative;
+    //     overflow: hidden;
 
 
-        & .text {
-            // display: -webkit-box !important;
-            // -webkit-line-clamp: 3;
-            // -webkit-box-orient: vertical;
-            // overflow: hidden;
+    //     & .text {
+    //         // display: -webkit-box !important;
+    //         // -webkit-line-clamp: 3;
+    //         // -webkit-box-orient: vertical;
+    //         // overflow: hidden;
 
-            display: flex !important;
-            justify-content: center;
-            align-items: center;
-            white-space: unset !important;
+    //         display: flex !important;
+    //         justify-content: center;
+    //         align-items: center;
+    //         white-space: unset !important;
 
-            &>div {
-                height: fit-content;
-            }
-        }
-    }
+    //         &>div {
+    //             height: fit-content;
+    //         }
+    //     }
+    // }
 
     & .vr {
         width: var(--bs-border-width);
@@ -82,25 +83,33 @@
 }
 
 
-.fade-wait-leave {
-    opacity: 1;
+
+.wrapper {
+    position: relative;
+    white-space: nowrap;
+    overflow: hidden;
+
+    flex-grow: 1;
+    flex-shrink: 1;
 }
 
-.fade-wait-leave.fade-wait-leave-active {
-    opacity: 0;
-    transition: opacity 0.4s ease-in;
+.element {
+    position: absolute;
+    padding-left: 100%;
+    padding-right: 100px;
+    top: 0;
+    animation-duration: var(--animationDuration);
+    animation-timing-function: linear;
+    display: inline-block;
+    animation-name: marquee;
 }
 
-.fade-wait-enter {
-    opacity: 0;
-}
+@keyframes marquee {
+    0% {
+        transform: translate(0, 0);
+    }
 
-.fade-wait-enter.fade-wait-enter-active {
-    opacity: 1;
-    /* Delay the enter animation until the leave completes */
-    transition: opacity 0.4s ease-in 0.6s;
-}
-
-.fade-wait-height {
-    // transition: height 0.6s ease-in-out;
+    100% {
+        transform: translate(-100%, 0);
+    }
 }

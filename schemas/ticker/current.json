@@ -21,6 +21,9 @@
         "endTime": {
             "type": "number"
         },
+        "startTime": {
+            "type": "number"
+        },
         "time": {
             "type": "number"
         },
@@ -31,7 +34,8 @@
     "required": [
         "text",
         "msgID",
-        "endTime"
+        "endTime",
+        "startTime"
     ],
     "default": {
         "text": null,
