@@ -54,3 +54,14 @@ svg[class*=" bi-"] {
     line-height: 1;
     vertical-align: -.125em;
 }
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("./fonts/montserrat-v26-latin-regular.woff2");
+}
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("./fonts/montserrat-v26-latin-700.woff2");
+  font-style: bold;
+}
