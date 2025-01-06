@@ -1,0 +1,50 @@
+import NodeCG from '@nodecg/types';
+import { NodeCGAPIClient } from '@nodecg/types/client/api/api.client';
+
+import { getNodeCG } from './utils';
+
+var ncg: NodeCGAPIClient | NodeCG.ServerAPI;
+declare var nodecg: NodeCGAPIClient;
+try {
+    ncg = nodecg;
+} catch {
+    ncg = getNodeCG();
+}
+
+type Listener<T> = (data: T, ack: NodeCG.Acknowledgement | undefined) => void;
+type Dict = { [name: string]: unknown };
+
+export function sendError(ack: NodeCG.Acknowledgement | undefined, msg: string) {
+    if (ack && !ack.handled) ack(new Error(msg));
+}
+
+export function sendSuccess<T>(ack: NodeCG.Acknowledgement | undefined, value: T) {
+    if (ack && !ack.handled) ack(null, value);
+}
+
+export function createMessageListeners<X extends Dict>() {
+    function listenTo<T extends keyof X & string>(name: T, listener: Listener<X[T]>, prefix: string | undefined = undefined) {
+        const prename = prefix ? `${prefix}:${name}` : name;
+        ncg.listenFor(prename, (data, ack) => {
+            console.debug("Calling", prename, "with", data);
+            listener(data, ack);
+        })
+    }
+
+
+    function sendToF<T extends keyof X & string>(name: T, data: X[T], prefix: string | undefined = undefined) {
+        const prename = prefix ? `${prefix}:${name}` : name;
+        return () => {
+            console.debug("Sending", prename, "with", data);
+            return ncg.sendMessage(prename, data);
+        }
+    }
+
+    function sendTo<T extends keyof X & string>(name: T, data: X[T], prefix: string | undefined = undefined) {
+        return sendToF(name, data, prefix)();
+    }
+
+    return { listenTo, sendTo, sendToF }
+}
+
+

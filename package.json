@@ -48,7 +48,7 @@
       },
       {
         "name": "countdown",
-        "title": "Countdown",
+        "title": "Break Countdown",
         "width": 2,
         "file": "wasd/dashboard/countdown/countdown.dashboard.html",
         "headerColor": "#525F78"

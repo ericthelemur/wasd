@@ -1,10 +1,11 @@
 import { EventEmitter } from 'events';
 
 import { getNodeCG } from '../../common/utils';
-import { listenTo } from '../common/listeners';
-import { countdown } from './replicants';
+import { listenTo } from '../common/messages';
+import { countdown } from '../extension/replicants';
 
 const nodecg = getNodeCG();
+const log = new nodecg.Logger("count");
 
 class CountdownTimer extends EventEmitter {
     state: "paused" | "running" | "ended" = "ended";
@@ -24,14 +25,14 @@ class CountdownTimer extends EventEmitter {
     setRemaining(val: number) {
         this.remainingMs = val;
         this.endTime = Date.now() + val;
-        console.log(`Setting timer to ${this.remainingMs}ms (${Math.round(this.remainingMs / 1000)}s) ending at ${new Date(this.endTime).toLocaleTimeString()}`);
+        log.info(`Setting timer to ${this.remainingMs}ms (${Math.round(this.remainingMs / 1000)}s) ending at ${new Date(this.endTime).toLocaleTimeString()}`);
         this.update();
     }
 
     tick() {
         this.remainingMs = Math.max(this.endTime - Date.now(), 0);
 
-        console.log("tick", this.state, this.endTime, this.remainingMs);
+        log.debug("tick", this.state, this.endTime, this.remainingMs);
         if (this.remainingMs <= 0) {
             this._reset();
         }

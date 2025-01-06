@@ -3,7 +3,7 @@ import '../../../common/uwcs-bootstrap.css';
 import { duration } from 'moment';
 import React, { FormEvent, useEffect, useRef, useState } from 'react';
 import {
-    ArrowCounterclockwise, PauseFill, PenFill, PlayFill, SendFill
+	ArrowCounterclockwise, PauseFill, PenFill, PlayFill, SendFill
 } from 'react-bootstrap-icons';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
@@ -18,7 +18,7 @@ import { useReplicant } from 'use-nodecg';
 import NodeCG from '@nodecg/types';
 
 import Editable from '../../../common/components/editable';
-import { sendTo } from '../../common/listeners';
+import { sendTo } from '../../common/messages';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;
 
