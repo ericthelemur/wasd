@@ -18,7 +18,7 @@ import { useReplicant } from 'use-nodecg';
 import NodeCG from '@nodecg/types';
 
 import Editable from '../../../common/components/editable';
-import { sendTo } from '../../common/messages';
+import { sendTo } from '../../messages';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;
 

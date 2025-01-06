@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 
 import { getNodeCG } from '../../common/utils';
-import { listenTo } from '../common/messages';
+import { listenTo } from '../messages';
 import { countdown } from '../extension/replicants';
 
 const nodecg = getNodeCG();

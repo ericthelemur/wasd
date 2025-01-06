@@ -1,4 +1,4 @@
-import { createMessageListeners } from "../../common/messages"
+import { createMessageListeners } from "../common/messages"
 
 type ListenerTypes = {
     "countdown.start": undefined,
