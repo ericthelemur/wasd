@@ -1,6 +1,7 @@
+import { createMessageListeners } from '../common/messages';
 import { MsgRef } from 'types/schemas';
 
-export type LTs = {
+export type ListenerTypes = {
     addPool: {}
 
     removePool: {
@@ -46,3 +47,5 @@ export type LTs = {
         aref: MsgRef;
     }
 }
+
+export const { sendTo, sendToF, listenTo } = createMessageListeners<ListenerTypes>();

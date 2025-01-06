@@ -7,7 +7,7 @@ import { TypedEmitter } from 'tiny-typed-emitter';
 import NodeCG from '@nodecg/types';
 
 import { getNodeCG } from '../../../common/utils';
-import { listenTo } from '../../common/listeners';
+import { listenTo } from '../../messages';
 import { login, status } from './replicants';
 
 interface X32Events {

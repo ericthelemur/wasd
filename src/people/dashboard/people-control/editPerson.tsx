@@ -12,7 +12,7 @@ import { useReplicant } from 'use-nodecg';
 
 import { DnDTransitionsList, InsertHandle } from '../../../common/components/dndlist';
 import Editable from '../../../common/components/editable';
-import { sendTo } from '../../common/listeners';
+import { sendTo } from '../../messages';
 
 export function SocialIcon({ icon }: { icon: Icon }) {
     if (icon) {

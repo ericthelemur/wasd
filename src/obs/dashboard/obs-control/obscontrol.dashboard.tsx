@@ -1,6 +1,6 @@
 import './obscontrol.scss';
 
-import { sendTo, sendToF } from '../../common/listeners';
+import { sendTo, sendToF } from '../../messages';
 import { FormEvent, useRef } from 'react';
 import { RecordFill, Wifi } from 'react-bootstrap-icons';
 import Badge from 'react-bootstrap/Badge';
@@ -29,7 +29,7 @@ function Status({ status }: { status?: ConnStatus }) {
 	return null;
 }
 
-function Statuses() {
+export function OBSStatuses() {
 	const [previewScene,] = useReplicant<PreviewScene>("previewScene", null);
 	const [programScene,] = useReplicant<ProgramScene>("programScene", null);
 	const [status,] = useReplicant<ObsStatus>("obsStatus", { "connection": "disconnected", "streaming": false, "recording": false, "studioMode": false, "transitioning": false, "moveCams": false });
@@ -148,7 +148,7 @@ function ControlForms() {
 export function MsgControlPanel() {
 	return <div className="m-3">
 		<ControlForms />
-		<Statuses />
+		<OBSStatuses />
 	</div>
 
 	/* <Form.Text>{JSON.stringify(sceneListRep)}</Form.Text>

@@ -1,4 +1,4 @@
-import { ListenerTypes } from '../common/listenerTypes';
+import { ListenerTypes } from '../messages';
 import getCurrentLine from 'get-current-line';
 import OBSWebSocket, { OBSRequestTypes } from 'obs-websocket-js';
 import {

@@ -1,7 +1,7 @@
 import { Message, MsgRef, Pool, Queue } from 'types/schemas';
 
 import { getNodeCG } from '../../common/utils';
-import { listenTo, sendError } from '../common/listeners';
+import { listenTo, sendError } from '../messages';
 import { bank, current, pools, queue } from './replicants';
 
 const nodecg = getNodeCG();

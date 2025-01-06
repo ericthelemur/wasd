@@ -14,7 +14,7 @@ import { useReplicant } from 'use-nodecg';
 import NodeCG from '@nodecg/types';
 
 import { GroupProps, TwoColDnD } from '../../../common/components/dndlist';
-import { sendToF } from '../../common/listeners';
+import { sendToF } from '../../messages';
 import { EditModal } from './editPerson';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;

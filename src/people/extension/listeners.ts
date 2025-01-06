@@ -1,7 +1,7 @@
 import { RunDataPlayer } from 'speedcontrol-util/types/speedcontrol';
 import { getNodeCG } from '../../common/utils';
 import { config, sc } from '../../wasd/extension/replicants';
-import { listenTo } from '../common/listeners';
+import { listenTo } from '../messages';
 import { people, peopleBank } from './replicants';
 import { OengusImportStatus } from 'speedcontrol-util/types/speedcontrol/schemas';
 import NodeCG from '@nodecg/types';

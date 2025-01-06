@@ -1,7 +1,7 @@
+import { createMessageListeners } from '../common/messages';
 import { OscMessage } from 'osc';
-import { Login } from 'types/schemas';
 
-export type ListenerTypes = {
+type ListenerTypes = {
     connect: {
         ip: string;
         localPort?: number;
@@ -25,3 +25,5 @@ export type ListenerTypes = {
         muted: boolean;
     }
 }
+
+export const { sendTo, sendToF, listenTo } = createMessageListeners<ListenerTypes>();

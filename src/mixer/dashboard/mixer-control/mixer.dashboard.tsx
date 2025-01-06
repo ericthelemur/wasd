@@ -15,7 +15,7 @@ import { useReplicant } from 'use-nodecg';
 
 import NodeCG from '@nodecg/types';
 
-import { sendTo, sendToF } from '../../common/listeners';
+import { sendTo } from '../../messages';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;
 
@@ -30,8 +30,7 @@ export function Status() {
 	return null;
 }
 
-function Statuses() {
-
+export function MixerStatuses() {
 	return <div className="mt-3">
 		<Stack direction="horizontal" gap={1}>
 			Status:
@@ -115,7 +114,7 @@ function ControlForms() {
 export function MsgControlPanel() {
 	return <div className="m-3">
 		<ControlForms />
-		<Statuses />
+		<MixerStatuses />
 	</div>
 }
 

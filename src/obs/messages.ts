@@ -1,3 +1,4 @@
+import { createMessageListeners } from '../common/messages';
 import type { ObsTransform } from 'types/schemas';
 
 export type ListenerTypes = {
@@ -25,3 +26,5 @@ export type ListenerTypes = {
         transform: Partial<ObsTransform>
     }
 }
+
+export const { sendTo, sendToF, listenTo } = createMessageListeners<ListenerTypes>();

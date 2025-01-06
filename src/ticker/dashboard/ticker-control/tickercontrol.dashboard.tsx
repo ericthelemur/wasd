@@ -13,7 +13,7 @@ import { useReplicant } from 'use-nodecg';
 
 import NodeCG from '@nodecg/types';
 
-import { sendTo, sendToF } from '../../common/listeners';
+import { sendTo, sendToF } from '../../messages';
 import { PoolComp } from './components/msgpool';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;

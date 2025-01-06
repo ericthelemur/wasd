@@ -6,12 +6,10 @@ import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { createRoot } from 'react-dom/client';
-import { Channels, Configschema, Muted, TechMuted, XrStatus } from 'types/schemas';
+import { Channels, Muted, TechMuted, XrStatus } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
-import NodeCG from '@nodecg/types';
-
-import { sendTo, sendToF } from '../../common/listeners';
+import { sendTo, sendToF } from '../../messages';
 
 export function Status() {
 	const [status,] = useReplicant<XrStatus>("xrStatus", { "connection": "disconnected" });
