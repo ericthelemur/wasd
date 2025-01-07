@@ -1,7 +1,7 @@
 import NodeCG from '@nodecg/types';
 import { NodeCGAPIClient } from '@nodecg/types/client/api/api.client';
 
-import { getNodeCG } from './utils';
+import { addPrefix, getNodeCG } from './utils';
 
 var ncg: NodeCGAPIClient | NodeCG.ServerAPI;
 declare var nodecg: NodeCGAPIClient;
@@ -17,7 +17,7 @@ type Dict = { [name: string]: unknown };
 
 export function createMessageListeners<X extends Dict>() {
     function listenTo<T extends keyof X & string>(name: T, listener: Listener<X[T]>, prefix: string | undefined = undefined) {
-        const prename = prefix ? `${prefix}:${name}` : name;
+        const prename = addPrefix(prefix, name);
         ncg.listenFor(prename, (data, ack) => {
             console.debug("Calling", prename, "with", data);
             listener(data, ack);
@@ -26,7 +26,7 @@ export function createMessageListeners<X extends Dict>() {
 
 
     function sendToF<T extends keyof X & string>(name: T, data: X[T], prefix: string | undefined = undefined) {
-        const prename = prefix ? `${prefix}:${name}` : name;
+        const prename = addPrefix(prefix, name);
         return () => {
             console.debug("Sending", prename, "with", data);
             return ncg.sendMessage(prename, data);

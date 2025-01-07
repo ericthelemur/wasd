@@ -34,6 +34,9 @@ export class OBSUtility extends OBSWebSocket {
     private _ignoreConnectionClosedEvents = false;
     private _reconnectInterval: NodeJS.Timeout | null = null;
 
+    private _lastTransitioningTarget: string | undefined = undefined;
+    private _lastTransitioningTime: number = 0;
+
     constructor(nodecg: NodeCG.ServerAPI, opts: { namespace?: string; hooks?: Partial<Hooks> } = {}) {
         super();
         this.nodecg = nodecg;
@@ -299,29 +302,20 @@ export class OBSUtility extends OBSWebSocket {
         }, this.namespace);
 
         this.replicants.programScene.on("change", (newVal, oldVal) => {
-            sendTo("transitioning", {
-                transitionName: "",
-                fromScene: oldVal?.name,
-                toScene: newVal?.name
-            })
+            this._sendTransitioning("", oldVal?.name, newVal?.name);
         })
 
-        // this.on("SceneTransitionStarted", ({ transitionName }) => {
-        //     const pre = this.replicants.previewScene.value;
-        //     const pro = this.replicants.programScene.value;
+        this.on("SceneTransitionStarted", ({ transitionName }) => {
+            const pro = this.replicants.programScene.value;
+            const from = pro?.name;
 
-        //     const from = pro ? pro : null;
-        //     const to = pro ? pre : ;
-        //     console.log("Transitioning", from, to, transitionName);
+            this._tryCallOBS('GetCurrentProgramScene').then(({ currentProgramSceneName }) => {
+                const to = currentProgramSceneName;
 
-
-        //     this.replicants.obsStatus.value.transitioning = true;
-        //     sendTo("transitioning", {
-        //         transitionName: transitionName,
-        //         fromScene: from?.name,
-        //         toScene: to?.name
-        //     })
-        // })
+                this.replicants.obsStatus.value.transitioning = true;
+                this._sendTransitioning(transitionName, from, to);
+            });
+        })
 
         this.on("SceneTransitionEnded", () => this.replicants.obsStatus.value.transitioning = false);
         // SceneTransitionEnded doesn't trigger if user cancelled transition, so cya
@@ -330,6 +324,25 @@ export class OBSUtility extends OBSWebSocket {
                 this.replicants.obsStatus.value.transitioning = false;
             }
         })
+
+        listenTo("transitioning", ({ toScene }) => {
+            this._lastTransitioningTarget = toScene;
+            this._lastTransitioningTime = Date.now();
+        })
+    }
+
+    private _sendTransitioning(name: string, from?: string, to?: string) {
+        // Avoid triggering duplicate transitioning events
+        const now = Date.now();
+        if (to == this._lastTransitioningTarget && now - 60000 < this._lastTransitioningTime) return;
+        this._lastTransitioningTarget = to;
+        this._lastTransitioningTime = now;
+
+        sendTo("transitioning", {
+            transitionName: name,
+            fromScene: from,
+            toScene: to
+        });
     }
 
     private _interactionListeners() {

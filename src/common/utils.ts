@@ -13,9 +13,12 @@ export function Replicant<T>(name: string, component: string, args: NodeCG.Repli
     return nodecg.Replicant<T>(name, { "schemaPath": path, ...args }) as unknown as NodeCG.ServerReplicantWithSchemaDefault<T>;
 }
 
+export function addPrefix(prefix: string | undefined, name: string) {
+    return prefix ? `${prefix}:${name}` : name;
+}
 
 export function PrefixedReplicant<T>(prefix: string, name: string, component: string, args: NodeCG.Replicant.OptionsNoDefault = {}) {
-    const prefixed = prefix ? `${prefix}:${name}` : name;
+    const prefixed = addPrefix(prefix, name);
     return Replicant<T>(prefixed, component, { schemaPath: buildSchemaPath(component, name), ...args });
 }
 

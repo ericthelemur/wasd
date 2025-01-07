@@ -12,6 +12,13 @@
     "compatibleRange": "^2.0.0",
     "dashboardPanels": [
       {
+        "name": "countdown",
+        "title": "Break Countdown",
+        "width": 2,
+        "file": "countdown/dashboard/countdown/countdown.dashboard.html",
+        "headerColor": "#525F78"
+      },
+      {
         "name": "mixer-control",
         "title": "Mixer Control",
         "width": 3,
@@ -44,13 +51,6 @@
         "title": "Ticker Control",
         "fullbleed": true,
         "file": "ticker/dashboard/ticker-control/tickercontrol.dashboard.html",
-        "headerColor": "#525F78"
-      },
-      {
-        "name": "countdown",
-        "title": "Break Countdown",
-        "width": 2,
-        "file": "wasd/dashboard/countdown/countdown.dashboard.html",
         "headerColor": "#525F78"
       },
       {
