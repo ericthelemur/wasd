@@ -8,7 +8,7 @@ import { Message, MsgRef } from 'types/schemas';
 
 import add from '../../../../common/components/add.svg';
 import Editable from '../../../../common/components/editable';
-import { sendTo, sendToF } from '../../../common/listeners';
+import { sendTo, sendToF } from '../../../messages';
 
 interface MessageProps {
     id: MsgRef;

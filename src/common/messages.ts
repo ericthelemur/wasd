@@ -14,13 +14,6 @@ try {
 type Listener<T> = (data: T, ack: NodeCG.Acknowledgement | undefined) => void;
 type Dict = { [name: string]: unknown };
 
-export function sendError(ack: NodeCG.Acknowledgement | undefined, msg: string) {
-    if (ack && !ack.handled) ack(new Error(msg));
-}
-
-export function sendSuccess<T>(ack: NodeCG.Acknowledgement | undefined, value: T) {
-    if (ack && !ack.handled) ack(null, value);
-}
 
 export function createMessageListeners<X extends Dict>() {
     function listenTo<T extends keyof X & string>(name: T, listener: Listener<X[T]>, prefix: string | undefined = undefined) {

@@ -7,7 +7,7 @@ import {
 
 import NodeCG from '@nodecg/types';
 
-import { listenTo, sendTo } from '../common/listeners';
+import { listenTo, sendTo } from '../messages';
 import { Replicant, PrefixedReplicant } from '../../common/utils';
 
 type PreTransitionProps = ListenerTypes["transition"];
