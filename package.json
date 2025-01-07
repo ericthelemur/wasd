@@ -54,6 +54,13 @@
         "headerColor": "#525F78"
       },
       {
+        "name": "main",
+        "title": "Main",
+        "width": 3,
+        "file": "wasd/dashboard/main/main.dashboard.html",
+        "headerColor": "#FF0000"
+      },
+      {
         "name": "editor",
         "title": "Replicant Editor",
         "width": 4,
