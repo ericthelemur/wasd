@@ -17,12 +17,13 @@ import { useReplicant } from 'use-nodecg';
 import { RecordFill, Wifi } from 'react-bootstrap-icons';
 import Stack from 'react-bootstrap/Stack';
 
-import NodeCG from '@nodecg/types';
-
-import Editable from '../../../common/components/editable';
-import { sendTo } from '../../common/listeners';
-
+import { sendTo as sendToOBS } from '../../../obs/messages';
+import { sendTo as sendToCountdown } from '../../../countdown/messages';
 import { PreviewScene, ProgramScene, ObsStatus } from 'types/schemas';
+import { Timer } from 'speedcontrol-util/types/speedcontrol/schemas/timer';
+import type NodeCG from '@nodecg/types';
+
+declare const nodecg: NodeCG.ServerAPI;
 
 function OBSStatus({ status }: { status?: ConnStatus }) {
 	switch (status) {
@@ -79,19 +80,73 @@ export function MixerStatuses() {
 
 
 function AllStatuses() {
-	return <div className="statuses">
+	return <div className="statuses mb-3">
 		<MixerStatuses />
 		<OBSStatuses />
 	</div>
 }
 
+
 function MainControls() {
-	return <div className="hstack">
-		<Button>Start Break</Button>
-		<Button>Go to Comms</Button>
-		<Button>Go to Run</Button>
+	const [lastScene, setLastScene] = useState("");
+	const [programScene,] = useReplicant<ProgramScene>("programScene", null);
+
+	function goToScene(newSceneName: string) {
+		if (programScene) setLastScene(programScene.name);
+		sendToOBS("transition", { sceneName: newSceneName });
+	}
+
+	switch (programScene?.name) {
+		case "BREAK": return <BreakControls lastScene={lastScene} goToScene={goToScene} />
+		case "COMMS": return <CommsControls lastScene={lastScene} goToScene={goToScene} />
+		default: return <RunControls lastScene={lastScene} goToScene={goToScene} />
+	}
+}
+
+interface ControlPage {
+	lastScene: string;
+	goToScene: (newSceneName: string) => void;
+}
+
+function BreakControls({ lastScene, goToScene }: ControlPage) {
+	const [countdown,] = useReplicant<Countdown>("countdown", { "display": "00:00", "value": 0, "state": "paused", msg: "Back Soon" });
+
+	function playPauseCountdown(e: FormEvent) {
+		e.preventDefault();
+		if (countdown!.state == "ended") {
+			sendToCountdown("countdown.start");
+		} else if (countdown!.state == "running") {
+			sendToCountdown("countdown.pause");
+		} else if (countdown!.state == "paused") {
+			sendToCountdown("countdown.unpause");
+		}
+	}
+
+	return <div className="vstack gap-2">
+		<Button onClick={playPauseCountdown}>{countdown?.state == "running" ? "Pause" : "Play"} Countdown</Button>
+		<Button onClick={(e) => { e.preventDefault(); sendToCountdown("countdown.add", 60 * 1000); }}>Add 1 Min</Button>
+		<Button onClick={() => goToScene("COMMS")}>Comms for Intro</Button>
 	</div>
 }
+
+function CommsControls({ lastScene, goToScene }: ControlPage) {
+	return <div className="vstack gap-2">
+		<Button onClick={() => goToScene(lastScene)}>Back to {lastScene}</Button>
+		<Button>Unmute Runner</Button>
+		<Button>Go to RUN-#</Button>
+	</div>
+}
+
+function RunControls({ lastScene, goToScene }: ControlPage) {
+	const [timer,] = useReplicant<Timer>("timer", { time: "", state: "finished", milliseconds: 0, timestamp: 0, teamFinishTimes: {} }, { namespace: "nodecg-speedcontrol" });
+
+	return <div className="vstack gap-2">
+		<Button onClick={() => nodecg.sendMessageToBundle(timer?.state != "running" ? "timerStart" : "timerStop", "nodecg-speedcontrol")}>{timer?.state != "running" ? "Start" : "Stop"} Run Timer</Button>
+		<Button onClick={() => goToScene("COMMS") /* TODO Surpress DCA changes */}>Comms Temp</Button>
+		<Button onClick={() => { goToScene("COMMS"); nodecg.sendMessageToBundle("changeToNextRun", "nodecg-speedcontrol") }}>Comms for Outro <br /><small>(Move to Next Game)</small></Button>
+	</div>
+}
+
 
 function MainForm() {
 	return <div className="m-3">
