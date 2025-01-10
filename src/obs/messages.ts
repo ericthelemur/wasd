@@ -24,6 +24,10 @@ export type ListenerTypes = {
         sceneName: string;
         sceneItemId: number;
         transform: Partial<ObsTransform>
+    },
+    startRecording: undefined,
+    stopRecording: {
+        filename: string
     }
 }
 

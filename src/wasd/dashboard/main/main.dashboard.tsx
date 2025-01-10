@@ -89,26 +89,29 @@ function AllStatuses() {
 
 function MainControls() {
 	const [lastScene, setLastScene] = useState("");
+	const [intro, setIntro] = useState<boolean | null>(null);
 	const [programScene,] = useReplicant<ProgramScene>("programScene", null);
 
 	function goToScene(newSceneName: string) {
 		if (programScene) setLastScene(programScene.name);
 		sendToOBS("transition", { sceneName: newSceneName });
 	}
-
+	const args = { lastScene, goToScene, intro, setIntro: (v: boolean | null) => setIntro(v) }
 	switch (programScene?.name) {
-		case "BREAK": return <BreakControls lastScene={lastScene} goToScene={goToScene} />
-		case "COMMS": return <CommsControls lastScene={lastScene} goToScene={goToScene} />
-		default: return <RunControls lastScene={lastScene} goToScene={goToScene} />
+		case "BREAK": return <BreakControls {...args} />
+		case "COMMS": return <CommsControls {...args} />
+		default: return <RunControls {...args} />
 	}
 }
 
 interface ControlPage {
 	lastScene: string;
 	goToScene: (newSceneName: string) => void;
+	intro: boolean | null;
+	setIntro: (v: boolean | null) => void;
 }
 
-function BreakControls({ lastScene, goToScene }: ControlPage) {
+function BreakControls({ lastScene, goToScene, intro, setIntro }: ControlPage) {
 	const [countdown,] = useReplicant<Countdown>("countdown", { "display": "00:00", "value": 0, "state": "paused", msg: "Back Soon" });
 
 	function playPauseCountdown(e: FormEvent) {
@@ -125,25 +128,27 @@ function BreakControls({ lastScene, goToScene }: ControlPage) {
 	return <div className="vstack gap-2">
 		<Button onClick={playPauseCountdown}>{countdown?.state == "running" ? "Pause" : "Play"} Countdown</Button>
 		<Button onClick={(e) => { e.preventDefault(); sendToCountdown("countdown.add", 60 * 1000); }}>Add 1 Min</Button>
-		<Button onClick={() => goToScene("COMMS")}>Comms for Intro</Button>
+		<Button onClick={() => { setIntro(null); goToScene("COMMS") }}>Comms for Info</Button>
+		<Button onClick={() => { setIntro(true); goToScene("COMMS"); sendToOBS("startRecording") }}>Comms for Intro</Button>
 	</div>
 }
 
-function CommsControls({ lastScene, goToScene }: ControlPage) {
+function CommsControls({ lastScene, goToScene, intro, setIntro }: ControlPage) {
 	return <div className="vstack gap-2">
 		<Button onClick={() => goToScene(lastScene)}>Back to {lastScene}</Button>
-		<Button>Unmute Runner</Button>
-		<Button>Go to RUN-#</Button>
+		<Button disabled={true}>Unmute Runner</Button>
+		<Button disabled={true}>Go to RUN-# ()</Button>
+		<Button onClick={() => { setIntro(null); goToScene("BREAK"); sendToOBS("stopRecording", { filename: "test" }) }}>Go to BREAK (End Run)</Button>
 	</div>
 }
 
-function RunControls({ lastScene, goToScene }: ControlPage) {
+function RunControls({ lastScene, goToScene, setIntro }: ControlPage) {
 	const [timer,] = useReplicant<Timer>("timer", { time: "", state: "finished", milliseconds: 0, timestamp: 0, teamFinishTimes: {} }, { namespace: "nodecg-speedcontrol" });
 
 	return <div className="vstack gap-2">
 		<Button onClick={() => nodecg.sendMessageToBundle(timer?.state != "running" ? "timerStart" : "timerStop", "nodecg-speedcontrol")}>{timer?.state != "running" ? "Start" : "Stop"} Run Timer</Button>
-		<Button onClick={() => goToScene("COMMS") /* TODO Surpress DCA changes */}>Comms Temp</Button>
-		<Button onClick={() => { goToScene("COMMS"); nodecg.sendMessageToBundle("changeToNextRun", "nodecg-speedcontrol") }}>Comms for Outro <br /><small>(Move to Next Game)</small></Button>
+		<Button onClick={() => { setIntro(null); goToScene("COMMS") } /* TODO Surpress DCA changes */}>Comms Temp</Button>
+		<Button onClick={() => { setIntro(false); goToScene("COMMS"); nodecg.sendMessageToBundle("changeToNextRun", "nodecg-speedcontrol") }}>Comms for Outro <br /><small>(Move to Next Game)</small></Button>
 	</div>
 }
 

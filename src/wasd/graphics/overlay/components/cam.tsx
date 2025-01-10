@@ -1,8 +1,8 @@
 import './cam.scss';
 
 import { it } from 'node:test';
-import { ListenerTypes as OBSMsgTypes } from 'nodecg-obs-control/src/common/listenerTypes';
-import { ObsSource, ObsTransform, SceneList } from 'nodecg-obs-control/src/types/schemas';
+import { ListenerTypes as OBSMsgTypes } from '../../../../obs/messages';
+import { ObsSource, ObsTransform, SceneList } from 'types/schemas';
 import { createContext, CSSProperties, useContext, useEffect, useRef, useState } from 'react';
 import { SceneInfo } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
@@ -36,7 +36,7 @@ export function Camera({ camName, aspectRatio, dims, style }: { camName: string,
     const ref = useRef<HTMLDivElement>(null);
 
     const sceneInfo = useContext(SceneInfoContext);
-    const [scenes,] = useReplicant<SceneList>("sceneList", [], { namespace: "nodecg-obs-control" });
+    const [scenes,] = useReplicant<SceneList>("sceneList", []);
     const [sceneSource, setSceneSource] = useState<ObsSource | null>(null);
 
     const [lastPos, setLastPos] = useState({ x: 0, y: 0, w: 0, h: 0 });
@@ -58,17 +58,17 @@ export function Camera({ camName, aspectRatio, dims, style }: { camName: string,
                 const target = { x: dims.x, y: dims.y, w: dims.width, h: dims.height };
                 const newTransform = calculateTransform(sceneSource.sceneItemTransform, target);
                 setLastPos(target);
-                nodecg.sendMessageToBundle("moveItem", "nodecg-obs-control", { sceneName: sceneInfo.name, sceneItemId: sceneSource.sceneItemId, transform: newTransform } as OBSMsgTypes["moveItem"])
+                nodecg.sendMessage("moveItem", { sceneName: sceneInfo.name, sceneItemId: sceneSource.sceneItemId, transform: newTransform } as OBSMsgTypes["moveItem"])
             }
         }
 
         // Poll for movement on timer and force move on msg
         const interval = setInterval(moveOBSSrc, 1000);
         const forceF = () => moveOBSSrc(true);
-        nodecg.listenFor("moveOBSSources", "nodecg-obs-control", forceF);
+        nodecg.listenFor("moveOBSSources", forceF);
         return () => {
             clearInterval(interval);
-            nodecg.unlisten("moveOBSSources", "nodecg-obs-control", forceF);
+            nodecg.unlisten("moveOBSSources", forceF);
         };
     }, [ref, sceneSource, lastPos]);
 

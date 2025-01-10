@@ -9,6 +9,8 @@ import NodeCG from '@nodecg/types';
 
 import { listenTo, sendTo } from '../messages';
 import { Replicant, PrefixedReplicant } from '../../common/utils';
+import path from 'path';
+import fsPromises from 'fs/promises';
 
 type PreTransitionProps = ListenerTypes["transition"];
 export interface Hooks {
@@ -288,8 +290,10 @@ export class OBSUtility extends OBSWebSocket {
                 this._tryCallOBS("TriggerStudioModeTransition", undefined, ack, "Error transitioning",
                     (e) => this.replicants.obsStatus.value.transitioning = false);
             } else {
-                if (!args.sceneName) this.ackError(ack, "Error: Cannot transition", undefined);
-                else this._tryCallOBS("SetCurrentProgramScene", { 'sceneName': args.sceneName }, ack, "Error transitioning",
+                if (!args.sceneName) {
+                    this.ackError(ack, "Error: Cannot transition", undefined);
+                    this.replicants.obsStatus.value.transitioning = false;
+                } else this._tryCallOBS("SetCurrentProgramScene", { 'sceneName': args.sceneName }, ack, "Error transitioning",
                     (e) => this.replicants.obsStatus.value.transitioning = false);
             }
         }, this.namespace);
@@ -352,5 +356,20 @@ export class OBSUtility extends OBSWebSocket {
                     .catch((err) => this.ackError(ack, "Error setting scene transform", err));
             }
         })
+
+        // Recording Listeners
+        listenTo("startRecording", (_, ack) => this._tryCallOBS("StartRecord", undefined, ack));
+
+        listenTo("stopRecording", (args, ack) => this._tryCallOBS("StopRecord", undefined, ack).then(({ outputPath }) => {
+            if (args?.filename) {      // Rename OBS output to args.filename
+                const currPath = path.parse(outputPath);
+                const newName = `${currPath.name} ${args.filename.replace(/[\\/:*?"<>|]/g, "-")}${currPath.ext}`
+                currPath.base = newName;
+                const targetPath = path.format(currPath);
+                setTimeout(() => fsPromises.rename(outputPath, targetPath)
+                    .then(() => this.log.info(`Renamed ${outputPath} to ${targetPath}`))
+                    .catch((e) => this.log.error(`Error renaming ${outputPath} to ${targetPath}: ${e}`)), 5000);
+            }
+        }));
     }
 }
