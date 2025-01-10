@@ -14,7 +14,7 @@ function Comms() {
         <div className="fill d-flex outer comms" style={{ fontFamily: "Montserrat", fontWeight: "600" }}>
             <div className="d-flex justify-content-center align-items-center w-100">
                 <div style={{ width: 1200 }}>
-                    <Camera camName={"COMMS"} aspectRatio="16 / 9" />
+                    <Camera camName="CAM-COMMS" aspectRatio="16 / 9" />
                     <div className="mt-2"></div>
                     <UpNext />
                 </div>
