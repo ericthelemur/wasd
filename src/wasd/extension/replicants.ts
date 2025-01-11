@@ -2,7 +2,7 @@ import { readFile } from 'fs';
 import SpeedcontrolUtil from 'speedcontrol-util';
 import { NodeCGServer } from 'speedcontrol-util/types/nodecg/lib/nodecg-instance';
 import { Configschema } from 'speedcontrol-util/types/speedcontrol/schemas';
-import { Config, Countdown, CustomBreakText, SceneData } from 'types/schemas/wasd';
+import { Config, Countdown, CustomBreakText, SceneData, StreamState } from 'types/schemas/wasd';
 
 import NodeCG from '@nodecg/types';
 
@@ -16,6 +16,7 @@ export const sceneData = Replicant<SceneData>("sceneData", "wasd");
 export const cusomBreakText = Replicant<CustomBreakText>("customBreakText", "wasd");
 export const countdown = Replicant<Countdown>('countdown', "wasd");
 export const config = Replicant<Config>("config", "wasd");
+export const streamState = Replicant<StreamState>("streamState", "wasd");
 
 try {
     // Hacky way to read the default marathon code from speedcontrol

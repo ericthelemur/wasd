@@ -8,9 +8,10 @@ import {
 import NodeCG from '@nodecg/types';
 
 import { listenTo, sendTo } from '../messages';
-import { Replicant, PrefixedReplicant } from '../../common/utils';
+import { Replicant, PrefixedReplicant, getNodeCG, getSpeedControlUtil } from '../../common/utils';
 import path from 'path';
 import fsPromises from 'fs/promises';
+import { RunDataActiveRun, RunFinishTimes } from 'speedcontrol-util/types/speedcontrol';
 
 type PreTransitionProps = ListenerTypes["transition"];
 export interface Hooks {
@@ -19,6 +20,28 @@ export interface Hooks {
 }
 
 const usedNamespaces = new Set();
+
+
+function getFilename() {
+    const run = getSpeedControlUtil().runDataActiveRun.value;
+    if (!run) return "Unknown";
+    const runners = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
+
+    const times = getSpeedControlUtil().runFinishTimes.value;
+    const time = times ? times[run?.id] : undefined;
+
+    return [
+        run.game,
+        run.category ? " - " : "",
+        run.category,
+        " - ",
+        runners,
+        time ? " in " : "",
+        time?.time,
+        " (WASD 2025)"
+    ].join("");
+}
+
 
 export class OBSUtility extends OBSWebSocket {
     nodecg: NodeCG.ServerAPI;
@@ -134,7 +157,7 @@ export class OBSUtility extends OBSWebSocket {
                 this._reconnectInterval = null;
                 this._reconnectToOBS();
             }
-        }, 1000);
+        }, 5000);
     }
 
 
@@ -181,7 +204,7 @@ export class OBSUtility extends OBSWebSocket {
         this.on("StudioModeStateChanged", ({ studioModeEnabled }) => {
             this.replicants.obsStatus.value.studioMode = studioModeEnabled;
             if (!studioModeEnabled) this.replicants.previewScene.value = null;
-            else this.call("GetCurrentPreviewScene")
+            else this._tryCallOBS("GetCurrentPreviewScene")
                 .then(({ currentPreviewSceneName }) => this._updateSceneItems(this.replicants.previewScene, currentPreviewSceneName));
         });
 
@@ -190,6 +213,8 @@ export class OBSUtility extends OBSWebSocket {
     }
 
     private _fullUpdate() {
+        this.replicants.obsStatus.value.transitioning = false;
+
         return Promise.all([
             this._updateScenes().then(
                 (res) => Promise.all([
@@ -202,7 +227,7 @@ export class OBSUtility extends OBSWebSocket {
     }
 
     private _updateScenes() {
-        return this.call('GetSceneList').then(res => {
+        return this._tryCallOBS('GetSceneList').then(res => {
             // Response type is not detailed enough, so assert type here
             this._updateSceneList(res.scenes as { sceneName: string }[]);
             return res;
@@ -211,7 +236,7 @@ export class OBSUtility extends OBSWebSocket {
 
     private _updateSceneList(scenes: { sceneName: string }[]) {
         Promise.all(scenes.map(s =>
-            this.call("GetSceneItemList", { sceneName: s.sceneName })
+            this._tryCallOBS("GetSceneItemList", { sceneName: s.sceneName })
                 .then((d) => ({ name: s.sceneName, sources: d.sceneItems } as unknown as ObsScene))
         )).then(r =>
             this.replicants.sceneList.value = r
@@ -222,7 +247,7 @@ export class OBSUtility extends OBSWebSocket {
     private _updateSceneItems(replicant: NodeCG.ServerReplicantWithSchemaDefault<PreviewScene>, sceneName: string) {
         if (!sceneName) replicant.value = null;
         else {
-            this.call("GetSceneItemList", { sceneName: sceneName }).then(items => {
+            this._tryCallOBS("GetSceneItemList", { sceneName: sceneName }).then(items => {
                 replicant.value = {
                     name: sceneName,
                     sources: items.sceneItems as unknown as ObsSource[]
@@ -352,24 +377,25 @@ export class OBSUtility extends OBSWebSocket {
     private _interactionListeners() {
         listenTo("moveItem", ({ sceneName, sceneItemId, transform }, ack) => {
             if (this.replicants.obsStatus.value.moveCams) {
-                this.call("SetSceneItemTransform", { sceneName: sceneName, sceneItemId: sceneItemId, sceneItemTransform: transform as any })
-                    .catch((err) => this.ackError(ack, "Error setting scene transform", err));
+                this._tryCallOBS("SetSceneItemTransform", { sceneName: sceneName, sceneItemId: sceneItemId, sceneItemTransform: transform as any });
             }
         })
 
         // Recording Listeners
         listenTo("startRecording", (_, ack) => this._tryCallOBS("StartRecord", undefined, ack));
 
-        listenTo("stopRecording", (args, ack) => this._tryCallOBS("StopRecord", undefined, ack).then(({ outputPath }) => {
-            if (args?.filename) {      // Rename OBS output to args.filename
-                const currPath = path.parse(outputPath);
-                const newName = `${currPath.name} ${args.filename.replace(/[\\/:*?"<>|]/g, "-")}${currPath.ext}`
-                currPath.base = newName;
-                const targetPath = path.format(currPath);
-                setTimeout(() => fsPromises.rename(outputPath, targetPath)
-                    .then(() => this.log.info(`Renamed ${outputPath} to ${targetPath}`))
-                    .catch((e) => this.log.error(`Error renaming ${outputPath} to ${targetPath}: ${e}`)), 5000);
-            }
+        listenTo("stopRecording", (_, ack) => this._tryCallOBS("StopRecord", undefined, ack).then(({ outputPath }) => {
+            // Rename OBS output to include run
+            const newFilename = getFilename();
+            const currPath = path.parse(outputPath);
+            const newName = `${currPath.name} ${newFilename.replace(/[\\/:*?"<>|]/g, " ")}${currPath.ext}`
+            currPath.base = newName;
+            const targetPath = path.format(currPath);
+            setTimeout(() => fsPromises.rename(outputPath, targetPath)
+                .then(() => this.log.info(`Renamed ${outputPath} to ${targetPath}`))
+                .catch((e) => this.log.error(`Error renaming ${outputPath} to ${targetPath}: ${e}`)), 5000);
         }));
+
+        listenTo("refreshOBS", () => this._fullUpdate());
     }
 }

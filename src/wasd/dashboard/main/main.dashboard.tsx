@@ -12,7 +12,7 @@ import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Modal from 'react-bootstrap/Modal';
 import { createRoot } from 'react-dom/client';
-import { Configschema, ConnStatus, Countdown, XrStatus } from 'types/schemas';
+import { Configschema, ConnStatus, Countdown, StreamState, XrStatus } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 import { RecordFill, Wifi } from 'react-bootstrap-icons';
 import Stack from 'react-bootstrap/Stack';
@@ -22,6 +22,7 @@ import { sendTo as sendToCountdown } from '../../../countdown/messages';
 import { PreviewScene, ProgramScene, ObsStatus } from 'types/schemas';
 import { Timer } from 'speedcontrol-util/types/speedcontrol/schemas/timer';
 import type NodeCG from '@nodecg/types';
+import { RunDataActiveRun, RunFinishTimes } from 'speedcontrol-util/types/speedcontrol';
 
 declare const nodecg: NodeCG.ServerAPI;
 
@@ -80,7 +81,7 @@ export function MixerStatuses() {
 
 
 function AllStatuses() {
-	return <div className="statuses mb-3">
+	return <div className="statuses">
 		<MixerStatuses />
 		<OBSStatuses />
 	</div>
@@ -89,17 +90,22 @@ function AllStatuses() {
 
 function MainControls() {
 	const [lastScene, setLastScene] = useState("");
-	const [intro, setIntro] = useState<boolean | null>(null);
+	const [obsStatus,] = useReplicant<ObsStatus>("obsStatus", { connection: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true });
 	const [programScene,] = useReplicant<ProgramScene>("programScene", null);
+	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
 
+	if (!obsStatus) return null;
 	function goToScene(newSceneName: string) {
 		if (programScene) setLastScene(programScene.name);
 		sendToOBS("transition", { sceneName: newSceneName });
 	}
-	const args = { lastScene, goToScene, intro, setIntro: (v: boolean | null) => setIntro(v) }
-	switch (programScene?.name) {
+	const args = { lastScene, goToScene, programScene: programScene?.name || "" }
+	console.log(args);
+	switch (state?.state) {
 		case "BREAK": return <BreakControls {...args} />
-		case "COMMS": return <CommsControls {...args} />
+		case "INTRO": return <IntroOutroControls {...args} />
+		case "RUN": return <RunControls {...args} />
+		case "OUTRO": return <IntroOutroControls {...args} />
 		default: return <RunControls {...args} />
 	}
 }
@@ -107,12 +113,12 @@ function MainControls() {
 interface ControlPage {
 	lastScene: string;
 	goToScene: (newSceneName: string) => void;
-	intro: boolean | null;
-	setIntro: (v: boolean | null) => void;
+	programScene: string;
 }
 
-function BreakControls({ lastScene, goToScene, intro, setIntro }: ControlPage) {
+function BreakControls({ goToScene, programScene }: ControlPage) {
 	const [countdown,] = useReplicant<Countdown>("countdown", { "display": "00:00", "value": 0, "state": "paused", msg: "Back Soon" });
+	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
 
 	function playPauseCountdown(e: FormEvent) {
 		e.preventDefault();
@@ -126,36 +132,75 @@ function BreakControls({ lastScene, goToScene, intro, setIntro }: ControlPage) {
 	}
 
 	return <div className="vstack gap-2">
-		<Button onClick={playPauseCountdown}>{countdown?.state == "running" ? "Pause" : "Play"} Countdown</Button>
-		<Button onClick={(e) => { e.preventDefault(); sendToCountdown("countdown.add", 60 * 1000); }}>Add 1 Min</Button>
-		<Button onClick={() => { setIntro(null); goToScene("COMMS") }}>Comms for Info</Button>
-		<Button onClick={() => { setIntro(true); goToScene("COMMS"); sendToOBS("startRecording") }}>Comms for Intro</Button>
+		<InputGroup className="d-flex">
+			<Button className="flex-grow-1" onClick={playPauseCountdown}>{countdown?.state == "running" ? "Pause" : "Play"} Countdown</Button>
+			<Button variant="outline-primary" style={{ flexGrow: 0 }} onClick={(e) => { e.preventDefault(); sendToCountdown("countdown.add", 60 * 1000); }}>+1m</Button>
+		</InputGroup>
+		<Button variant="outline-primary" onClick={() => goToScene(programScene == "BREAK" ? "COMMS" : "BREAK")}>{programScene == "BREAK" ? "Comms Insert" : "Back to BREAK"}</Button>
+		<Button onClick={() => { setState({ state: "INTRO" }); goToScene("COMMS"); sendToOBS("startRecording") }}>Intro Phase (Scene COMMS; Rec start)</Button>
 	</div>
 }
 
-function CommsControls({ lastScene, goToScene, intro, setIntro }: ControlPage) {
+function IntroOutroControls({ lastScene, goToScene }: ControlPage) {
+	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
+	const intro = state?.state == "INTRO";
+
 	return <div className="vstack gap-2">
-		<Button onClick={() => goToScene(lastScene)}>Back to {lastScene}</Button>
-		<Button disabled={true}>Unmute Runner</Button>
-		<Button disabled={true}>Go to RUN-# ()</Button>
-		<Button onClick={() => { setIntro(null); goToScene("BREAK"); sendToOBS("stopRecording", { filename: "test" }) }}>Go to BREAK (End Run)</Button>
+		<Button disabled={true}>Go to COMMS (no runner)</Button>
+		<Button disabled={true}>Go to COMMS-# (no game)</Button>
+		<Button variant={intro ? "primary" : "outline-primary"} onClick={() => { setState({ state: "RUN" }); goToScene("RUN-1") }}>{!intro && "Back to "}RUN Phase (Scene RUN-#)</Button>
+		{intro
+			? <Button variant="outline-primary" onClick={() => { sendToOBS("stopRecording"); setState({ state: "BREAK" }); goToScene("BREAK") }}>Back to BREAK Phase (Scene BREAK; Rec stop)</Button>
+			: <Button onClick={() => { sendToOBS("stopRecording"); setState({ state: "BREAK" }); goToScene("BREAK"); nodecg.sendMessageToBundle("changeToNextRun", "nodecg-speedcontrol") }}>BREAK Phase (Scene BREAK; Rec stop; Next Run)</Button>
+		}
 	</div>
 }
 
-function RunControls({ lastScene, goToScene, setIntro }: ControlPage) {
+function TimerButton() {
+	const [run,] = useReplicant<RunDataActiveRun>("runDataActiveRun", { id: "", teams: [], customData: {} }, { namespace: "nodecg-speedcontrol" });
 	const [timer,] = useReplicant<Timer>("timer", { time: "", state: "finished", milliseconds: 0, timestamp: 0, teamFinishTimes: {} }, { namespace: "nodecg-speedcontrol" });
 
+	if (!run) return <Button disabled={true} />
+	if (run.teams.length == 0) return <Button disabled={true}>No Teams</Button>;
+	if (run.teams.length > 1) return <Button disabled={true}>Use Timer Control</Button>;
+	return <Button onClick={() => {
+		if (timer?.state != "running") {
+			nodecg.sendMessageToBundle("timerStart", "nodecg-speedcontrol");
+		} else {
+			nodecg.sendMessageToBundle("timerStop", "nodecg-speedcontrol", { id: run.teams[0].id });
+		}
+	}}>
+		{timer?.state != "running" ? "Start" : "Stop"} Run Timer</Button>
+}
+
+function RunControls({ lastScene, goToScene }: ControlPage) {
+	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
+
 	return <div className="vstack gap-2">
-		<Button onClick={() => nodecg.sendMessageToBundle(timer?.state != "running" ? "timerStart" : "timerStop", "nodecg-speedcontrol")}>{timer?.state != "running" ? "Start" : "Stop"} Run Timer</Button>
-		<Button onClick={() => { setIntro(null); goToScene("COMMS") } /* TODO Surpress DCA changes */}>Comms Temp</Button>
-		<Button onClick={() => { setIntro(false); goToScene("COMMS"); nodecg.sendMessageToBundle("changeToNextRun", "nodecg-speedcontrol") }}>Comms for Outro <br /><small>(Move to Next Game)</small></Button>
+		<TimerButton />
+		<Button onClick={() => { goToScene("COMMS") } /* TODO Surpress DCA changes */}>Comms Insert</Button>
+		<Button onClick={() => { setState({ state: "OUTRO" }); goToScene("COMMS"); }}>State OUTRO</Button>
 	</div>
 }
 
 
+function StateButton({ s }: { s: StreamState["state"] }) {
+	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
+	if (!state) return null;
+
+	return <Button variant={state.state == s ? "primary" : "outline-primary"}
+		disabled={state.state == s} onClick={() => setState({ state: s })}>{s}</Button>
+}
+
 function MainForm() {
-	return <div className="m-3">
+	return <div className="m-3 vstack gap-3">
 		<AllStatuses />
+		<InputGroup>
+			<StateButton s="BREAK" />
+			<StateButton s="INTRO" />
+			<StateButton s="RUN" />
+			<StateButton s="OUTRO" />
+		</InputGroup>
 		<MainControls />
 	</div>
 }

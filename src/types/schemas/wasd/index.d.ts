@@ -7,3 +7,5 @@ export * from './countdown';
 export * from './customBreakText';
 // @ts-ignore
 export * from './sceneData';
+// @ts-ignore
+export * from './streamState';

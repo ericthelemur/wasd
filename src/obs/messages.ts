@@ -26,9 +26,8 @@ export type ListenerTypes = {
         transform: Partial<ObsTransform>
     },
     startRecording: undefined,
-    stopRecording: {
-        filename: string
-    }
+    stopRecording: undefined,
+    refreshOBS: undefined
 }
 
 export const { sendTo, sendToF, listenTo } = createMessageListeners<ListenerTypes>();

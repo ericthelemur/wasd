@@ -117,8 +117,12 @@ function ScenesForm() {
 			<summary><span className="h6">Source Position Sync</span></summary>
 			{status && <Form.Check type="switch" className="d-inline-block ms-3" checked={status.moveCams}
 				label="Update OBS Sources with Overlay" onChange={(e) => setStatus({ ...status, moveCams: !status.moveCams })} />}
-			<Button className="d-inline mt-2" variant="outline-danger" onClick={() => nodecg.sendMessage("moveOBSSources")}>Force Update OBS Sources</Button>
+			<InputGroup className="mt-2">
+				<Button variant="outline-danger" onClick={() => nodecg.sendMessage("moveOBSSources")}>Force Update OBS Sources</Button>
+				<Button variant="outline-warning" onClick={() => nodecg.sendMessage("refreshOBS")}>Refresh OBS Info</Button>
+			</InputGroup>
 		</details>
+		<Button className="mb-2" onClick={() => sendTo(status?.recording ? "stopRecording" : "startRecording", undefined)}>{status?.recording ? "Stop Recording" : "Start Recording"}</Button>
 
 		<h4>{status?.studioMode ? "Preview" : "Transition"}</h4>
 		<div className="gap-2 mb-2 d-flex flex-wrap">
