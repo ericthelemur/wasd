@@ -11,6 +11,8 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Modal from 'react-bootstrap/Modal';
+import Tab from 'react-bootstrap/Tab';
+import Tabs from 'react-bootstrap/Tabs';
 import { createRoot } from 'react-dom/client';
 import { Configschema, ConnStatus, Countdown, StreamState, XrStatus } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
@@ -94,20 +96,18 @@ function MainControls() {
 	const [programScene,] = useReplicant<ProgramScene>("programScene", null);
 	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
 
-	if (!obsStatus) return null;
+	if (!obsStatus || !state) return null;
 	function goToScene(newSceneName: string) {
 		if (programScene) setLastScene(programScene.name);
 		sendToOBS("transition", { sceneName: newSceneName });
 	}
 	const args = { lastScene, goToScene, programScene: programScene?.name || "" }
-	console.log(args);
-	switch (state?.state) {
-		case "BREAK": return <BreakControls {...args} />
-		case "INTRO": return <IntroOutroControls {...args} />
-		case "RUN": return <RunControls {...args} />
-		case "OUTRO": return <IntroOutroControls {...args} />
-		default: return <RunControls {...args} />
-	}
+	return <Tabs id="main-state-tabs" activeKey={state.state} onSelect={s => s && setState({ state: s } as StreamState)}>
+		<Tab eventKey="BREAK" title="BREAK"><BreakControls {...args} /></Tab>
+		<Tab eventKey="INTRO" title="INTRO"><IntroOutroControls {...args} /></Tab>
+		<Tab eventKey="RUN" title="RUN"><RunControls {...args} /></Tab>
+		<Tab eventKey="OUTRO" title="OUTRO"><IntroOutroControls {...args} /></Tab>
+	</Tabs>
 }
 
 interface ControlPage {
@@ -183,24 +183,9 @@ function RunControls({ lastScene, goToScene }: ControlPage) {
 	</div>
 }
 
-
-function StateButton({ s }: { s: StreamState["state"] }) {
-	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
-	if (!state) return null;
-
-	return <Button variant={state.state == s ? "primary" : "outline-primary"}
-		disabled={state.state == s} onClick={() => setState({ state: s })}>{s}</Button>
-}
-
 function MainForm() {
 	return <div className="m-3 vstack gap-3">
 		<AllStatuses />
-		<InputGroup>
-			<StateButton s="BREAK" />
-			<StateButton s="INTRO" />
-			<StateButton s="RUN" />
-			<StateButton s="OUTRO" />
-		</InputGroup>
 		<MainControls />
 	</div>
 }
