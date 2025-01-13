@@ -61,6 +61,7 @@ export class OBSUtility extends OBSWebSocket {
 
     private _lastTransitioningTarget: string | undefined = undefined;
     private _lastTransitioningTime: number = 0;
+    private _transitioningBackupTimeout: NodeJS.Timeout | null = null;
 
     constructor(nodecg: NodeCG.ServerAPI, opts: { namespace?: string; hooks?: Partial<Hooks> } = {}) {
         super();
@@ -205,7 +206,8 @@ export class OBSUtility extends OBSWebSocket {
             this.replicants.obsStatus.value.studioMode = studioModeEnabled;
             if (!studioModeEnabled) this.replicants.previewScene.value = null;
             else this._tryCallOBS("GetCurrentPreviewScene")
-                .then(({ currentPreviewSceneName }) => this._updateSceneItems(this.replicants.previewScene, currentPreviewSceneName));
+                .then(({ currentPreviewSceneName }) => this._updateSceneItems(this.replicants.previewScene, currentPreviewSceneName))
+                .catch(err => this.ackError(undefined, 'Error fetching preview scene:', err));
         });
 
         this.on("RecordStateChanged", ({ outputActive }) => this.replicants.obsStatus.value.recording = outputActive);
@@ -223,7 +225,7 @@ export class OBSUtility extends OBSWebSocket {
                 ])
             ).catch(err => this.ackError(undefined, 'Error updating scenes list:', err)),
             this._updateStatus()
-        ]);
+        ]).catch(err => this.ackError(undefined, 'Error in full update:', err));
     }
 
     private _updateScenes() {
@@ -231,7 +233,7 @@ export class OBSUtility extends OBSWebSocket {
             // Response type is not detailed enough, so assert type here
             this._updateSceneList(res.scenes as { sceneName: string }[]);
             return res;
-        })
+        });
     }
 
     private _updateSceneList(scenes: { sceneName: string }[]) {
@@ -275,7 +277,7 @@ export class OBSUtility extends OBSWebSocket {
             if (catchF) catchF(err);
             this.ackError(ack, errMsg ? errMsg : `Error calling ${requestType}`, err);
             throw err;
-        })
+        });
     }
 
     private ackError(ack: NodeCG.Acknowledgement | undefined, errmsg: string, err: any) {
@@ -286,40 +288,44 @@ export class OBSUtility extends OBSWebSocket {
 
     private _transitionListeners() {
         listenTo("transition", async (args, ack) => {
-            args = args ? args : {};
-            // Mark that we're starting to transition. Resets to false after SwitchScenes.
-            this.replicants.obsStatus.value.transitioning = true;
+            try {
+                args = args ? args : {};
+                // Mark that we're starting to transition. Resets to false after SwitchScenes.
+                this.replicants.obsStatus.value.transitioning = true;
 
-            // Call hook
-            if (this.hooks.preTransition !== undefined) {
-                const res = await this.hooks.preTransition(this, args);
-                if (res) args = res;
-            }
-
-            // Set transition and duration
-            if (args.transitionName) this._tryCallOBS("SetCurrentSceneTransition",
-                { "transitionName": args.transitionName }, ack, "Error setting transition"
-            );
-
-            if (args.transitionDuration) this._tryCallOBS("SetCurrentSceneTransitionDuration",
-                { transitionDuration: args.transitionDuration }, ack, "Error setting transiton duration"
-            );
-
-            // Trigger transition, needs different calls outside studio mode
-            if (this.replicants.obsStatus.value.studioMode) {
-                if (args.sceneName) {
-                    this._tryCallOBS('SetCurrentPreviewScene', { 'sceneName': args.sceneName },
-                        ack, 'Error setting preview scene for transition:')
+                // Call hook
+                if (this.hooks.preTransition !== undefined) {
+                    const res = await this.hooks.preTransition(this, args);
+                    if (res) args = res;
                 }
 
-                this._tryCallOBS("TriggerStudioModeTransition", undefined, ack, "Error transitioning",
-                    (e) => this.replicants.obsStatus.value.transitioning = false);
-            } else {
-                if (!args.sceneName) {
-                    this.ackError(ack, "Error: Cannot transition", undefined);
-                    this.replicants.obsStatus.value.transitioning = false;
-                } else this._tryCallOBS("SetCurrentProgramScene", { 'sceneName': args.sceneName }, ack, "Error transitioning",
-                    (e) => this.replicants.obsStatus.value.transitioning = false);
+                // Set transition and duration
+                if (args.transitionName) this._tryCallOBS("SetCurrentSceneTransition",
+                    { "transitionName": args.transitionName }, ack, "Error setting transition"
+                );
+
+                if (args.transitionDuration) this._tryCallOBS("SetCurrentSceneTransitionDuration",
+                    { transitionDuration: args.transitionDuration }, ack, "Error setting transiton duration"
+                );
+
+                // Trigger transition, needs different calls outside studio mode
+                if (this.replicants.obsStatus.value.studioMode) {
+                    if (args.sceneName) {
+                        this._tryCallOBS('SetCurrentPreviewScene', { 'sceneName': args.sceneName },
+                            ack, 'Error setting preview scene for transition:')
+                    }
+
+                    this._tryCallOBS("TriggerStudioModeTransition", undefined, ack, "Error transitioning",
+                        (e) => this.replicants.obsStatus.value.transitioning = false);
+                } else {
+                    if (!args.sceneName) {
+                        this.ackError(ack, "Error: Cannot transition", undefined);
+                        this.replicants.obsStatus.value.transitioning = false;
+                    } else this._tryCallOBS("SetCurrentProgramScene", { 'sceneName': args.sceneName }, ack, "Error transitioning",
+                        (e) => this.replicants.obsStatus.value.transitioning = false);
+                }
+            } catch (err) {
+                this.ackError(undefined, 'Error transitioning:', err);
             }
         }, this.namespace);
 
@@ -328,6 +334,7 @@ export class OBSUtility extends OBSWebSocket {
 
             this._tryCallOBS('SetCurrentPreviewScene', { 'sceneName': args.sceneName },
                 ack, 'Error setting preview scene for transition:')
+                .catch(err => this.ackError(undefined, 'Error changing preview scene:', err));
         }, this.namespace);
 
         this.replicants.programScene.on("change", (newVal, oldVal) => {
@@ -341,9 +348,9 @@ export class OBSUtility extends OBSWebSocket {
             this._tryCallOBS('GetCurrentProgramScene').then(({ currentProgramSceneName }) => {
                 const to = currentProgramSceneName;
 
-                this.replicants.obsStatus.value.transitioning = true;
+                // this.replicants.obsStatus.value.transitioning = true;
                 this._sendTransitioning(transitionName, from, to);
-            });
+            }).catch(err => this.ackError(undefined, 'Error sending transitioning:', err));
         })
 
         this.on("SceneTransitionEnded", () => this.replicants.obsStatus.value.transitioning = false);
@@ -357,16 +364,22 @@ export class OBSUtility extends OBSWebSocket {
         listenTo("transitioning", ({ toScene }) => {
             this._lastTransitioningTarget = toScene;
             this._lastTransitioningTime = Date.now();
-        })
+
+            clearInterval(this._transitioningBackupTimeout ?? undefined);
+            this._transitioningBackupTimeout = setTimeout(() => this.replicants.obsStatus.value.transitioning = false, 2000);
+        });
+
     }
 
     private _sendTransitioning(name: string, from?: string, to?: string) {
         // Avoid triggering duplicate transitioning events
         const now = Date.now();
         if (to == this._lastTransitioningTarget && now - 60000 < this._lastTransitioningTime) return;
+
         this._lastTransitioningTarget = to;
         this._lastTransitioningTime = now;
 
+        this.replicants.obsStatus.value.transitioning = true;
         sendTo("transitioning", {
             transitionName: name,
             fromScene: from,
@@ -377,12 +390,13 @@ export class OBSUtility extends OBSWebSocket {
     private _interactionListeners() {
         listenTo("moveItem", ({ sceneName, sceneItemId, transform }, ack) => {
             if (this.replicants.obsStatus.value.moveCams) {
-                this._tryCallOBS("SetSceneItemTransform", { sceneName: sceneName, sceneItemId: sceneItemId, sceneItemTransform: transform as any });
+                this._tryCallOBS("SetSceneItemTransform", { sceneName: sceneName, sceneItemId: sceneItemId, sceneItemTransform: transform as any })
+                    .catch(err => this.ackError(undefined, `Error moving ${sceneItemId} in ${sceneName}:`, err));
             }
         })
 
         // Recording Listeners
-        listenTo("startRecording", (_, ack) => this._tryCallOBS("StartRecord", undefined, ack));
+        listenTo("startRecording", (_, ack) => this._tryCallOBS("StartRecord", undefined, ack).catch(err => this.ackError(undefined, 'Error starting recording:', err)));
 
         listenTo("stopRecording", (_, ack) => this._tryCallOBS("StopRecord", undefined, ack).then(({ outputPath }) => {
             // Rename OBS output to include run
@@ -394,7 +408,7 @@ export class OBSUtility extends OBSWebSocket {
             setTimeout(() => fsPromises.rename(outputPath, targetPath)
                 .then(() => this.log.info(`Renamed ${outputPath} to ${targetPath}`))
                 .catch((e) => this.log.error(`Error renaming ${outputPath} to ${targetPath}: ${e}`)), 5000);
-        }));
+        }).catch(err => this.ackError(undefined, 'Error stopping recording:', err)));
 
         listenTo("refreshOBS", () => this._fullUpdate());
     }
