@@ -64,7 +64,7 @@ class CountdownTimer extends EventEmitter {
 }
 
 const instance = new CountdownTimer();
-instance.on('tick', (value, state) => { countdown.value = { msg: countdown.value?.msg, display: "##:##", value, state } });
+instance.on('tick', (value, state) => { countdown.value = { value, state } });
 instance.update();
 
 listenTo("countdown.start", () => instance.start());

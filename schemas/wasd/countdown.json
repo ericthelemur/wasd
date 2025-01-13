@@ -11,19 +11,14 @@
         "running",
         "ended"
       ]
-    },
-    "msg": {
-      "type": "string"
     }
   },
   "required": [
     "value",
-    "state",
-    "msg"
+    "state"
   ],
   "default": {
     "value": 0,
-    "state": "ended",
-    "msg": "Back Soon"
+    "state": "ended"
   }
 }

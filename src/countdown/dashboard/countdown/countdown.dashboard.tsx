@@ -1,6 +1,5 @@
 import '../../../common/uwcs-bootstrap.css';
 
-import { duration } from 'moment';
 import React, { FormEvent, useEffect, useRef, useState } from 'react';
 import {
 	ArrowCounterclockwise, PauseFill, PenFill, PlayFill, SendFill
@@ -12,13 +11,14 @@ import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Modal from 'react-bootstrap/Modal';
 import { createRoot } from 'react-dom/client';
-import { Configschema, Countdown } from 'types/schemas';
+import { Configschema, Countdown, CountdownText } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
 import NodeCG from '@nodecg/types';
 
 import Editable from '../../../common/components/editable';
 import { sendTo } from '../../messages';
+import { msToTimeString } from 'countdown/utils';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;
 
@@ -29,36 +29,6 @@ function Status({ state }: { state?: string }) {
 		case "running": return <Badge className="h3" bg="danger">Running</Badge>
 	}
 	return null;
-}
-
-function timeStringToMs(timeString: string | undefined) {
-	if (!timeString) return 0;
-	if (typeof timeString !== 'string') {
-		throw new TypeError('Expected string');
-	}
-
-	const format = /^(\d{1,2}:){0,2}\d{1,2}$/;
-	if (!format.test(timeString)) {
-		throw new Error(`Bad timeString format ${timeString}`);
-	}
-
-	const parts = timeString.split(':').map(part => parseInt(part, 10)).reverse();
-
-	return duration({ seconds: parts[0], minutes: parts[1], hours: parts[2] }).asMilliseconds();
-}
-
-function msToTimeString(ms: number | undefined) {
-	if (!ms) return "00:00";
-
-	// const mins = Math.ceil(ms / (1000 * 60));
-	// return `${mins} mins`
-
-	const d = duration({ milliseconds: ms });
-
-	return [(d.hours() || null), d.minutes(), d.seconds()]
-		.filter(d => d !== null)
-		.map(d => String(d).padStart(2, '0'))
-		.join(':');
 }
 
 
@@ -102,16 +72,27 @@ export function TimerEditModal({ countdown, setEditing }: { countdown: Countdown
 
 
 function CountdownForm() {
-	const [countdown,] = useReplicant<Countdown>("countdown", { "display": "00:00", "value": 0, "state": "paused", msg: "Back Soon" });
-
-	const [editing, setEditing] = useState<boolean>(false);
-
-	if (!countdown) return null;
+	const [cdText, setCDText] = useReplicant<CountdownText>("countdownText", "Back Soon");
 
 	function resetCountdown(e: FormEvent) {
 		e.preventDefault();
 		sendTo("countdown.reset");
 	}
+
+	return (
+		<Form onSubmit={resetCountdown} className="vstack gap-3 m-3">
+			<Editable className="flex-grow-1 flex-shrink-1" text={cdText || "Back Soon"} setText={(v) => setCDText(v)} type="multi" container={true} />
+			<CDForm resetCountdown={resetCountdown} />
+		</Form>
+	)
+}
+
+function CDForm({ resetCountdown }: { resetCountdown: (e: FormEvent) => void }) {
+	const [countdown,] = useReplicant<Countdown>("countdown", { "value": 0, "state": "paused" });
+
+	const [editing, setEditing] = useState<boolean>(false);
+
+	if (!countdown) return null;
 
 	function playPauseCountdown(e: FormEvent) {
 		e.preventDefault();
@@ -131,26 +112,23 @@ function CountdownForm() {
 		}
 	}
 
-	return (
-		<Form onSubmit={resetCountdown} className="vstack gap-3 m-3">
-			{editing && <TimerEditModal countdown={countdown} setEditing={setEditing} />}
-			<Status state={countdown.state} />
-			<Editable className="flex-grow-1 flex-shrink-1" text={countdown.msg} setText={(v) => countdown.msg = v} type="multi" container={true} />
-			<InputGroup>
-				<Form.Control readOnly disabled value={msToTimeString(countdown.value)} />
-				<Button type="button" variant="outline-primary" onClick={() => setEditing(true)}><PenFill /></Button>
-			</InputGroup>
-			<InputGroup>
-				<Button className="flex-grow-1" type="submit" onClick={playPauseCountdown}>{countdown?.state == "running" ? <PauseFill /> : <PlayFill />}</Button>
-				<Button className="flex-grow-1" type="button" variant="outline-primary" disabled={countdown?.state == "running"} onClick={resetCountdown}><ArrowCounterclockwise /></Button>
-			</InputGroup>
-			<InputGroup>
-				<Button className="flex-grow-1" type="button" variant="outline-primary" onClick={addTime(30)}>+30s</Button>
-				<Button className="flex-grow-1" type="button" variant="outline-primary" onClick={addTime(60)}>+1 min</Button>
-				<Button className="flex-grow-1" type="button" variant="outline-primary" onClick={addTime(5 * 60)}>+5 min</Button>
-			</InputGroup>
-		</Form>
-	)
+	return <>
+		{editing && <TimerEditModal countdown={countdown} setEditing={setEditing} />}
+		<InputGroup>
+			<Form.Control readOnly disabled value={msToTimeString(countdown.value)} />
+			<Button type="button" variant="outline-primary" onClick={() => setEditing(true)}><PenFill /></Button>
+		</InputGroup>
+		<Status state={countdown.state} />
+		<InputGroup>
+			<Button className="flex-grow-1" type="submit" onClick={playPauseCountdown}>{countdown?.state == "running" ? <PauseFill /> : <PlayFill />}</Button>
+			<Button className="flex-grow-1" type="button" variant="outline-primary" disabled={countdown?.state == "running"} onClick={resetCountdown}><ArrowCounterclockwise /></Button>
+		</InputGroup>
+		<InputGroup>
+			<Button className="flex-grow-1" type="button" variant="outline-primary" onClick={addTime(30)}>+30s</Button>
+			<Button className="flex-grow-1" type="button" variant="outline-primary" onClick={addTime(60)}>+1 min</Button>
+			<Button className="flex-grow-1" type="button" variant="outline-primary" onClick={addTime(5 * 60)}>+5 min</Button>
+		</InputGroup>
+	</>;
 }
 
 

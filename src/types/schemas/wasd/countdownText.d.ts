@@ -5,8 +5,4 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface Countdown {
-	value: number;
-	state: 'paused' | 'running' | 'ended';
-	[k: string]: unknown;
-}
+export type CountdownText = string;
