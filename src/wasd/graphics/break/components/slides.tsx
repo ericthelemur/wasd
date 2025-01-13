@@ -1,4 +1,5 @@
 // import 'nodecg-dono-control/src/dashboard/reader/reader.graphic.css';
+import { msToApproxTimeString } from '../../../../countdown/utils';
 import './slides.scss';
 
 import Markdown from 'markdown-to-jsx';
@@ -101,7 +102,7 @@ function RunCard({ run }: { run: RunData }) {
     if (!run) return null;
 
     const runners = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
-    const info = [runners, run.estimate?.replace(/:?0*$/, ""), run.category, run.system, run.release].filter(v => v);
+    const info = [runners, msToApproxTimeString((run.estimateS || 0) * 1000, true), run.category, run.system, run.release].filter(v => v);
 
     const date = new Date(run.scheduled!);
     const dateStr = date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", hour12: true });
@@ -109,13 +110,13 @@ function RunCard({ run }: { run: RunData }) {
     // const durStr = formatDuration(Date.now() - 1000 * new Date(run.scheduled!).getUTCMilliseconds());
 
     return <Card key={run.id}>
-        <Card.Body>
+        <Card.Body className='p-2'>
             <div className="game">
                 <h2>
-                    <Textfit mode="single" max={55}>
+                    <Textfit mode="single" max={50}>
                         <span className="fw-bold">{run.game}</span>{" at "}<span className="fw-bold">{dateStr}</span>
                     </Textfit>
-                    <Textfit mode="single" max={60}>
+                    <Textfit mode="single" max={55}>
                         <div style={{ marginTop: 3, fontSize: "0.6em", lineHeight: 1 }}>{info.join(" / ")}</div>
                     </Textfit>
                 </h2>
@@ -143,7 +144,7 @@ function RunsComp({ runDataArray, runDataActiveRunSurrounding }: PageArgs) {
     const nextRuns = getNextRuns(3);
     if (!nextRuns) return null;
     return <>
-        <h3>Coming Up Later:</h3>
+        <h1>Coming Up Later:</h1>
         <div className="upcoming vstack fb">
             {nextRuns.map(r => <RunCard run={r} />)}
         </div>
@@ -151,8 +152,8 @@ function RunsComp({ runDataArray, runDataActiveRunSurrounding }: PageArgs) {
 }
 
 // const pages = [AboutComp, MilestonesComp, RunsComp, CharityComp, PollsComp, TargetsComp, RunsComp];
-const pages = [AboutComp, RunsComp, CharityComp, RunsComp];
-// const pages = [PollsComp];
+// const pages = [AboutComp, RunsComp, CharityComp, RunsComp];
+const pages = [RunsComp];
 
 function HR() {
     return <div style={{ width: "100%", height: "var(--bw)", backgroundColor: "white" }} />
@@ -166,7 +167,7 @@ export function UpNext({ className }: { className?: string }) {
     const run = runDataArray && runId ? runDataArray.find(r => r.id === runId) : undefined;
 
     return <div className="text-center">
-        <h1 className="fw-bold">{run ? "Up Next:" : "That's It!"}</h1>
+        <h1>{run ? "Up Next:" : "That's It!"}</h1>
         {run ? <RunCard run={run} /> : "Thanks for watching! Tune back in next year"}
     </div>
 }
@@ -209,12 +210,12 @@ export function Slides({ side }: { side?: boolean }) {
 
     const page = <Func {...args} />
     return <div className="w-100 h-100 d-flex flex-column next-run">
-        {!side && <><div className="p-5">
+        {!side && <><div className="p-5 pt-4">
             <UpNext />
         </div>
             <HR />
         </>}
-        <div className={"vstack fb " + (side ? "ps-5" : "p-5")} style={{ fontSize: "0.9em" }}>
+        <div className={"vstack fb " + (side ? "ps-5" : "p-5 pt-4")} style={{ fontSize: "0.9em" }}>
             {page}
         </div>
     </div >
