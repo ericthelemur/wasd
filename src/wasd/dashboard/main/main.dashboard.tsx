@@ -141,18 +141,35 @@ function BreakControls({ goToScene, programScene }: ControlPage) {
 	</div>
 }
 
+function ToBreakButton({ goToScene }: { goToScene: ControlPage["goToScene"] }) {
+	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
+	if (!state) return null;
+
+	if (state.state == "INTRO") {
+		return <Button variant="outline-primary" onClick={() => {
+			sendToOBS("stopRecording");
+			setState({ state: "BREAK" });
+			goToScene("BREAK");
+		}}>Back to BREAK Phase (Scene BREAK; Rec stop)</Button>
+	} else {	// Outro
+		return <Button onClick={() => {
+			sendToOBS("stopRecording");
+			setState({ state: "BREAK" });
+			goToScene("BREAK");
+			nodecg.sendMessageToBundle("changeToNextRun", "nodecg-speedcontrol");
+		}}>BREAK Phase (Scene BREAK; Rec stop; Next Run)</Button>
+	}
+}
+
 function IntroOutroControls({ lastScene, goToScene }: ControlPage) {
 	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
 	const intro = state?.state == "INTRO";
 
 	return <div className="vstack gap-2">
-		<Button disabled={true}>Go to COMMS (no runner)</Button>
-		<Button disabled={true}>Go to COMMS-# (no game)</Button>
+		<Button onClick={() => goToScene("COMMS")}>Go to COMMS (no runner)</Button>
+		<Button onClick={() => goToScene("COMMS-1")}>Go to COMMS-# (no game)</Button>
 		<Button variant={intro ? "primary" : "outline-primary"} onClick={() => { setState({ state: "RUN" }); goToScene("RUN-1") }}>{!intro && "Back to "}RUN Phase (Scene RUN-#)</Button>
-		{intro
-			? <Button variant="outline-primary" onClick={() => { sendToOBS("stopRecording"); setState({ state: "BREAK" }); goToScene("BREAK") }}>Back to BREAK Phase (Scene BREAK; Rec stop)</Button>
-			: <Button onClick={() => { sendToOBS("stopRecording"); setState({ state: "BREAK" }); goToScene("BREAK"); nodecg.sendMessageToBundle("changeToNextRun", "nodecg-speedcontrol") }}>BREAK Phase (Scene BREAK; Rec stop; Next Run)</Button>
-		}
+		<ToBreakButton goToScene={goToScene} />
 	</div>
 }
 
@@ -184,9 +201,11 @@ function RunControls({ lastScene, goToScene }: ControlPage) {
 }
 
 function MainForm() {
+	const [obsStatus,] = useReplicant<ObsStatus>("obsStatus", { connection: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true });
+
 	return <div className="m-3 vstack gap-3">
 		<AllStatuses />
-		<MainControls />
+		{obsStatus?.connection == "connected" && <MainControls />}
 	</div>
 }
 
