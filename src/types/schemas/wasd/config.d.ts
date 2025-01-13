@@ -7,5 +7,6 @@
 
 export interface Config {
 	oengusShortcode: string;
+	updateMinsBehind?: boolean;
 	[k: string]: string;
 }

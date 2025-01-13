@@ -11,15 +11,20 @@
                 "OUTRO",
                 "INSERT"
             ]
+        },
+        "minsBehind": {
+            "type": "number"
         }
     },
-    "required": [
-        "state"
-    ],
     "additionalProperties": {
         "type": "string"
     },
+    "required": [
+        "state",
+        "minsBehind"
+    ],
     "default": {
-        "oengusShortcode": "wasd2022"
+        "state": "BREAK",
+        "minsBehind": 0
     }
 }

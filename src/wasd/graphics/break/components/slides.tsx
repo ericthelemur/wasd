@@ -89,25 +89,16 @@ function CharityComp({ custom }: PageArgs) {
     return MarkdownPage({ md: custom.charity, title: "SpecialEffect" });
 }
 
-function formatDuration(durMS: number) {
-    const totalMins = durMS / (60);
-    const mins = Math.floor(totalMins % 60);
-    const hrs = Math.floor(totalMins / 60);
-    console.log(durMS, totalMins, mins, hrs);
-    if (hrs <= 0 && mins <= 2) return "now!"
-    return hrs ? `${hrs} hour${hrs !== 1 ? "s" : ""}` : `${mins} min${mins !== 1 ? "s" : ""}`;
-}
-
 function RunCard({ run }: { run: RunData }) {
     if (!run) return null;
 
     const runners = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
-    const info = [runners, msToApproxTimeString((run.estimateS || 0) * 1000, true), run.category, run.system, run.release].filter(v => v);
+    const info = [runners, msToApproxTimeString((run.estimateS || 0) * 1000), run.category, run.system, run.release].filter(v => v);
 
     const date = new Date(run.scheduled!);
     const dateStr = date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", hour12: true });
     // console.log("now", Date.now(), new Date(run.scheduled!), Date.now() - new Date(run.scheduled!).getUTCMilliseconds())
-    // const durStr = formatDuration(Date.now() - 1000 * new Date(run.scheduled!).getUTCMilliseconds());
+    // const durStr = msToApproxTimeString(1000 * new Date(run.scheduled!).getUTCMilliseconds() - Date.now());
 
     return <Card key={run.id}>
         <Card.Body className='p-2'>

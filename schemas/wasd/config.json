@@ -4,6 +4,9 @@
     "properties": {
         "oengusShortcode": {
             "type": "string"
+        },
+        "updateMinsBehind": {
+            "type": "boolean"
         }
     },
     "required": [
@@ -13,6 +16,7 @@
         "type": "string"
     },
     "default": {
-        "oengusShortcode": "wasd2022"
+        "oengusShortcode": "wasd2022",
+        "updateMinsBehind": true
     }
 }

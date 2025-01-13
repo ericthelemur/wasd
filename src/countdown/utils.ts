@@ -37,10 +37,11 @@ function pluralize(n: number, word: string) {
     return `${n}\u00A0${word}s `;
 }
 
-export function msToApproxTimeString(ms: number | undefined, short?: boolean) {
+export function msToApproxTimeString(ms: number | undefined, nowText?: string) {
     if (!ms) return "Soon™";
 
     const hours = Math.floor(ms / (1000 * 60 * 60));
     const mins = Math.ceil((ms / (1000 * 60)) % 60);
-    return pluralize(hours, short ? "hr" : "hr") + pluralize(mins, "min");
+    if (hours <= 0 && mins <= 0) return nowText || "";
+    return pluralize(hours, "hr") + pluralize(mins, "min");
 }

@@ -7,5 +7,6 @@
 
 export interface StreamState {
 	state: 'BREAK' | 'INTRO' | 'RUN' | 'OUTRO' | 'INSERT';
+	minsBehind: number;
 	[k: string]: string;
 }
