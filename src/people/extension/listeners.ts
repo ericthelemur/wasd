@@ -24,9 +24,12 @@ async function loadOengusPeople() {
     // speedcontrol filters it down to twitch & youtube only
     try {
         const code = config.value.oengusShortcode;
-        if (!code) return;
+        const slug = config.value.oengusScheduleSlug;
+        if (!code || !slug) return;
         // Fetch info from Oengus
-        const schList = await fetch(`https://oengus.io/api/v1/marathons/${code}/schedule`, { headers: { accept: "application/json" } });
+        // const schList = await fetch(`https://oengus.io/api/v1/marathons/${code}/schedule`, { headers: { accept: "application/json" } });
+
+        const schList = await fetch(`https://oengus.io/api/v2/marathons/${code}/schedules/for-slug/${slug}`, { headers: { accept: "application/json" } });
         if (schList.status == 404) return nodecg.log.error("Marathon code", code, "does not exist");
         const lines = await schList.json();
         nodecg.log.info("Loaded schedule JSON");
@@ -34,15 +37,26 @@ async function loadOengusPeople() {
         // Fetch info from 
         let schPeople: { [name: string]: { scID?: string, id: number, name: string, pronouns: string, socials: { id: string, social: string, name: string }[] } } = {};
         lines.lines.map((line: any) => {
-            line.runners.map((p: any) => {
-                if (p.displayName || p.username) {
-                    const newP = {
-                        id: p.id,
-                        name: p.displayName || p.username,
-                        pronouns: p.pronouns?.length > 0 ? p.pronouns[0] : "",
-                        socials: p.connections.map((c: any) => ({ id: c.id.toString(), social: c.platform.toLowerCase(), name: c.username }))
+            line.runners.map((r: any) => {
+                console.log(r.runnerName);
+                if (r.profile) {
+                    const p = r.profile;
+                    if (p.displayName || p.username) {
+                        const newP = {
+                            id: p.id,
+                            name: p.displayName || p.username,
+                            pronouns: p.pronouns?.length > 0 ? p.pronouns[0] : "",
+                            socials: p.connections.map((c: any) => ({ id: c.id.toString(), social: c.platform.toLowerCase(), name: c.username }))
+                        }
+                        schPeople[newP.name] = newP;
                     }
-                    schPeople[newP.name] = newP;
+                } else if (r.runnerName) {
+                    schPeople[r.runnerName] = {
+                        id: r.runnerName,
+                        name: r.runnerName,
+                        pronouns: "",
+                        socials: []
+                    }
                 }
             })
         });
@@ -80,13 +94,15 @@ async function loadOengusPeople() {
 // Since speedcontrol doesn't expose the marathon code nicely
 nodecg.listenFor("importOengusSchedule", "nodecg-speedcontrol", async (data, ack) => {
     config.value.oengusShortcode = data.marathonShort;
+    config.value.oengusScheduleSlug = data.slug;
     // loadOengusPeople();
 });
 
-listenTo("loadRunners", ({ code }) => {
-    if (code) {
+listenTo("loadRunners", ({ code, slug }) => {
+    if (code && slug) {
         config.value.oengusShortcode = code;
-        // loadOengusPeople();
+        config.value.oengusScheduleSlug = slug;
+        loadOengusPeople();
     }
 });
 

@@ -29,11 +29,19 @@ try {
         if (err) throw err;
 
         if (data) {
-            const configFile = JSON.parse(data as unknown as string) as any as Configschema;
-            const code = configFile.oengus?.defaultMarathon;
-            if (code) {
-                nodecg.log.info("Setting marathon code to", code);
-                config.value.oengusShortcode = code;
+            const configFile = JSON.parse(data as unknown as string) as any;
+            const oengusConfig = configFile.oengus as Configschema["oengus"] & { "defaultSchedule": string };    // FIX: Add deafultSchedule as Speedcontrolutil not updated with Speedcontrol yet
+            if (oengusConfig) {
+                const code = oengusConfig.defaultMarathon;
+                if (code) {
+                    nodecg.log.info("Setting marathon code to", code);
+                    config.value.oengusShortcode = code;
+                }
+                const sch = oengusConfig.defaultSchedule;
+                if (sch) {
+                    nodecg.log.info("Setting slug to", sch);
+                    config.value.oengusScheduleSlug = sch;
+                }
             }
         }
     });

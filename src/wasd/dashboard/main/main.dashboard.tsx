@@ -102,7 +102,7 @@ function MainControls() {
 		sendToOBS("transition", { sceneName: newSceneName });
 	}
 	const args = { lastScene, goToScene, programScene: programScene?.name || "" }
-	return <Tabs id="main-state-tabs" activeKey={state.state} onSelect={s => s && setState({ state: s } as StreamState)}>
+	return <Tabs id="main-state-tabs" activeKey={state.state} onSelect={s => s && setState({ ...state, state: s } as StreamState)}>
 		<Tab eventKey="BREAK" title="BREAK"><BreakControls {...args} /></Tab>
 		<Tab eventKey="INTRO" title="INTRO"><IntroOutroControls {...args} /></Tab>
 		<Tab eventKey="RUN" title="RUN"><RunControls {...args} /></Tab>
@@ -137,7 +137,7 @@ function BreakControls({ goToScene, programScene }: ControlPage) {
 			<Button variant="outline-primary" style={{ flexGrow: 0 }} onClick={(e) => { e.preventDefault(); sendToCountdown("countdown.add", 60 * 1000); }}>+1m</Button>
 		</InputGroup>
 		<Button variant="outline-primary" onClick={() => goToScene(programScene == "BREAK" ? "COMMS" : "BREAK")}>{programScene == "BREAK" ? "Comms Insert" : "Back to BREAK"}</Button>
-		<Button onClick={() => { setState({ state: "INTRO" }); goToScene("COMMS"); sendToOBS("startRecording") }}>Intro Phase (Scene COMMS; Rec start)</Button>
+		<Button onClick={() => { setState({ ...state, state: "INTRO" }); goToScene("COMMS"); sendToOBS("startRecording") }}>Intro Phase (Scene COMMS; Rec start)</Button>
 	</div>
 }
 
@@ -148,13 +148,13 @@ function ToBreakButton({ goToScene }: { goToScene: ControlPage["goToScene"] }) {
 	if (state.state == "INTRO") {
 		return <Button variant="outline-primary" onClick={() => {
 			sendToOBS("stopRecording");
-			setState({ state: "BREAK" });
+			setState({ ...state, state: "BREAK" });
 			goToScene("BREAK");
 		}}>Back to BREAK Phase (Scene BREAK; Rec stop)</Button>
 	} else {	// Outro
 		return <Button onClick={() => {
 			sendToOBS("stopRecording");
-			setState({ state: "BREAK" });
+			setState({ ...state, state: "BREAK" });
 			goToScene("BREAK");
 			nodecg.sendMessageToBundle("changeToNextRun", "nodecg-speedcontrol");
 		}}>BREAK Phase (Scene BREAK; Rec stop; Next Run)</Button>
@@ -168,7 +168,7 @@ function IntroOutroControls({ lastScene, goToScene }: ControlPage) {
 	return <div className="vstack gap-2">
 		<Button onClick={() => goToScene("COMMS")}>Go to COMMS (no runner)</Button>
 		<Button onClick={() => goToScene("COMMS-1")}>Go to COMMS-# (no game)</Button>
-		<Button variant={intro ? "primary" : "outline-primary"} onClick={() => { setState({ state: "RUN" }); goToScene("RUN-1") }}>{!intro && "Back to "}RUN Phase (Scene RUN-#)</Button>
+		<Button variant={intro ? "primary" : "outline-primary"} onClick={() => { setState({ ...state, state: "RUN" }); goToScene("RUN-1") }}>{!intro && "Back to "}RUN Phase (Scene RUN-#)</Button>
 		<ToBreakButton goToScene={goToScene} />
 	</div>
 }
@@ -191,12 +191,12 @@ function TimerButton() {
 }
 
 function RunControls({ lastScene, goToScene }: ControlPage) {
-	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
+	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK", "minsBehind": 0 });
 
 	return <div className="vstack gap-2">
 		<TimerButton />
 		<Button onClick={() => { goToScene("COMMS") } /* TODO Surpress DCA changes */}>Comms Insert</Button>
-		<Button onClick={() => { setState({ state: "OUTRO" }); goToScene("COMMS"); }}>State OUTRO</Button>
+		<Button onClick={() => { setState({ ...state, state: "OUTRO" }); goToScene("COMMS"); }}>State OUTRO</Button>
 	</div>
 }
 

@@ -47,6 +47,14 @@
         "headerColor": "#525F78"
       },
       {
+        "name": "people-run",
+        "title": "People",
+        "width": 4,
+        "file": "people/dashboard/people-control/people.dashboard.html",
+        "workspace": "run modifications",
+        "headerColor": "#525F78"
+      },
+      {
         "name": "ticker-control",
         "title": "Ticker Control",
         "fullbleed": true,

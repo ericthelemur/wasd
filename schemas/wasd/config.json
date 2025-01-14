@@ -5,18 +5,23 @@
         "oengusShortcode": {
             "type": "string"
         },
+        "oengusScheduleSlug": {
+            "type": "string"
+        },
         "updateMinsBehind": {
             "type": "boolean"
         }
     },
     "required": [
-        "oengusShortcode"
+        "oengusShortcode",
+        "oengusScheduleSlug"
     ],
     "additionalProperties": {
         "type": "string"
     },
     "default": {
-        "oengusShortcode": "wasd2022",
+        "oengusShortcode": "wasd2024",
+        "oengusScheduleSlug": "1",
         "updateMinsBehind": true
     }
 }

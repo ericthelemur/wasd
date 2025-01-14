@@ -21,12 +21,13 @@ declare const nodecg: NodeCG.ClientAPI<Configschema>;
 
 function ControlButtons() {
 	const [v,] = useReplicant<boolean>("timerChangesDisabled", false, { namespace: "nodecg-speedcontrol" });
-	const [config,] = useReplicant<Config>("config", { "oengusShortcode": "code" });
+	const [config,] = useReplicant<Config>("config", { "oengusShortcode": "code", "oengusScheduleSlug": "slug" });
 
 	if (v === undefined) return null;
-	return <InputGroup className="p-2 w-50 bg-body" style={{ position: "absolute", bottom: 0, zIndex: 999 }} >
-		<Button onClick={sendToF("loadRunners", { code: config!.oengusShortcode })}>Refresh Runners</Button>
+	return <InputGroup className="p-2 w-100 bg-body" style={{ position: "absolute", bottom: 0, zIndex: 999 }} >
+		<Button onClick={sendToF("loadRunners", { code: config!.oengusShortcode, slug: config!.oengusScheduleSlug })}>Refresh Runners</Button>
 		<Editable textClasses="input-group-text" text={config?.oengusShortcode ?? ""} setText={(v) => config!.oengusShortcode = v} type="multi" />
+		<Editable textClasses="input-group-text" text={config?.oengusScheduleSlug ?? ""} setText={(v) => config!.oengusScheduleSlug = v} type="multi" />
 	</InputGroup >
 }
 
