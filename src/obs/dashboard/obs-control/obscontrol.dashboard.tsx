@@ -32,7 +32,7 @@ function Status({ status }: { status?: ConnStatus }) {
 export function OBSStatuses() {
 	const [previewScene,] = useReplicant<PreviewScene>("previewScene", null);
 	const [programScene,] = useReplicant<ProgramScene>("programScene", null);
-	const [status,] = useReplicant<ObsStatus>("obsStatus", { "connection": "disconnected", "streaming": false, "recording": false, "studioMode": false, "transitioning": false, "moveCams": false });
+	const [status,] = useReplicant<ObsStatus>("obsStatus", { "connection": "disconnected", "streaming": false, "recording": false, "studioMode": false, "transitioning": false, "moveCams": false, "controlRecording": false });
 
 	return <div className="mt-3">
 		<Stack direction="horizontal" gap={1}>
@@ -110,19 +110,27 @@ function ScenesForm() {
 	const [sceneListRep,] = useReplicant<SceneList>("sceneList", []);
 	const [previewSceneRep,] = useReplicant<PreviewScene>("previewScene", null);
 	const [programSceneRep,] = useReplicant<ProgramScene>("programScene", null);
-	const [status, setStatus] = useReplicant<ObsStatus>("obsStatus", { "connection": "disconnected", "streaming": false, "recording": false, "studioMode": false, "transitioning": false, "moveCams": false });
+	const [status, setStatus] = useReplicant<ObsStatus>("obsStatus", { "connection": "disconnected", "streaming": false, "recording": false, "studioMode": false, "transitioning": false, "moveCams": false, "controlRecording": true });
 
 	return <div className="vstack">
-		<details className="mb-2 d-block">
-			<summary><span className="h6">Source Position Sync</span></summary>
-			{status && <Form.Check type="switch" className="d-inline-block ms-3" checked={status.moveCams}
-				label="Update OBS Sources with Overlay" onChange={(e) => setStatus({ ...status, moveCams: !status.moveCams })} />}
+		<details className="mb-2 d-block card p-2">
+			<summary><span className="h6">Settings</span></summary>
 			<InputGroup className="mt-2">
-				<Button variant="outline-danger" onClick={() => nodecg.sendMessage("moveOBSSources")}>Force Update OBS Sources</Button>
-				<Button variant="outline-warning" onClick={() => nodecg.sendMessage("refreshOBS")}>Refresh OBS Info</Button>
+				<InputGroup.Text>
+					{status && <Form.Check type="switch" className="d-inline-block ms-3" checked={status.moveCams}
+						label="Move Cams" onChange={() => setStatus({ ...status, moveCams: !status.moveCams })} />}
+				</InputGroup.Text>
+				<InputGroup.Text>
+					{status && <Form.Check type="switch" className="d-inline-block ms-3" checked={status.controlRecording}
+						label="Record" onChange={() => setStatus({ ...status, controlRecording: !status.controlRecording })} />}
+				</InputGroup.Text>
+			</InputGroup>
+			<InputGroup className="mt-2">
+				<Button variant="outline-warning" onClick={() => nodecg.sendMessage("refreshOBS")}>Refresh Info</Button>
+				<Button variant="outline-danger" onClick={() => nodecg.sendMessage("moveOBSSources")}>Force Update Sources</Button>
 			</InputGroup>
 		</details>
-		<Button className="mb-2" onClick={() => sendTo(status?.recording ? "stopRecording" : "startRecording", undefined)}>{status?.recording ? "Stop Recording" : "Start Recording"}</Button>
+		<Button className="my-2" onClick={() => sendTo(status?.recording ? "stopRecording" : "startRecording", undefined)}>{status?.recording ? "Stop Recording" : "Start Recording"}</Button>
 
 		<h4>{status?.studioMode ? "Preview" : "Transition"}</h4>
 		<div className="gap-2 mb-2 d-flex flex-wrap">
@@ -135,7 +143,7 @@ function ScenesForm() {
 
 
 function ControlForms() {
-	const [status,] = useReplicant<ObsStatus>("obsStatus", { "connection": "disconnected", "streaming": false, "recording": false, "studioMode": false, "transitioning": false, "moveCams": false });
+	const [status,] = useReplicant<ObsStatus>("obsStatus", { "connection": "disconnected", "streaming": false, "recording": false, "studioMode": false, "transitioning": false, "moveCams": false, "controlRecording": false });
 	if (status) {
 		if (status.connection !== "connected") {
 			return <ConnectForm />
@@ -154,13 +162,6 @@ export function MsgControlPanel() {
 		<ControlForms />
 		<OBSStatuses />
 	</div>
-
-	/* <Form.Text>{JSON.stringify(sceneListRep)}</Form.Text>
-	<Form.Text>{JSON.stringify(previewSceneRep?.name)}</Form.Text>
-	<Form.Text>{JSON.stringify(programSceneRep?.name)}</Form.Text>
-	<Form.Text>{JSON.stringify(programSceneRep?.sources)}</Form.Text>
-	<Form.Text>{JSON.stringify(transitioningRep)}</Form.Text>
-	<Form.Text>{JSON.stringify(studioModeRep)}</Form.Text> */
 }
 
 const root = createRoot(document.getElementById('root')!);

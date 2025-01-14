@@ -396,19 +396,32 @@ export class OBSUtility extends OBSWebSocket {
         })
 
         // Recording Listeners
-        listenTo("startRecording", (_, ack) => this._tryCallOBS("StartRecord", undefined, ack).catch(err => this.ackError(undefined, 'Error starting recording:', err)));
+        listenTo("startRecording", (_, ack) => {
+            if (this.replicants.obsStatus.value.controlRecording) {
+                this.log.info("Starting Recording");
+                this._tryCallOBS("StartRecord", undefined, ack).catch(err => this.ackError(ack, 'Error starting recording:', err));
+            } else {
+                this.ackError(ack, 'Error starting recording:', "Recording Control is Disabled");
+            }
+        });
 
-        listenTo("stopRecording", (_, ack) => this._tryCallOBS("StopRecord", undefined, ack).then(({ outputPath }) => {
-            // Rename OBS output to include run
-            const newFilename = getFilename();
-            const currPath = path.parse(outputPath);
-            const newName = `${currPath.name} ${newFilename.replace(/[\\/:*?"<>|]/g, " ")}${currPath.ext}`
-            currPath.base = newName;
-            const targetPath = path.format(currPath);
-            setTimeout(() => fsPromises.rename(outputPath, targetPath)
-                .then(() => this.log.info(`Renamed ${outputPath} to ${targetPath}`))
-                .catch((e) => this.log.error(`Error renaming ${outputPath} to ${targetPath}: ${e}`)), 5000);
-        }).catch(err => this.ackError(undefined, 'Error stopping recording:', err)));
+        listenTo("stopRecording", (_, ack) => {
+            if (this.replicants.obsStatus.value.controlRecording) {
+                this._tryCallOBS("StopRecord", undefined, ack).then(({ outputPath }) => {
+                    // Rename OBS output to include run
+                    const newFilename = getFilename();
+                    const currPath = path.parse(outputPath);
+                    const newName = `${currPath.name} ${newFilename.replace(/[\\/:*?"<>|]/g, " ")}${currPath.ext}`
+                    currPath.base = newName;
+                    const targetPath = path.format(currPath);
+                    setTimeout(() => fsPromises.rename(outputPath, targetPath)
+                        .then(() => this.log.info(`Renamed ${outputPath} to ${targetPath}`))
+                        .catch((e) => this.log.error(`Error renaming ${outputPath} to ${targetPath}: ${e}`)), 5000);
+                }).catch(err => this.ackError(undefined, 'Error stopping recording:', err));
+            } else {
+                this.ackError(ack, 'Error starting recording:', "Recording Control is Disabled");
+            }
+        });
 
         listenTo("refreshOBS", () => this._fullUpdate());
     }

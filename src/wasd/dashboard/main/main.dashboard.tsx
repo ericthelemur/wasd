@@ -25,6 +25,7 @@ import { PreviewScene, ProgramScene, ObsStatus } from 'types/schemas';
 import { Timer } from 'speedcontrol-util/types/speedcontrol/schemas/timer';
 import type NodeCG from '@nodecg/types';
 import { RunDataActiveRun, RunFinishTimes } from 'speedcontrol-util/types/speedcontrol';
+import { msToTimeString } from 'countdown/utils';
 
 declare const nodecg: NodeCG.ServerAPI;
 
@@ -42,7 +43,7 @@ function OBSStatus({ status }: { status?: ConnStatus }) {
 export function OBSStatuses() {
 	const [previewScene,] = useReplicant<PreviewScene>("previewScene", null);
 	const [programScene,] = useReplicant<ProgramScene>("programScene", null);
-	const [status,] = useReplicant<ObsStatus>("obsStatus", { "connection": "disconnected", "streaming": false, "recording": false, "studioMode": false, "transitioning": false, "moveCams": false });
+	const [status,] = useReplicant<ObsStatus>("obsStatus", { "connection": "disconnected", "streaming": false, "recording": false, "studioMode": false, "transitioning": false, "moveCams": false, "controlRecording": false });
 
 	return <div className="mt-0">
 		<Stack direction="horizontal" gap={1}>
@@ -92,21 +93,22 @@ function AllStatuses() {
 
 function MainControls() {
 	const [lastScene, setLastScene] = useState("");
-	const [obsStatus,] = useReplicant<ObsStatus>("obsStatus", { connection: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true });
 	const [programScene,] = useReplicant<ProgramScene>("programScene", null);
 	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
+	const [obsStatus,] = useReplicant<ObsStatus>("obsStatus", { connection: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false });
 
-	if (!obsStatus || !state) return null;
+
+	if (!state || !obsStatus) return null;
 	function goToScene(newSceneName: string) {
 		if (programScene) setLastScene(programScene.name);
 		sendToOBS("transition", { sceneName: newSceneName });
 	}
-	const args = { lastScene, goToScene, programScene: programScene?.name || "" }
+	const args = { lastScene, goToScene, programScene: programScene?.name || "", controlRecording: obsStatus.controlRecording }
 	return <Tabs id="main-state-tabs" activeKey={state.state} onSelect={s => s && setState({ ...state, state: s } as StreamState)}>
 		<Tab eventKey="BREAK" title="BREAK"><BreakControls {...args} /></Tab>
-		<Tab eventKey="INTRO" title="INTRO"><IntroOutroControls {...args} /></Tab>
+		<Tab eventKey="INTRO" title="INTRO"><IntroControls {...args} /></Tab>
 		<Tab eventKey="RUN" title="RUN"><RunControls {...args} /></Tab>
-		<Tab eventKey="OUTRO" title="OUTRO"><IntroOutroControls {...args} /></Tab>
+		<Tab eventKey="OUTRO" title="OUTRO"><OutroControls {...args} /></Tab>
 	</Tabs>
 }
 
@@ -114,11 +116,12 @@ interface ControlPage {
 	lastScene: string;
 	goToScene: (newSceneName: string) => void;
 	programScene: string;
+	controlRecording: boolean;
 }
 
-function BreakControls({ goToScene, programScene }: ControlPage) {
-	const [countdown,] = useReplicant<Countdown>("countdown", { "display": "00:00", "value": 0, "state": "paused", msg: "Back Soon" });
-	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
+function CountdownRow() {
+	const [countdown,] = useReplicant<Countdown>("countdown", { "value": 0, "state": "paused" });
+	if (!countdown) return;
 
 	function playPauseCountdown(e: FormEvent) {
 		e.preventDefault();
@@ -130,46 +133,52 @@ function BreakControls({ goToScene, programScene }: ControlPage) {
 			sendToCountdown("countdown.unpause");
 		}
 	}
+	const going = countdown.state == "running";
+	return <InputGroup className="d-flex">
+		<Button className="flex-grow-1" variant={going ? "outline-primary" : "primary"} onClick={playPauseCountdown}>{going ? "Pause" : "Play"} Countdown</Button>
+		<InputGroup.Text className={going ? "text-danger" : ""}>{msToTimeString(countdown.value)}</InputGroup.Text>
+		<Button variant="outline-primary" style={{ flexGrow: 0 }} onClick={(e) => { e.preventDefault(); sendToCountdown("countdown.add", 60 * 1000); }}>+1m</Button>
+	</InputGroup>
+}
+
+function BreakControls({ goToScene, programScene, controlRecording }: ControlPage) {
+	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
 
 	return <div className="vstack gap-2">
-		<InputGroup className="d-flex">
-			<Button className="flex-grow-1" onClick={playPauseCountdown}>{countdown?.state == "running" ? "Pause" : "Play"} Countdown</Button>
-			<Button variant="outline-primary" style={{ flexGrow: 0 }} onClick={(e) => { e.preventDefault(); sendToCountdown("countdown.add", 60 * 1000); }}>+1m</Button>
-		</InputGroup>
-		<Button variant="outline-primary" onClick={() => goToScene(programScene == "BREAK" ? "COMMS" : "BREAK")}>{programScene == "BREAK" ? "Comms Insert" : "Back to BREAK"}</Button>
-		<Button onClick={() => { setState({ ...state, state: "INTRO" }); goToScene("COMMS"); sendToOBS("startRecording") }}>Intro Phase (Scene COMMS; Rec start)</Button>
+		<CountdownRow />
+		<Button variant="outline-primary" onClick={() => goToScene(programScene == "BREAK" ? "COMMS" : "BREAK")}>{programScene == "BREAK" ? "Scene COMMS" : "Back to BREAK"}</Button>
+		<Button onClick={() => { setState({ ...state, state: "INTRO" }); goToScene("COMMS"); controlRecording && sendToOBS("startRecording") }}>Intro Phase (Scene COMMS{controlRecording && "; Rec start"})</Button>
 	</div>
 }
 
-function ToBreakButton({ goToScene }: { goToScene: ControlPage["goToScene"] }) {
+function IntroControls({ lastScene, goToScene, programScene, controlRecording }: ControlPage) {
 	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
-	if (!state) return null;
 
-	if (state.state == "INTRO") {
-		return <Button variant="outline-primary" onClick={() => {
-			sendToOBS("stopRecording");
+	return <div className="vstack gap-2">
+		<Button disabled={programScene == "COMMS"} variant="outline-primary" onClick={() => goToScene("COMMS")}>Scene COMMS (no runner)</Button>
+		<Button disabled={programScene == "COMMS-1"} onClick={() => goToScene("COMMS-1")}>Scene COMMS-# (no game)</Button>
+		<Button variant="primary" onClick={() => { setState({ ...state, state: "RUN" }); goToScene("RUN-1"); }}>RUN Phase (Scene RUN-#)</Button>
+		<Button variant="outline-primary" onClick={() => {
+			controlRecording && sendToOBS("stopRecording");
 			setState({ ...state, state: "BREAK" });
 			goToScene("BREAK");
-		}}>Back to BREAK Phase (Scene BREAK; Rec stop)</Button>
-	} else {	// Outro
-		return <Button onClick={() => {
-			sendToOBS("stopRecording");
+		}}>Back to BREAK Phase (Scene BREAK{controlRecording && "; Rec stop"})</Button>
+	</div>
+}
+
+function OutroControls({ lastScene, goToScene, programScene, controlRecording }: ControlPage) {
+	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
+
+	return <div className="vstack gap-2">
+		<Button disabled={programScene == "COMMS-1"} onClick={() => goToScene("COMMS-1")}>Scene COMMS-# (no game)</Button>
+		<Button disabled={programScene == "COMMS"} variant="outline-primary" onClick={() => goToScene("COMMS")}>Scene COMMS (no runner)</Button>
+		<Button onClick={() => {
+			controlRecording && sendToOBS("stopRecording");
 			setState({ ...state, state: "BREAK" });
 			goToScene("BREAK");
 			nodecg.sendMessageToBundle("changeToNextRun", "nodecg-speedcontrol");
-		}}>BREAK Phase (Scene BREAK; Rec stop; Next Run)</Button>
-	}
-}
-
-function IntroOutroControls({ lastScene, goToScene }: ControlPage) {
-	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
-	const intro = state?.state == "INTRO";
-
-	return <div className="vstack gap-2">
-		<Button onClick={() => goToScene("COMMS")}>Go to COMMS (no runner)</Button>
-		<Button onClick={() => goToScene("COMMS-1")}>Go to COMMS-# (no game)</Button>
-		<Button variant={intro ? "primary" : "outline-primary"} onClick={() => { setState({ ...state, state: "RUN" }); goToScene("RUN-1") }}>{!intro && "Back to "}RUN Phase (Scene RUN-#)</Button>
-		<ToBreakButton goToScene={goToScene} />
+		}}>BREAK Phase (Scene BREAK{controlRecording && "; Rec stop"}; Next Run)</Button>
+		<Button variant="outline-primary" onClick={() => { setState({ ...state, state: "RUN" }); goToScene("RUN-1") }}>Back to RUN Phase (Scene RUN-#)</Button>
 	</div>
 }
 
@@ -190,18 +199,20 @@ function TimerButton() {
 		{timer?.state != "running" ? "Start" : "Stop"} Run Timer</Button>
 }
 
-function RunControls({ lastScene, goToScene }: ControlPage) {
+function RunControls({ lastScene, goToScene, programScene }: ControlPage) {
 	const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK", "minsBehind": 0 });
 
 	return <div className="vstack gap-2">
 		<TimerButton />
-		<Button onClick={() => { goToScene("COMMS") } /* TODO Surpress DCA changes */}>Comms Insert</Button>
-		<Button onClick={() => { setState({ ...state, state: "OUTRO" }); goToScene("COMMS"); }}>State OUTRO</Button>
+		<Button disabled={programScene == "RUN-1"} onClick={() => { goToScene("RUN-1") }}>Scene RUN-#</Button>
+		<Button disabled={programScene == "COMMS-1"} variant="outline-primary" onClick={() => { goToScene("COMMS-1") }}>Scene COMMS-#</Button>
+		<Button disabled={programScene == "COMMS"} variant="outline-primary" onClick={() => { goToScene("COMMS") }}>Scene COMMS</Button>
+		<Button onClick={() => { setState({ ...state, state: "OUTRO" }); goToScene("COMMS-1"); }}>State OUTRO (Scene COMMS-#)</Button>
 	</div>
 }
 
 function MainForm() {
-	const [obsStatus,] = useReplicant<ObsStatus>("obsStatus", { connection: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true });
+	const [obsStatus,] = useReplicant<ObsStatus>("obsStatus", { connection: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false });
 
 	return <div className="m-3 vstack gap-3">
 		<AllStatuses />

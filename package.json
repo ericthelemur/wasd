@@ -42,7 +42,7 @@
       {
         "name": "people",
         "title": "People",
-        "width": 4,
+        "width": 3,
         "file": "people/dashboard/people-control/people.dashboard.html",
         "headerColor": "#525F78"
       },
