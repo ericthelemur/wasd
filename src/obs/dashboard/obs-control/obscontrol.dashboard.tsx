@@ -1,3 +1,4 @@
+import '../../../common/uwcs-bootstrap.css';
 import './obscontrol.scss';
 
 import { sendTo, sendToF } from '../../messages';

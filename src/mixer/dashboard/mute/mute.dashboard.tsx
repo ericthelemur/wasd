@@ -63,7 +63,6 @@ function MuteControl({ mic }: { mic: string }) {
 	const micMuted = (muted ? muted[mic]?.muted : undefined);
 	const longMuted = micMuted !== temp;
 	const micTalkback = (muted ? muted[mic]?.soloed : undefined);
-	console.log(micMuted, micTalkback);
 
 	function holdDown() {
 		sendTo("setMute", { mic: mic, muted: !longMuted })
@@ -133,7 +132,10 @@ function MutePanel() {
 	const [status,] = useReplicant<XrStatus>("xrStatus", { "connection": "disconnected" });
 
 	const [mic, setMic] = useState(fetchFromParams());
-	useEffect(() => copyToParams(mic), [mic]);
+	useEffect(() => {
+		copyToParams(mic);
+		document.title = mic ? `${mic} | MUTE` : "MUTE";
+	}, [mic]);
 
 	if (!status || status.connection === "disconnected" || status.connection === "connecting") return null;
 

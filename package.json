@@ -131,7 +131,7 @@
   "scripts": {
     "start": "cd ../.. && node -r source-map-support/register --trace-uncaught index.js",
     "build": "node scripts/build.mjs",
-    "watch": "npm run build -- --watch",
+    "watch": "npm run build -- --watch --browser",
     "clean": "npm run build -- --clean-only",
     "types": "node scripts/types.mjs",
     "nodemon": "nodemon --config scripts/nodemon.json",

@@ -82,7 +82,7 @@ function OverlayWrapper() {
 
     const runAspect = info.run?.customData.layout;
     return <SceneInfoContext.Provider value={info}>
-        <Overlay aspect={runAspect ? aspectParse(runAspect) : aspect} />
+        <Overlay aspect={aspect ? aspect : aspectParse(runAspect!)} />
     </SceneInfoContext.Provider>
 }
 
