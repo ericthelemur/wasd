@@ -31,16 +31,21 @@ function setDCAs(toScene?: string) {
     for (const [name, number] of Object.entries(channels.value.dcas)) {
         const enabledDCA = newActiveDCAs.includes(name);
         const address = `/dca/${number}/fader`;
-        // x32.setFader(address, enabledDCA ? 0.75 : 0);
-        // x32.sendMethod({ address: address, args: [{ type: 'f', value: enabledDCA ? 0.75 : 0 }] });
-        x32.fade(address, null, enabledDCA ? 0.75 : 0, enabledDCA ? 1000 : 500);
+
+        let vol = enabledDCA ? 0.75 : 0;
+        if (enabledDCA && name == "MUSIC" && toScene != "BREAK") {  // Mix music lower on non-break
+            vol = (channels.value as any)["music-vol"] || 0.5;      // Pull override volume from unofficial channels.music-vol
+        }
+        x32.fade(address, null, vol, enabledDCA ? 1000 : 500);
     }
 
-    // for (const [name, number] of Object.entries(channels.value.mutegroups)) {
-    //     const enabledDCA = newActiveDCAs.includes(name);
-    //     const address = `/config/mute/${number}`;
-    //     x32.sendMethod({ address: address, args: [{ type: 'i', value: enabledDCA ? 0 : 1 }] });
-    // }
+    setTimeout(() => {
+        for (const [name, number] of Object.entries(channels.value.mutegroups)) {
+            const enabledDCA = newActiveDCAs.includes(name);
+            const address = `/config/mute/${number}`;
+            x32.sendMethod({ address: address, args: [{ type: 'i', value: enabledDCA ? 0 : 1 }] });
+        }
+    }, 500);
 }
 
 nodecg.listenFor("transitioning", (data: { transitionName: string; fromScene?: string; toScene?: string; }) => {
