@@ -9,5 +9,5 @@ export interface Config {
 	oengusShortcode: string;
 	oengusScheduleSlug: string;
 	updateMinsBehind?: boolean;
-	[k: string]: string;
+	[k: string]: unknown;
 }

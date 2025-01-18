@@ -21,7 +21,7 @@ function upcoming() {
         const behind = expectedCurrRunStart - actualCurrRunStart;
 
         nodecg.log.info(now, timer, currRun?.scheduledS, actualCurrRunStart, expectedCurrRunStart, behind);
-        streamState.value.minsBehind = 15 * Math.round(behind / (1000 * 60 * 15))
+        streamState.value.minsBehind = 5 * Math.round(behind / (1000 * 60 * 5));
     }
 }
 
@@ -31,3 +31,9 @@ try {
 } catch (e) {
     nodecg.log.error(e);
 }
+
+config.on("change", (newVal, oldVal) => {
+    if (newVal.updateMinsBehind && !oldVal?.updateMinsBehind) {
+        upcoming();
+    }
+})

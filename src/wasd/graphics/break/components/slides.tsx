@@ -13,7 +13,7 @@ import Card from 'react-bootstrap/Card';
 import { Textfit } from 'react-textfit';
 import { RunData, RunDataActiveRun, RunDataArray } from 'speedcontrol-util/types/speedcontrol';
 import { RunDataActiveRunSurrounding } from 'speedcontrol-util/types/speedcontrol/schemas';
-import { CustomBreakText } from 'types/schemas';
+import { CustomBreakText, StreamState } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
 interface PageArgs {
@@ -90,13 +90,14 @@ function CharityComp({ custom }: PageArgs) {
 }
 
 function RunCard({ run }: { run: RunData }) {
-    if (!run) return null;
+    const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
+    if (!run || !state) return null;
 
     const runners = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
     const info = [runners, msToApproxTimeString((run.estimateS || 0) * 1000), run.category, run.system, run.release].filter(v => v);
 
-    const date = new Date(run.scheduled!);
-    const dateStr = date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", hour12: true });
+    const date = new Date(run.scheduledS! * 1000);
+    const dateStr = date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", hour12: true }) + date.toLocaleDateString(undefined);
     // console.log("now", Date.now(), new Date(run.scheduled!), Date.now() - new Date(run.scheduled!).getUTCMilliseconds())
     // const durStr = msToApproxTimeString(1000 * new Date(run.scheduled!).getUTCMilliseconds() - Date.now());
 
@@ -175,6 +176,7 @@ export function Slides({ side }: { side?: boolean }) {
     const [runDataArray,] = useReplicant<RunDataArray>("runDataArray", [], { namespace: "nodecg-speedcontrol" });
     const [runDataActiveRunSurrounding,] = useReplicant<RunDataActiveRunSurrounding>("runDataActiveRunSurrounding", { previous: undefined, current: undefined, next: undefined }, { namespace: "nodecg-speedcontrol" });
     const [custom,] = useReplicant<CustomBreakText>("customBreakText", {});
+    const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
 
     // const args = { total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding };
     const args = { custom, runDataArray, runDataActiveRunSurrounding };
@@ -203,6 +205,7 @@ export function Slides({ side }: { side?: boolean }) {
     return <div className="w-100 h-100 d-flex flex-column next-run">
         {!side && <><div className="p-5 pt-4">
             <UpNext />
+            Currently {!state?.minsBehind ? "on time!" : `about ${Math.abs(state?.minsBehind)} mins ${state?.minsBehind > 0 ? "behind" : "ahead"}`}
         </div>
             <HR />
         </>}

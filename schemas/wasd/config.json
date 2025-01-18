@@ -16,9 +16,6 @@
         "oengusShortcode",
         "oengusScheduleSlug"
     ],
-    "additionalProperties": {
-        "type": "string"
-    },
     "default": {
         "oengusShortcode": "wasd2024",
         "oengusScheduleSlug": "1",

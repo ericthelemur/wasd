@@ -62,6 +62,13 @@
         "headerColor": "#525F78"
       },
       {
+        "name": "scheduleadjuster",
+        "title": "Schedule Adjuster",
+        "width": 2,
+        "file": "wasd/dashboard/scheduleadjuster/schedule.dashboard.html",
+        "headerColor": "#FF0000"
+      },
+      {
         "name": "main",
         "title": "Main",
         "width": 3,
