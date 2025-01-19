@@ -89,8 +89,21 @@ function CharityComp({ custom }: PageArgs) {
     return MarkdownPage({ md: custom.charity, title: "SpecialEffect" });
 }
 
-function RunCard({ run }: { run: RunData }) {
-    const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
+export function RunTime({ run, minsBehind, delay }: { run: RunData, minsBehind?: number, delay?: boolean }) {
+    const date = new Date(run.scheduledS! * 1000);
+    const dateStr = date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", hour12: true }).replace(" ", "");
+
+    if (delay && minsBehind) {
+        const lateDate = new Date(run.scheduledS! * 1000 + (minsBehind ?? 0) * 60 * 1000);
+        const lateDateStr = lateDate.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", hour12: true }).replace(" ", "");
+        return <>{<span className="text-decoration-line-through">{dateStr}</span>} ~{lateDateStr}</>;
+    } else {
+        return dateStr;
+    }
+}
+
+function RunCard({ run, delay, isNext }: { run: RunData, delay?: boolean, isNext?: boolean }) {
+    const [state,] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
     if (!run || !state) return null;
 
     const runners = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
@@ -106,7 +119,8 @@ function RunCard({ run }: { run: RunData }) {
             <div className="game">
                 <h2>
                     <Textfit mode="single" max={50}>
-                        <span className="fw-bold">{run.game}</span>{" at "}<span className="fw-bold">{dateStr}</span>
+                        <span className="fw-bold">{run.game}</span>
+                        {!isNext && <>{" at "}<span className="fw-bold"><RunTime run={run} minsBehind={state.minsBehind} delay={delay} /></span></>}
                     </Textfit>
                     <Textfit mode="single" max={55}>
                         <div style={{ marginTop: 3, fontSize: "0.6em", lineHeight: 1 }}>{info.join(" / ")}</div>
@@ -117,8 +131,8 @@ function RunCard({ run }: { run: RunData }) {
     </Card>
 }
 
-function RunsComp({ runDataArray, runDataActiveRunSurrounding }: PageArgs) {
-    if (!runDataArray || !runDataActiveRunSurrounding) return null;
+function RunsComp({ runDataArray, runDataActiveRunSurrounding, state }: PageArgs) {
+    if (!runDataArray || !runDataActiveRunSurrounding || !state) return null;
 
     function findRunIndex(arg?: RunData | string | null): number {
         let runId = arg;
@@ -130,15 +144,23 @@ function RunsComp({ runDataArray, runDataActiveRunSurrounding }: PageArgs) {
         const nextRun = runDataActiveRunSurrounding ? runDataActiveRunSurrounding.next : undefined;
         let runIndex = findRunIndex(nextRun);
         if (runIndex > runDataArray!.length - 2) return null;
-        return runDataArray!.slice(runIndex + 1, runIndex + 1 + amount);
+        return runDataArray!.slice(runIndex, runIndex + amount);
     }
 
     const nextRuns = getNextRuns(3);
     if (!nextRuns) return null;
+
+    let delaying = true;
     return <>
-        <h1>Coming Up Later:</h1>
+        <h1>
+            Coming Up Later:{" "}
+            {state?.minsBehind && <small className="fs-2">~{Math.abs(state?.minsBehind)} mins {state?.minsBehind > 0 ? "behind" : "ahead"}</small>}
+        </h1>
         <div className="upcoming vstack fb">
-            {nextRuns.map(r => <RunCard run={r} />)}
+            {nextRuns.map(r => {
+                if (!r.category) delaying = false;
+                return <RunCard run={r} delay={delaying} />
+            })}
         </div>
     </>
 }
@@ -155,12 +177,12 @@ export function UpNext({ className }: { className?: string }) {
     const [runDataArray,] = useReplicant<RunDataArray>("runDataArray", [], { namespace: "nodecg-speedcontrol" });
     const [runDataActiveRunSurrounding,] = useReplicant<RunDataActiveRunSurrounding>("runDataActiveRunSurrounding", { previous: undefined, current: undefined, next: undefined }, { namespace: "nodecg-speedcontrol" });
 
-    const runId = runDataActiveRunSurrounding?.next;
+    const runId = runDataActiveRunSurrounding?.current;
     const run = runDataArray && runId ? runDataArray.find(r => r.id === runId) : undefined;
 
     return <div className="text-center">
         <h1>{run ? "Up Next:" : "That's It!"}</h1>
-        {run ? <RunCard run={run} /> : "Thanks for watching! Tune back in next year"}
+        {run ? <RunCard run={run} delay={true} isNext={true} /> : "Thanks for watching! Tune back in next year"}
     </div>
 }
 
@@ -205,7 +227,6 @@ export function Slides({ side }: { side?: boolean }) {
     return <div className="w-100 h-100 d-flex flex-column next-run">
         {!side && <><div className="p-5 pt-4">
             <UpNext />
-            Currently {!state?.minsBehind ? "on time!" : `about ${Math.abs(state?.minsBehind)} mins ${state?.minsBehind > 0 ? "behind" : "ahead"}`}
         </div>
             <HR />
         </>}
