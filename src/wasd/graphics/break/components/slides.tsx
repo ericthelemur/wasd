@@ -142,7 +142,6 @@ function RunsComp({ runDataArray, runDataActiveRunSurrounding, state }: PageArgs
     function getNextRuns(amount = 4) {
         const nextRun = runDataActiveRunSurrounding ? runDataActiveRunSurrounding.next : undefined;
         let runIndex = findRunIndex(nextRun);
-        if (runIndex > runDataArray!.length - 2) return null;
         return runDataArray!.slice(runIndex, runIndex + amount);
     }
 
@@ -158,7 +157,7 @@ function RunsComp({ runDataArray, runDataActiveRunSurrounding, state }: PageArgs
         <div className="upcoming vstack fb">
             {nextRuns.map(r => {
                 if (!r.category) delaying = false;
-                return <RunCard run={r} delay={delaying} />
+                return <RunCard key={r.id} run={r} delay={delaying} />
             })}
         </div>
     </>
@@ -166,9 +165,17 @@ function RunsComp({ runDataArray, runDataActiveRunSurrounding, state }: PageArgs
 
 // const pages = [AboutComp, MilestonesComp, RunsComp, CharityComp, PollsComp, TargetsComp, RunsComp];
 // const pages = [AboutComp, RunsComp, CharityComp, RunsComp];
-const pages = [{
+
+interface PageCandidate {
+    page: (args: PageArgs) => React.JSX.Element | null;
+    condition: (args: PageArgs) => boolean;
+    duration?: number;
+}
+
+const pages: PageCandidate[] = [{
     page: RunsComp,
-    condition: (args: PageArgs) => Boolean(args.runDataActiveRunSurrounding?.next)
+    condition: (args: PageArgs) => Boolean(args.runDataActiveRunSurrounding?.next),
+    duration: 10
 }, {
     page: CharityComp,
     condition: (args: PageArgs) => Boolean(args.custom?.charity)
@@ -208,13 +215,14 @@ export function Slides({ side }: { side?: boolean }) {
     const [runDataActiveRunSurrounding,] = useReplicant<RunDataActiveRunSurrounding>("runDataActiveRunSurrounding", { previous: undefined, current: undefined, next: undefined }, { namespace: "nodecg-speedcontrol" });
     const [custom,] = useReplicant<CustomBreakText>("customBreakText", {});
     const [state,] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
-    const [refreshTime, setRefreshTime] = useState<Number>(Date.now());
+    const [refreshTime, setRefreshTime] = useState<number>(Date.now());
 
     // const args = { total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding };
     const args = { custom, runDataArray, runDataActiveRunSurrounding, state };
 
     // Rotate through pages
     useEffect(() => {
+        const time = refreshTime - Date.now() + (pages[index].duration ?? 5) * 1000;
         const interval = setTimeout(() => {
             // const args = { total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding };
             const args = { custom, runDataArray, runDataActiveRunSurrounding };
@@ -229,7 +237,7 @@ export function Slides({ side }: { side?: boolean }) {
             setIndex(newIndex);
             setFunc(() => pages[newIndex].page);
             setRefreshTime(Date.now());
-        }, 5000);
+        }, time > 0 ? time : 1);
         return () => clearInterval(interval);
         // }, [index, total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding]);
     }, [refreshTime, index, custom, runDataArray, runDataActiveRunSurrounding, state]);
