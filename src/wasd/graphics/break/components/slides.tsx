@@ -25,6 +25,7 @@ interface PageArgs {
     custom?: CustomBreakText;
     runDataActiveRunSurrounding?: RunDataActiveRunSurrounding;
     runDataArray?: RunDataArray;
+    state?: StreamState;
 }
 type PageComp = (a: PageArgs) => JSX.Element | null;
 
@@ -73,8 +74,8 @@ type PageComp = (a: PageArgs) => JSX.Element | null;
 function MarkdownPage({ md, title }: { md?: string, title?: string }) {
     if (!md) return null;
     return <>
-        <h3>{title}</h3>
-        <Textfit max={40} className="h-100"><Markdown>{md}</Markdown></Textfit>
+        <h1>{title}</h1>
+        <Textfit max={40} className="h-100 fw-medium"><Markdown>{md}</Markdown></Textfit>
     </>
 }
 
@@ -109,21 +110,19 @@ function RunCard({ run, delay, isNext }: { run: RunData, delay?: boolean, isNext
     const runners = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
     const info = [runners, msToApproxTimeString((run.estimateS || 0) * 1000), run.category, run.system, run.release].filter(v => v);
 
-    const date = new Date(run.scheduledS! * 1000);
-    const dateStr = date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", hour12: true }) + date.toLocaleDateString(undefined);
     // console.log("now", Date.now(), new Date(run.scheduled!), Date.now() - new Date(run.scheduled!).getUTCMilliseconds())
     // const durStr = msToApproxTimeString(1000 * new Date(run.scheduled!).getUTCMilliseconds() - Date.now());
 
     return <Card key={run.id}>
         <Card.Body className='p-2'>
             <div className="game">
-                <h2>
+                <h2 className="fw-medium">
                     <Textfit mode="single" max={50}>
                         <span className="fw-bold">{run.game}</span>
                         {!isNext && <>{" at "}<span className="fw-bold"><RunTime run={run} minsBehind={state.minsBehind} delay={delay} /></span></>}
                     </Textfit>
                     <Textfit mode="single" max={55}>
-                        <div style={{ marginTop: 3, fontSize: "0.6em", lineHeight: 1 }}>{info.join(" / ")}</div>
+                        <div style={{ marginTop: 3, fontSize: "0.6em", lineHeight: 1, opacity: run.category ? 1 : 0 }}>{info.join(" / ")}</div>
                     </Textfit>
                 </h2>
             </div>
@@ -167,7 +166,17 @@ function RunsComp({ runDataArray, runDataActiveRunSurrounding, state }: PageArgs
 
 // const pages = [AboutComp, MilestonesComp, RunsComp, CharityComp, PollsComp, TargetsComp, RunsComp];
 // const pages = [AboutComp, RunsComp, CharityComp, RunsComp];
-const pages = [RunsComp];
+const pages = [{
+    page: RunsComp,
+    condition: (args: PageArgs) => Boolean(args.runDataActiveRunSurrounding?.next)
+}, {
+    page: CharityComp,
+    condition: (args: PageArgs) => Boolean(args.custom?.charity)
+}, {
+    page: AboutComp,
+    condition: (args: PageArgs) => Boolean(args.custom?.about)
+},
+]
 
 function HR() {
     return <div style={{ width: "100%", height: "var(--bw)", backgroundColor: "white" }} />
@@ -198,29 +207,32 @@ export function Slides({ side }: { side?: boolean }) {
     const [runDataArray,] = useReplicant<RunDataArray>("runDataArray", [], { namespace: "nodecg-speedcontrol" });
     const [runDataActiveRunSurrounding,] = useReplicant<RunDataActiveRunSurrounding>("runDataActiveRunSurrounding", { previous: undefined, current: undefined, next: undefined }, { namespace: "nodecg-speedcontrol" });
     const [custom,] = useReplicant<CustomBreakText>("customBreakText", {});
-    const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
+    const [state,] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
+    const [refreshTime, setRefreshTime] = useState<Number>(Date.now());
 
     // const args = { total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding };
-    const args = { custom, runDataArray, runDataActiveRunSurrounding };
+    const args = { custom, runDataArray, runDataActiveRunSurrounding, state };
 
     // Rotate through pages
     useEffect(() => {
-        const interval = setInterval(() => {
+        const interval = setTimeout(() => {
             // const args = { total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding };
             const args = { custom, runDataArray, runDataActiveRunSurrounding };
-            var newIndex = (index + 1) % pages.length;
+            let newIndex = 0;
             for (let i = 1; i < pages.length + 1; i++) {
                 newIndex = (index + i) % pages.length;
-                const newFunc = pages[newIndex];
-                const result = newFunc(args);
-                if (result && result.props.children) break;
+                const { condition } = pages[newIndex];
+                if (condition(args)) {
+                    break;
+                }
             }
             setIndex(newIndex);
-            setFunc(() => pages[newIndex]);
+            setFunc(() => pages[newIndex].page);
+            setRefreshTime(Date.now());
         }, 5000);
         return () => clearInterval(interval);
         // }, [index, total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding]);
-    }, [index, custom, runDataArray, runDataActiveRunSurrounding]);
+    }, [refreshTime, index, custom, runDataArray, runDataActiveRunSurrounding, state]);
 
 
     const page = <Func {...args} />
