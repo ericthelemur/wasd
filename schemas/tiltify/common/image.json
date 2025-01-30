@@ -1,0 +1,24 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "alt": {
+            "type": "string"
+        },
+        "height": {
+            "type": "integer"
+        },
+        "src": {
+            "type": "string"
+        },
+        "width": {
+            "type": "integer"
+        }
+    },
+    "required": [
+        "alt",
+        "height",
+        "src",
+        "width"
+    ]
+}

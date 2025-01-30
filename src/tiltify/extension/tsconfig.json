@@ -1,0 +1,6 @@
+{
+	"extends": "../../../wasd-common/shared/tsconfig.build.json",
+	"include": [
+		"**/*.ts"
+	]
+}

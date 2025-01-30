@@ -1,0 +1,33 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "active": {
+            "type": "boolean"
+        },
+        "amount": {
+            "$ref": "../common/amount.json"
+        },
+        "id": {
+            "$ref": "../common/uuid.json"
+        },
+        "inserted_at": {
+            "$ref": "../common/timestamp.json"
+        },
+        "legacy_id": {
+            "type": "integer"
+        },
+        "name": {
+            "type": "string"
+        },
+        "updated_at": {
+            "$ref": "../common/timestamp.json"
+        }
+    },
+    "required": [
+        "active",
+        "amount",
+        "id",
+        "name"
+    ]
+}
