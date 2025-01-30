@@ -1,4 +1,4 @@
-import { Donation } from 'nodecg-tiltify/src/types/schemas/donations';
+import { Donation } from 'types/schemas/tiltify';
 
 import { formatAmounts } from '../../dashboard/reader/utils';
 

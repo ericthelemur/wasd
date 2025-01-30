@@ -6,5 +6,20 @@
  */
 
 export interface Configschema {
+	barURL?: string;
+	tiltify_client_id?: string;
+	tiltify_client_secret?: string;
+	tiltify_webhook_id?: string;
+	tiltify_webhook_secret?: string;
+	tiltify_campaign_id?: string;
+	display_currency?: string;
+	/**
+	 * Key for currency API, uses hardcoded values as a fallback
+	 */
+	freecurrencyapi_key?: string;
+	/**
+	 * Delay between dono being recieved and auto approval, only if enabled
+	 */
+	autoApproveTimeSec?: number;
 	[k: string]: unknown;
 }

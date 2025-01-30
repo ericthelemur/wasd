@@ -19,6 +19,13 @@
         "headerColor": "#525F78"
       },
       {
+        "name": "dono-reader",
+        "title": "Donation Reader",
+        "file": "donos/dashboard/reader/reader.graphic.html",
+        "fullbleed": true,
+        "headerColor": "#525F78"
+      },
+      {
         "name": "mixer-control",
         "title": "Mixer Control",
         "width": 3,
@@ -36,7 +43,7 @@
         "name": "obs-control",
         "title": "OBS Control",
         "width": 3,
-        "file": "/obs/dashboard/obs-control/obscontrol.dashboard.html",
+        "file": "obs/dashboard/obs-control/obscontrol.dashboard.html",
         "headerColor": "#525F78"
       },
       {
@@ -172,6 +179,7 @@
     "react-dom": "18.3.1",
     "react-fitty": "^1.0.1",
     "react-textfit": "git+http://github.com/ericthelemur/react-textfit.git",
+    "react-toastify": "^11.0.3",
     "react-transition-group": "^4.4.5",
     "speedcontrol-util": "^0.6.1",
     "tiny-typed-emitter": "2.1.0",

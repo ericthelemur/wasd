@@ -1,5 +1,44 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
-    "properties": {}
+    "properties": {
+        "barURL": {
+            "type": "string",
+            "default": "/bundles/wasd/graphics/bar/bar.graphic.html"
+        },
+        "tiltify_client_id": {
+            "type": "string",
+            "default": ""
+        },
+        "tiltify_client_secret": {
+            "type": "string",
+            "default": ""
+        },
+        "tiltify_webhook_id": {
+            "type": "string",
+            "default": ""
+        },
+        "tiltify_webhook_secret": {
+            "type": "string",
+            "default": ""
+        },
+        "tiltify_campaign_id": {
+            "type": "string",
+            "default": ""
+        },
+        "display_currency": {
+            "type": "string",
+            "default": "GBP"
+        },
+        "freecurrencyapi_key": {
+            "type": "string",
+            "description": "Key for currency API, uses hardcoded values as a fallback",
+            "default": ""
+        },
+        "autoApproveTimeSec": {
+            "description": "Delay between dono being recieved and auto approval, only if enabled",
+            "type": "number",
+            "default": 15
+        }
+    }
 }

@@ -1,4 +1,4 @@
-import 'wasd-common/shared/uwcs-bootstrap.css';
+import '../../../common/uwcs-bootstrap.css';
 import 'react-toastify/dist/ReactToastify.css';
 import './alerts.graphic.css';
 

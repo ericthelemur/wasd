@@ -5,6 +5,7 @@ import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 
 import { defaultSettings } from '../reader.graphic';
 import * as icons from './icons';
+import { ArrowCounterclockwise, GearFill, MoonFill } from 'react-bootstrap-icons';
 
 export interface SortSettings {
     list: string;
@@ -24,7 +25,7 @@ export function Settings(props: SettingsProps) {
     const disabled = props.settings.list === "incentives";
     return <details id="settings" className='m2'>
         <summary className='btn btn-primary'>
-            <i className='bi bi-gear-fill'></i>
+            <GearFill />
         </summary>
         <div id="dropdown" className='bg-body-secondary'>
             <small className='float-end'>
@@ -32,10 +33,10 @@ export function Settings(props: SettingsProps) {
                     const curr_light = localStorage.getItem("dark_mode") == "light";
                     localStorage.setItem("dark_mode", !curr_light ? "light" : "dark");
                     dark();
-                }}><i className="bi bi-moon-fill"></i></Button>{" "}
+                }}><MoonFill /></Button>{" "}
                 <Button variant="outline-primary" className="px-2 py-1 small" disabled={disabled} onClick={(e) => {
                     props.setSettings(defaultSettings);
-                }}><i className="bi bi-arrow-counterclockwise"></i></Button>
+                }}><ArrowCounterclockwise /></Button>
             </small>
 
             <h5>Local Settings</h5>

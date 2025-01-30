@@ -1,12 +1,11 @@
-import { CENSORED, ModStatus, UNDECIDED } from 'nodecg-tiltify/src/extension/utils/mod';
-import { Donation } from 'nodecg-tiltify/src/types/schemas/donations';
+import { CENSORED, ModStatus, UNDECIDED } from 'tiltify/extension/utils/mod';
 import Button from 'react-bootstrap/Button';
-import { Settings } from 'types/schemas/settings';
 import { useReplicant } from 'use-nodecg';
 
 import { DonoProp } from '../utils';
 import * as icons from './icons';
 import { NodeCGAPIClient } from '@nodecg/types/client/api/api.client';
+import { DonoSettings, Donation } from 'types/schemas';
 
 declare var nodecg: NodeCGAPIClient;
 
@@ -47,7 +46,7 @@ export function ModButton(props: ModButtonProps) {
 }
 
 export function Buttons({ dono }: DonoProp) {
-    const [settings, _] = useReplicant<Settings>("donations", { autoapprove: false });
+    const [settings, _] = useReplicant<DonoSettings>("donoSettings", { autoapprove: false });
     const whitelist = !settings?.autoapprove || dono.timeToApprove === 8.64e15;
 
     var censorBtn: React.JSX.Element;

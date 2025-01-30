@@ -1,6 +1,4 @@
-import { Polls } from 'nodecg-tiltify/src/types/schemas/polls';
-import { Rewards } from 'nodecg-tiltify/src/types/schemas/rewards';
-import { Targets } from 'nodecg-tiltify/src/types/schemas/targets';
+import { Polls, Rewards, Targets } from 'types/schemas/tiltify';
 import { useReplicant } from 'use-nodecg';
 
 import { truncate } from '../utils/index';

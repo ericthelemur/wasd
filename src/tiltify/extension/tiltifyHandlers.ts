@@ -4,9 +4,9 @@ import { Request, Response } from "express-serve-static-core";
 import { createHmac } from "node:crypto";
 import { EventEmitter } from 'node:stream';
 
-import type { Alldonations, Campaign, Donation, Donations, Donors, Milestones, Polls, Rewards, Schedule, Targets } from '../types/schemas';
+import type { Alldonations, Campaign, Donation, Donations, Donors, Milestones, Polls, Rewards, Schedule, Targets } from 'types/schemas/tiltify';
 import { WEBHOOK_MODE } from './index.extension';
-import { getNodeCG } from './utils';
+import { getNodeCG } from 'common/utils';
 import { convertValue } from './utils/currency';
 import * as rep from "./utils/replicants";
 

@@ -1,7 +1,5 @@
-import { APPROVED, CENSORED, UNDECIDED } from 'nodecg-tiltify/src/extension/utils/mod';
-import { Alldonations, Basedono } from 'nodecg-tiltify/src/types/schemas/alldonations';
-import { Donation, Donations } from 'nodecg-tiltify/src/types/schemas/donations';
-import { Donor, Donors } from 'nodecg-tiltify/src/types/schemas/donors';
+import { APPROVED, CENSORED, UNDECIDED } from 'tiltify/extension/utils/mod';
+import { Alldonations, Basedono, Donation, Donations, Donor, Donors } from 'types/schemas/tiltify';
 import { useReplicant } from 'use-nodecg';
 
 import { formatAmounts } from '../utils';
@@ -77,7 +75,7 @@ function groupBy<T>(arr: T[], fn: (item: T) => any) {
 	}, {});
 }
 
-export function Donors(props: DonoListProps) {
+export function DonorsComp(props: DonoListProps) {
 	const [d, setDonos] = useReplicant<Donations>("donations", [], { namespace: "nodecg-tiltify" });
 	const donos = d === undefined ? [] : d;
 	const [dr, setDonors] = useReplicant<Donors>("donors", [], { namespace: "nodecg-tiltify" });
@@ -103,11 +101,11 @@ export function Donors(props: DonoListProps) {
 		return result * (props.sortSettings.dir === "asc" ? 1 : -1);
 	})
 
-	return <div className="donations gap-3 d-block">{details.map(Donor)}</div>;
+	return <div className="donations gap-3 d-block">{details.map(DonorComp)}</div>;
 }
 
 
-function Donor(props: DonorProps) {
+function DonorComp(props: DonorProps) {
 	// Details of donor and drop down list of donations
 	const { name, donor, donations, total, latest } = props;
 

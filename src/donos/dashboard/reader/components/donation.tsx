@@ -1,5 +1,4 @@
-import { tripleState } from 'nodecg-tiltify/src/extension/utils/mod';
-import { Donation } from 'nodecg-tiltify/src/types/schemas/donations';
+import { tripleState } from 'tiltify/extension/utils/mod';
 import Card from 'react-bootstrap/Card';
 
 import { dateFormat, DonoProp, formatAmounts, timeFormat } from '../utils';

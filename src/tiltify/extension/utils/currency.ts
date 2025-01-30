@@ -1,24 +1,24 @@
-import { getNodeCG } from ".";
-import type { Donation } from '../../types/schemas';
+import { getNodeCG } from "common/utils";
+import type { Donation } from 'types/schemas/tiltify';
 import { donations } from "./replicants";
 
 const nodecg = getNodeCG();
 
-type ConversionRates = {[code: string]: number};
+type ConversionRates = { [code: string]: number };
 
 export var conversionRates: ConversionRates = {
-    USD: 1.2461833299,
-    AUD: 1.9125802417,
-    BRL: 6.1138013225,
-    CAD: 1.7095394992,
-    DKK: 8.5156950429,
-    EUR: 1.1418281377,
+    USD: 1.2457642727,
+    AUD: 1.9958017872,
+    BRL: 7.3077038198,
+    CAD: 1.7930537577,
+    DKK: 8.9145157206,
+    EUR: 1.194551036,
     GBP: 1.0,
-    JPY: 186.4645194486,
-    MXN: 21.4624577112,
-    NOK: 13.4646396158,
-    NZD: 2.079581301,
-    PLN: 5.0062181164
+    JPY: 193.2566911842,
+    MXN: 25.5583902512,
+    NOK: 14.0488476995,
+    NZD: 2.1984006411,
+    PLN: 5.0183628982
 };
 
 if (nodecg.bundleConfig.freecurrencyapi_key) {

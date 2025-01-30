@@ -1,11 +1,11 @@
-import 'wasd-common/shared/uwcs-bootstrap.css';
+import '../../../common/uwcs-bootstrap.css';
 import './reader.graphic.css';
 
 import { useEffect, useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import { createRoot } from 'react-dom/client';
 
-import { AllDonations, Donors, LiveDonations } from './components/donolists';
+import { AllDonations, DonorsComp, LiveDonations } from './components/donolists';
 import * as icons from './components/icons';
 import { Incentives } from './components/incentives';
 import { Settings, SortSettings, TabSetting } from './components/settings';
@@ -42,7 +42,7 @@ export function Reader() {
 	const args = { sortSettings: sortSettings, setSortSettings: setSortSettings };
 	// Pick page to render
 	if (sortSettings.list === "all") donos = <AllDonations {...args} />;
-	else if (sortSettings.list === "donors") donos = <Donors {...args} />;
+	else if (sortSettings.list === "donors") donos = <DonorsComp {...args} />;
 	else if (sortSettings.list === "incentives") donos = <Incentives />;
 	else donos = <LiveDonations {...args} />;
 

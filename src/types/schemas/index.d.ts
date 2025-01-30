@@ -1,6 +1,8 @@
 // @ts-ignore
 export * from './common';
 // @ts-ignore
+export * from './donos';
+// @ts-ignore
 export * from './mixer';
 // @ts-ignore
 export * from './obs';
@@ -8,6 +10,8 @@ export * from './obs';
 export * from './people';
 // @ts-ignore
 export * from './ticker';
+// @ts-ignore
+export * from './tiltify';
 // @ts-ignore
 export * from './wasd';
 // @ts-ignore

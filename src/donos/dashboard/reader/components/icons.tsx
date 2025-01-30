@@ -1,6 +1,7 @@
-import 'bootstrap-icons/font/bootstrap-icons.min.css';
+// import 'bootstrap-icons/font/bootstrap-icons.min.css';
+import { EnvelopeOpenFill, EnvelopeFill, EyeFill, EyeSlashFill, CheckLg, QuestionLg, ArrowCounterclockwise, Ban, ArrowUp, ArrowDown, Clock, CurrencyPound, BellFill, ArchiveFill, PeopleFill, PiggyBankFill } from 'react-bootstrap-icons';
 
-import { APPROVED, CENSORED, ModStatus, UNDECIDED } from 'nodecg-tiltify/src/extension/utils/mod';
+import { APPROVED, CENSORED, ModStatus, UNDECIDED } from 'tiltify/extension/utils/mod';
 
 export interface ModAction {
     icon: React.JSX.Element;
@@ -12,16 +13,16 @@ export interface ModAction {
 
 
 export const read: ModAction = {
-    icon: <i className="bi bi-envelope-open-fill"></i>,
-    iconAction: <i className="bi bi-envelope-open-fill"></i>,
+    icon: <EnvelopeOpenFill />,
+    iconAction: <EnvelopeOpenFill />,
     action: "Read",
     category: "read",
     value: true
 }
 
 export const unread: ModAction = {
-    icon: <i className="bi bi-envelope-fill"></i>,
-    iconAction: <i className="bi bi-envelope-fill"></i>,
+    icon: <EnvelopeFill />,
+    iconAction: <EnvelopeFill />,
     action: "Unread",
     category: "unread",
     value: false
@@ -29,16 +30,16 @@ export const unread: ModAction = {
 
 
 export const shown: ModAction = {
-    icon: <i className="bi bi-eye-fill"></i>,
-    iconAction: <i className="bi bi-eye-fill"></i>,
+    icon: <EyeFill />,
+    iconAction: <EyeFill />,
     action: "Show",
     category: "shown",
     value: true
 }
 
 export const unshown: ModAction = {
-    icon: <i className="bi bi-eye-slash-fill"></i>,
-    iconAction: <i className="bi bi-eye-slash-fill"></i>,
+    icon: <EyeSlashFill />,
+    iconAction: <EyeSlashFill />,
     action: "Unshow",
     category: "unshown",
     value: false
@@ -46,88 +47,88 @@ export const unshown: ModAction = {
 
 
 export const approved: ModAction = {
-    icon: <i className="bi bi-check-lg"></i>,
-    iconAction: <i className="bi bi-check-lg"></i>,
+    icon: <CheckLg />,
+    iconAction: <CheckLg />,
     action: "Approve",
     category: "approved",
     value: APPROVED
 }
 
 export const undecided: ModAction = {
-    icon: <i className="bi bi-question-lg"></i>,
-    iconAction: <i className="bi bi-arrow-counterclockwise"></i>,
+    icon: <QuestionLg />,
+    iconAction: <ArrowCounterclockwise />,
     action: "Reset",
     category: "undecided",
     value: UNDECIDED
 }
 
 export const censored: ModAction = {
-    icon: <i className="bi bi-ban"></i>,
-    iconAction: <i className="bi bi-ban"></i>,
+    icon: <Ban />,
+    iconAction: <Ban />,
     action: "Censor",
     category: "censored",
     value: CENSORED
 }
 
 export const asc: ModAction = {
-    icon: <i className="bi bi-arrow-up"></i>,
-    iconAction: <i className="bi bi-arrow-up"></i>,
+    icon: <ArrowUp />,
+    iconAction: <ArrowUp />,
     action: "Sort Ascending",
     category: "asc",
     value: null
 }
 
 export const dsc: ModAction = {
-    icon: <i className="bi bi-arrow-down"></i>,
-    iconAction: <i className="bi bi-arrow-down"></i>,
+    icon: <ArrowDown />,
+    iconAction: <ArrowDown />,
     action: "Sort Descending",
     category: "dsc",
     value: null
 }
 
 export const time: ModAction = {
-    icon: <i className="bi bi-clock"></i>,
-    iconAction: <i className="bi bi-clock"></i>,
+    icon: <Clock />,
+    iconAction: <Clock />,
     action: "Sort by time",
     category: "time",
     value: null
 }
 
 export const money: ModAction = {
-    icon: <i className="bi bi-currency-pound"></i>,
-    iconAction: <i className="bi bi-currency-pound"></i>,
+    icon: <CurrencyPound />,
+    iconAction: <CurrencyPound />,
     action: "Sort by money",
     category: "money",
     value: null
 }
 
 export const live: ModAction = {
-    icon: <i className="bi bi-bell-fill"></i>,
-    iconAction: <i className="bi bi-bell-fill"></i>,
+    icon: <BellFill />,
+    iconAction: <BellFill />,
     action: "Live",
     category: "live",
     value: null
 }
 
 export const all: ModAction = {
-    icon: <i className="bi bi-archive-fill"></i>,
-    iconAction: <i className="bi bi-archive-fill"></i>,
+    icon: <ArchiveFill />,
+    iconAction: <ArchiveFill />,
     action: "All",
     category: "all",
     value: null
 }
 
 export const donors: ModAction = {
-    icon: <i className="bi bi-people-fill"></i>,
-    iconAction: <i className="bi bi-people-fill"></i>,
+    icon: <PeopleFill />,
+    iconAction: <PeopleFill />,
     action: "Donors",
     category: "donors",
     value: null
 }
 
 export const incentives: ModAction = {
-    icon: <i className="bi bi-piggy-bank-fill"></i>,
-    iconAction: <i className="bi bi-piggy-bank-fill"></i>,
+    icon: <PiggyBankFill />,
+    iconAction: <PiggyBankFill />,
     action: "Incentives",
     category: "incentives",
     value: null

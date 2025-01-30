@@ -1,6 +1,6 @@
 import {
     Amount, Milestone, Milestones, Poll, Polls, Reward, Rewards, Target, Targets, Total
-} from 'nodecg-tiltify/src/types/schemas';
+} from 'types/schemas/tiltify';
 import { useState } from 'react';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';

@@ -3,11 +3,9 @@ import { msToApproxTimeString } from '../../../../countdown/utils';
 import './slides.scss';
 
 import Markdown from 'markdown-to-jsx';
-// import {
-//     findMilestones, MilestoneCard, PollCard, RewardCard, TargetCard
-// } from 'nodecg-dono-control/src/dashboard/reader/components/incentives';
-// import { sortMapSingle } from 'nodecg-dono-control/src/dashboard/reader/utils';
-// import { Milestones, Polls, Rewards, Targets, Total } from 'nodecg-tiltify/src/types/schemas';
+import { findMilestones, MilestoneCard, PollCard, RewardCard, TargetCard } from 'donos/dashboard/reader/components/incentives';
+import { sortMapSingle } from 'donos/dashboard/reader/utils';
+import { Milestones, Polls, Rewards, Targets, Total } from 'types/schemas/tiltify';
 import React, { useEffect, useState } from 'react';
 import Card from 'react-bootstrap/Card';
 import { Textfit } from 'react-textfit';
