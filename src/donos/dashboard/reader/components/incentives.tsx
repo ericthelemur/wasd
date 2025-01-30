@@ -179,11 +179,11 @@ export function PollCard({ poll }: { poll: Poll }) {
 }
 
 export function Incentives() {
-    const [rewards, _] = useReplicant<Rewards>("rewards", [], { namespace: "nodecg-tiltify" });
-    const [targets, _2] = useReplicant<Targets>("targets", [], { namespace: "nodecg-tiltify" });
-    const [polls, _3] = useReplicant<Polls>("polls", [], { namespace: "nodecg-tiltify" });
-    const [milestones, _4] = useReplicant<Milestones>("milestones", [], { namespace: "nodecg-tiltify" });
-    const [total, _5] = useReplicant<Total>("total", { "currency": "GBP", "value": 0 }, { namespace: "nodecg-tiltify" });
+    const [rewards, _] = useReplicant<Rewards>("rewards", []);
+    const [targets, _2] = useReplicant<Targets>("targets", []);
+    const [polls, _3] = useReplicant<Polls>("polls", []);
+    const [milestones, _4] = useReplicant<Milestones>("milestones", []);
+    const [total, _5] = useReplicant<Total>("total", { "currency": "GBP", "value": 0 });
 
     return (
         <>

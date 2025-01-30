@@ -1,4 +1,4 @@
-import { getNodeCG } from "common/utils";
+import { getNodeCG } from "../../../common/utils";
 import type { Donation } from 'types/schemas/tiltify';
 import { donations } from "./replicants";
 

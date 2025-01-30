@@ -18,7 +18,10 @@
       "$ref": "../common/timestamp.json"
     },
     "donor_comment": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "donor_name": {
       "type": "string"
@@ -36,7 +39,10 @@
       "$ref": "../common/uuid-nullable.json"
     },
     "reward_claims": {
-      "type": "array",
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
         "type": "object",
         "properties": {
@@ -88,7 +94,6 @@
     "amount",
     "campaign_id",
     "completed_at",
-    "donor_comment",
     "donor_name",
     "id",
     "read",

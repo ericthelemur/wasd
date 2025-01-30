@@ -1,6 +1,6 @@
 import type NodeCG from '@nodecg/types';
 import type { Donation } from 'types/schemas/tiltify';
-import { getNodeCG } from 'common/utils';
+import { getNodeCG } from '../../common/utils';
 import { APPROVED, CENSORED, ModStatus, UNDECIDED } from './utils/mod';
 import * as rep from './utils/replicants';
 

@@ -19,7 +19,7 @@ function changeModStatus(dono: Donation, to: ModStatus, property = "modstatus") 
             if (confirmUncensor != true) return;
         }
         console.log("set-donation-" + property, [{ id: dono.id }, to]);
-        nodecg.sendMessageToBundle("set-donation-" + property, "nodecg-tiltify", [dono, to]);
+        nodecg.sendMessage("set-donation-" + property, [dono, to]);
     }
 }
 

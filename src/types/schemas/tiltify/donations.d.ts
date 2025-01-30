@@ -13,18 +13,20 @@ export interface Donation {
 	campaign_id: string;
 	completed_at: string;
 	created_at?: string;
-	donor_comment: string;
+	donor_comment?: string | null;
 	donor_name: string;
 	fundraising_event_id?: string | null;
 	legacy_id?: number;
 	poll_id?: string | null;
 	poll_option_id?: string | null;
-	reward_claims?: {
-		id?: string;
-		quantity?: number;
-		reward_id?: string;
-		[k: string]: unknown;
-	}[];
+	reward_claims?:
+		| {
+				id?: string;
+				quantity?: number;
+				reward_id?: string;
+				[k: string]: unknown;
+		  }[]
+		| null;
 	reward_id?: string | null;
 	sustained?: boolean;
 	target_id?: string | null;

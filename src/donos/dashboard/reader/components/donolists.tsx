@@ -13,12 +13,13 @@ interface DonoListProps {
 
 interface SortedDonosProps extends DonoListProps {
 	donos: Basedono[] | Donation[];
+	hideButtons?: boolean;
 }
 
-export function SortedDonations({ donos, sortSettings, setSortSettings }: SortedDonosProps) {
+export function SortedDonations({ donos, sortSettings, setSortSettings, hideButtons }: SortedDonosProps) {
 	if (!donos || !donos[0]) return <h5>Loading or No Donations Yet!</h5>;
 
-	if ("read" in donos[0]) {
+	if ("read" in donos[0] && !hideButtons) {
 		donos = (donos as Donation[]).filter((d) => {
 			return ((sortSettings.show.includes("read") && d.read) || (sortSettings.show.includes("unread") && !d.read)) &&
 				((sortSettings.show.includes("approved") && d.modStatus === APPROVED) ||
@@ -27,9 +28,9 @@ export function SortedDonations({ donos, sortSettings, setSortSettings }: Sorted
 		})
 		if (donos.length === 0) return <h5>All Donations Filtered Out!</h5>
 	} else {
-		donos = [...donos]
+		donos = [...donos] as Basedono[];
 	}
-	const sortedDonos = donos.sort((a: Basedono, b: Basedono) => {
+	const sortedDonos = donos.sort((a: Basedono | Donation, b: Basedono | Donation) => {
 		const va = sortSettings.sort === "money" ? a.amount.value : b.completed_at;
 		const vb = sortSettings.sort === "money" ? b.amount.value : a.completed_at;
 		var result = (va < vb) ? -1 : (va > vb) ? 1 : 0;
@@ -45,13 +46,13 @@ export function SortedDonations({ donos, sortSettings, setSortSettings }: Sorted
 
 
 export function LiveDonations(props: DonoListProps) {
-	const [d, setDonos] = useReplicant<Donations>("donations", [], { namespace: "nodecg-tiltify" });
+	const [d, setDonos] = useReplicant<Donations>("donations", []);
 	const donos = d === undefined ? [] : d;
 	return <SortedDonations donos={donos} {...props} />
 }
 
 export function AllDonations(props: DonoListProps) {
-	const [d, setDonos] = useReplicant<Alldonations>("alldonations", [], { namespace: "nodecg-tiltify" });
+	const [d, setDonos] = useReplicant<Alldonations>("alldonations", []);
 	const donos = d === undefined ? [] : d;
 	return <SortedDonations donos={donos} {...props} />
 }

@@ -12,7 +12,7 @@ export interface Donor {
 	avatar?: Image;
 	id: string;
 	name: string;
-	url: string;
+	url: string | null;
 	[k: string]: unknown;
 }
 export interface Amount {

@@ -1,6 +1,6 @@
 import type NodeCG from '@nodecg/types';
 import type { Donation, Donations, Alldonations, Total, Polls, Schedule, Targets, Rewards, Milestones, Donors, Campaign } from 'types/schemas/tiltify';
-import { getNodeCG, Replicant } from "common/utils";
+import { getNodeCG, Replicant } from "../../../common/utils";
 
 export const donations = Replicant<Donations>("donations", "tiltify");
 export const allDonations = Replicant<Alldonations>("alldonations", "tiltify");

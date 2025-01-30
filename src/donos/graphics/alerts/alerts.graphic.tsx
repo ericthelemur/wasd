@@ -11,7 +11,7 @@ import { Notification } from './notification';
 
 declare var nodecg: NodeCGAPIClient;
 
-nodecg.listenFor("show-dono", "nodecg-tiltify", (dono) => {
+nodecg.listenFor("show-dono", (dono) => {
     toast(<Notification dono={dono} />, {
         toastId: dono.id,
         position: "bottom-left",
@@ -23,10 +23,10 @@ nodecg.listenFor("show-dono", "nodecg-tiltify", (dono) => {
         progress: undefined,
         theme: "light",
     })
-    nodecg.sendMessageToBundle("set-donation-shown", "nodecg-tiltify", [dono, true]);
+    nodecg.sendMessage("set-donation-shown", [dono, true]);
 })
 
-nodecg.listenFor("revoke-dono", "nodecg-tiltify", (dono) => {
+nodecg.listenFor("revoke-dono", (dono) => {
     toast.dismiss(dono.id);
 })
 
