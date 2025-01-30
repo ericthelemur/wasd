@@ -74,7 +74,7 @@ type PageComp = (a: PageArgs) => JSX.Element | null;
 function MarkdownPage({ md, title }: { md?: string, title?: string }) {
     if (!md) return null;
     return <>
-        <h1>{title}</h1>
+        {title && <h1>{title}</h1>}
         <Textfit max={40} className="h-100 fw-medium"><Markdown>{md}</Markdown></Textfit>
     </>
 }
@@ -84,11 +84,16 @@ function AboutComp({ custom }: PageArgs) {
     return MarkdownPage({ md: custom.about, title: "About WASD" });
 }
 
-
 function CharityComp({ custom }: PageArgs) {
     if (!custom) return null;
     return MarkdownPage({ md: custom.charity, title: "SpecialEffect" });
 }
+
+function CustomComp({ custom }: PageArgs) {
+    if (!custom) return null;
+    return MarkdownPage({ md: custom.custom });
+}
+
 
 export function RunTime({ run, minsBehind, delay }: { run: RunData, minsBehind?: number, delay?: boolean }) {
     const date = new Date(run.scheduledS! * 1000);
@@ -174,14 +179,17 @@ interface PageCandidate {
 
 const pages: PageCandidate[] = [{
     page: RunsComp,
-    condition: (args: PageArgs) => Boolean(args.runDataActiveRunSurrounding?.next),
+    condition: (args: PageArgs) => Boolean(args.custom?.disabled?.runs) && Boolean(args.runDataActiveRunSurrounding?.next),
     duration: 10
 }, {
     page: CharityComp,
-    condition: (args: PageArgs) => Boolean(args.custom?.charity)
+    condition: (args: PageArgs) => Boolean(args.custom?.disabled?.charity) && Boolean(args.custom?.charity)
 }, {
     page: AboutComp,
-    condition: (args: PageArgs) => Boolean(args.custom?.about)
+    condition: (args: PageArgs) => Boolean(args.custom?.disabled?.about) && Boolean(args.custom?.about)
+}, {
+    page: CustomComp,
+    condition: (args: PageArgs) => Boolean(args.custom?.disabled?.custom) && Boolean(args.custom?.custom)
 },
 ]
 

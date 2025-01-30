@@ -29,7 +29,7 @@ function argParse(def) {
     extension: argv.includes('--extension') || buildAll || buildDefault,
     dashboard: argv.includes('--dashboard') || buildAll || buildDefault || buildBrowser,
     graphics: argv.includes('--graphics') || buildAll || buildDefault || buildBrowser,
-    shared: argv.includes('--shared') || buildAll || buildDefault || buildBrowser,
+    shared: argv.includes('--shared') || buildAll || buildDefault, // || buildBrowser,
     schemas: argv.includes('--schemas') || argv.includes('--types') || buildAll,
     nodeModules: argv.includes('--node-modules'),
     production: argv.includes('--production'),
@@ -213,6 +213,7 @@ try {
 } catch (e) {
   // throw e;
   // the reporter-cli package will handle printing errors to the user
+  console.log(e);
   process.exit(1);
 }
 

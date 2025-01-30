@@ -8,5 +8,9 @@
 export interface CustomBreakText {
 	about?: string;
 	charity?: string;
+	custom?: string;
+	disabled?: {
+		[k: string]: boolean;
+	};
 	[k: string]: unknown;
 }
