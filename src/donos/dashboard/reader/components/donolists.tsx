@@ -24,7 +24,10 @@ export function SortedDonations({ donos, sortSettings, setSortSettings, hideButt
 			return ((sortSettings.show.includes("read") && d.read) || (sortSettings.show.includes("unread") && !d.read)) &&
 				((sortSettings.show.includes("approved") && d.modStatus === APPROVED) ||
 					(sortSettings.show.includes("undecided") && d.modStatus === UNDECIDED) ||
-					(sortSettings.show.includes("censored") && d.modStatus === CENSORED))
+					(sortSettings.show.includes("censored") && d.modStatus === CENSORED)) &&
+				(!sortSettings.term.trim() ||
+					(sortSettings.term && d.donor_name && d.donor_name.includes(sortSettings.term)) ||
+					(sortSettings.term && d.donor_comment && d.donor_comment.includes(sortSettings.term)))
 		})
 		if (donos.length === 0) return <h5>All Donations Filtered Out!</h5>
 	} else {

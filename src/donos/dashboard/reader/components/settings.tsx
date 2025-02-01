@@ -12,6 +12,7 @@ export interface SortSettings {
     sort: string;
     dir: string,
     show: string[];
+    term: string;
 }
 
 interface SettingsProps {

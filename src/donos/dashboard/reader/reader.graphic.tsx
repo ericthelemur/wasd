@@ -4,13 +4,15 @@ import './reader.graphic.css';
 import { useEffect, useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import { createRoot } from 'react-dom/client';
+import FormControl from 'react-bootstrap/FormControl';
 
 import { AllDonations, DonorsComp, LiveDonations } from './components/donolists';
 import * as icons from './components/icons';
 import { Incentives } from './components/incentives';
 import { Settings, SettingsBasics, SortSettings, TabSetting } from './components/settings';
+import { Search } from 'react-bootstrap-icons';
 
-export const defaultSettings: SortSettings = { list: "live", sort: "time", dir: "dsc", show: ["unread", "approved", "undecided"] };
+export const defaultSettings: SortSettings = { list: "live", sort: "time", dir: "dsc", show: ["unread", "approved", "undecided"], term: "" };
 
 function fetchFromParams() {
 	const url = new URL(window.location.href);
@@ -52,6 +54,10 @@ export function Reader() {
 			<h1 className="mt-3">Tiltify Donation Reader</h1>
 			<div className="d-flex flex-align-column align-items-end gap-3 mb-3">
 				<SettingsBasics settings={sortSettings} setSettings={setSortSettings} />
+				<div><Search className='h2 me-2 mb-0' />
+					<FormControl type="text" placeholder='Search Term' style={{ width: "unset", display: "inline" }}
+						onChange={(v) => setSortSettings({ ...sortSettings, term: v.target.value })} />
+				</div>
 			</div>
 			<TabSetting name="list" labels={true} current={sortSettings.list}
 				options={[icons.live, icons.all, icons.donors, icons.incentives]}
