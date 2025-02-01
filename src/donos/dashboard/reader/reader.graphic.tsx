@@ -8,7 +8,7 @@ import { createRoot } from 'react-dom/client';
 import { AllDonations, DonorsComp, LiveDonations } from './components/donolists';
 import * as icons from './components/icons';
 import { Incentives } from './components/incentives';
-import { Settings, SortSettings, TabSetting } from './components/settings';
+import { Settings, SettingsBasics, SortSettings, TabSetting } from './components/settings';
 
 export const defaultSettings: SortSettings = { list: "live", sort: "time", dir: "dsc", show: ["unread", "approved", "undecided"] };
 
@@ -50,6 +50,9 @@ export function Reader() {
 		<Container fluid="xxl">
 			<Settings settings={sortSettings} setSettings={setSortSettings} />
 			<h1 className="mt-3">Tiltify Donation Reader</h1>
+			<div className="d-flex flex-align-column align-items-end gap-3 mb-3">
+				<SettingsBasics settings={sortSettings} setSettings={setSortSettings} />
+			</div>
 			<TabSetting name="list" labels={true} current={sortSettings.list}
 				options={[icons.live, icons.all, icons.donors, icons.incentives]}
 				onclick={(v) => setSortSettings({ ...sortSettings, list: v })}

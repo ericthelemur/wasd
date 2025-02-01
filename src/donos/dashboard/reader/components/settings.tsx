@@ -40,24 +40,31 @@ export function Settings(props: SettingsProps) {
             </small>
 
             <h5>Local Settings</h5>
-            <CheckSetting name="show" title="Filters" current={props.settings.show} disabled={disabled}
-                options={[icons.unread, icons.read]}
-                onclick={(v) => props.setSettings({ ...props.settings, show: v })}
-            />{" "}
-            <CheckSetting name="show" current={props.settings.show} disabled={disabled}
-                options={[icons.approved, icons.undecided, icons.censored]}
-                onclick={(v) => props.setSettings({ ...props.settings, show: v })}
-            />
-            <RadioSetting name="dir" title="Sort by" current={props.settings.dir} disabled={disabled}
-                options={[icons.dsc, icons.asc]}
-                onclick={(v) => props.setSettings({ ...props.settings, dir: v })}
-            />{" "}
-            <RadioSetting name="sort" current={props.settings.sort} disabled={disabled}
-                options={[icons.time, icons.money]}
-                onclick={(v) => props.setSettings({ ...props.settings, sort: v })}
-            />
+            <SettingsBasics {...props} />
         </div>
     </details >
+}
+
+export function SettingsBasics(props: SettingsProps) {
+    const disabled = props.settings.list === "incentives";
+    return <>
+        <CheckSetting name="show" title="Filters" current={props.settings.show} disabled={disabled}
+            options={[icons.unread, icons.read]}
+            onclick={(v) => props.setSettings({ ...props.settings, show: v })}
+        />{" "}
+        <CheckSetting name="show" current={props.settings.show} disabled={disabled}
+            options={[icons.approved, icons.undecided, icons.censored]}
+            onclick={(v) => props.setSettings({ ...props.settings, show: v })}
+        />{" "}
+        <RadioSetting name="dir" title="Sort by" current={props.settings.dir} disabled={disabled}
+            options={[icons.dsc, icons.asc]}
+            onclick={(v) => props.setSettings({ ...props.settings, dir: v })}
+        />{" "}
+        <RadioSetting name="sort" current={props.settings.sort} disabled={disabled}
+            options={[icons.time, icons.money]}
+            onclick={(v) => props.setSettings({ ...props.settings, sort: v })}
+        />
+    </>
 }
 
 interface SettingProps<T> {
@@ -71,7 +78,7 @@ interface SettingProps<T> {
 }
 
 export function CheckSetting(props: SettingProps<string[]>) {
-    return <>
+    return <span>
         {props.title ? <h6>{props.title}</h6> : ""}
         <ToggleButtonGroup type="checkbox" name={props.name} value={props.current} onChange={props.onclick}>
             {props.options.map(o => (
@@ -80,11 +87,11 @@ export function CheckSetting(props: SettingProps<string[]>) {
                 </ToggleButton>
             ))}
         </ToggleButtonGroup>
-    </>
+    </span>
 }
 
 export function RadioSetting(props: SettingProps<string>) {
-    return <>
+    return <span>
         {props.title ? <h6>{props.title}</h6> : ""}
         <ToggleButtonGroup type="radio" name={props.name} value={props.current} onChange={props.onclick}>
             {props.options.map(o => (
@@ -93,7 +100,7 @@ export function RadioSetting(props: SettingProps<string>) {
                 </ToggleButton>
             ))}
         </ToggleButtonGroup>
-    </>
+    </span>
 }
 
 
