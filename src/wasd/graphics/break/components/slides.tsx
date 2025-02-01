@@ -27,47 +27,47 @@ interface PageArgs {
 }
 type PageComp = (a: PageArgs) => JSX.Element | null;
 
-// function MilestonesComp({ milestones, total }: PageArgs) {
-//     if (!milestones || total === undefined) return null;
-//     const chosen = findMilestones(milestones, total, 3);
-//     if (!chosen) return null;
-//     return <>
-//         <h3>Donation Milestones:</h3>
-//         <div className="upcoming vstack fb">
-//             {chosen.map(m => <MilestoneCard key={m.id} milestone={m} total={total} />)}
-//         </div>
-//     </>
-// }
+function MilestonesComp({ milestones, total }: PageArgs) {
+    if (!milestones || total === undefined) return null;
+    const chosen = findMilestones(milestones, total, 3);
+    if (!chosen) return null;
+    return <>
+        <h3>Donation Milestones:</h3>
+        <div className="upcoming vstack fb">
+            {chosen.map(m => <MilestoneCard key={m.id} milestone={m} total={total} />)}
+        </div>
+    </>
+}
 
-// function PollsComp({ polls }: PageArgs) {
-//     if (!polls) return null;
-//     return <>
-//         <h3>Donation Polls:</h3>
-//         <div className="upcoming vstack fb">
-//             {sortMapSingle(polls, t => Number(t.amount_raised.value), p => <PollCard key={p.id} poll={p} />, true, 2)}
-//         </div>
-//     </>
-// }
+function PollsComp({ polls }: PageArgs) {
+    if (!polls) return null;
+    return <>
+        <h3>Donation Polls:</h3>
+        <div className="upcoming vstack fb">
+            {sortMapSingle(polls, t => Number(t.amount_raised.value), p => <PollCard key={p.id} poll={p} />, true, 2)}
+        </div>
+    </>
+}
 
-// function TargetsComp({ targets }: PageArgs) {
-//     if (!targets) return null;
-//     return <>
-//         <h3>Donation Targets:</h3>
-//         <div className="upcoming vstack fb">
-//             {sortMapSingle(targets, t => Number(t.amount_raised.value) - 0.1 * Number(t.amount.value), t => <TargetCard key={t.id} target={t} />, false, 3)}
-//         </div>
-//     </>
-// }
+function TargetsComp({ targets }: PageArgs) {
+    if (!targets) return null;
+    return <>
+        <h3>Donation Targets:</h3>
+        <div className="upcoming vstack fb">
+            {sortMapSingle(targets, t => Number(t.amount_raised.value) - 0.1 * Number(t.amount.value), t => <TargetCard key={t.id} target={t} />, false, 3)}
+        </div>
+    </>
+}
 
-// function RewardComp({ rewards }: PageArgs) {
-//     if (!rewards) return null;
-//     return <>
-//         <h3>Donation Rewards:</h3>
-//         <div className="upcoming vstack fb">
-//             {sortMapSingle(rewards, t => Number(t.highlighted), r => <RewardCard key={r.id} reward={r} />, false, 3)}
-//         </div>
-//     </>
-// }
+function RewardComp({ rewards }: PageArgs) {
+    if (!rewards) return null;
+    return <>
+        <h3>Donation Rewards:</h3>
+        <div className="upcoming vstack fb">
+            {sortMapSingle(rewards, t => Number(t.highlighted), r => <RewardCard key={r.id} reward={r} noFold={true} />, false, 3)}
+        </div>
+    </>
+}
 
 function MarkdownPage({ md, title }: { md?: string, title?: string }) {
     if (!md) return null;
@@ -102,7 +102,7 @@ export function RunTime({ run, minsBehind, delay }: { run: RunData, minsBehind?:
         const lateDateStr = lateDate.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", hour12: true }).replace(" ", "");
         return <>{<span className="text-decoration-line-through">{dateStr}</span>} ~{lateDateStr}</>;
     } else {
-        return dateStr;
+        return <>{dateStr}</>;
     }
 }
 
@@ -177,19 +177,40 @@ interface PageCandidate {
 
 const pages: PageCandidate[] = [{
     page: RunsComp,
-    condition: (args: PageArgs) => Boolean(args.custom?.disabled?.runs) && Boolean(args.runDataActiveRunSurrounding?.next),
+    condition: (args) => !args.custom?.disabled?.runs && Boolean(args.runDataActiveRunSurrounding?.next),
     duration: 10
 }, {
-    page: CharityComp,
-    condition: (args: PageArgs) => Boolean(args.custom?.disabled?.charity) && Boolean(args.custom?.charity)
-}, {
-    page: AboutComp,
-    condition: (args: PageArgs) => Boolean(args.custom?.disabled?.about) && Boolean(args.custom?.about)
-}, {
-    page: CustomComp,
-    condition: (args: PageArgs) => Boolean(args.custom?.disabled?.custom) && Boolean(args.custom?.custom)
-},
+        page: CharityComp,
+        condition: (args) => !args.custom?.disabled?.charity && Boolean(args.custom?.charity)
+    }, {
+        page: AboutComp,
+        condition: (args) => !args.custom?.disabled?.about && Boolean(args.custom?.about)
+    }, {
+        page: CustomComp,
+        condition: (args) => !args.custom?.disabled?.custom && Boolean(args.custom?.custom)
+    }, {
+        page: PollsComp,
+        condition: (args) => !args.custom?.disabled?.polls && args.polls != undefined && args.polls.length > 0
+    }, {
+        page: MilestonesComp,
+        condition: (args) => !args.custom?.disabled?.milestones && args.milestones != undefined && args.milestones?.length > 0
+    }, {
+        page: RewardComp,
+        condition: (args) => !args.custom?.disabled?.rewards && args.rewards != undefined && args.rewards?.length > 0
+    }, {
+        page: TargetsComp,
+        condition: (args) => !args.custom?.disabled?.targets && args.targets != undefined && args.targets?.length > 0
+    }
 ]
+
+function shufflePages() {
+    for (var i = pages.length - 1; i >= 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = pages[i];
+        pages[i] = pages[j];
+        pages[j] = temp;
+    }
+}
 
 function HR() {
     return <div style={{ width: "100%", height: "var(--bw)", backgroundColor: "white" }} />
@@ -212,29 +233,28 @@ export function Slides({ side }: { side?: boolean }) {
     const [index, setIndex] = useState(0);
     const [Func, setFunc] = useState<PageComp>(() => AboutComp);
 
-    // const [total,] = useReplicant<Total>("total", { "currency": "GBP", "value": 0 }, { namespace: "nodecg-tiltify" });
-    // const [milestones,] = useReplicant<Milestones>("milestones", [], { namespace: "nodecg-tiltify" });
-    // const [polls,] = useReplicant<Polls>("polls", [], { namespace: "nodecg-tiltify" });
-    // const [targets,] = useReplicant<Targets>("targets", [], { namespace: "nodecg-tiltify" });
-    // const [rewards,] = useReplicant<Rewards>("rewards", [], { namespace: "nodecg-tiltify" });
+    const [total,] = useReplicant<Total>("total", { "currency": "GBP", "value": 0 });
+    const [milestones,] = useReplicant<Milestones>("milestones", []);
+    const [polls,] = useReplicant<Polls>("polls", []);
+    const [targets,] = useReplicant<Targets>("targets", []);
+    const [rewards,] = useReplicant<Rewards>("rewards", []);
     const [runDataArray,] = useReplicant<RunDataArray>("runDataArray", [], { namespace: "nodecg-speedcontrol" });
     const [runDataActiveRunSurrounding,] = useReplicant<RunDataActiveRunSurrounding>("runDataActiveRunSurrounding", { previous: undefined, current: undefined, next: undefined }, { namespace: "nodecg-speedcontrol" });
     const [custom,] = useReplicant<CustomBreakText>("customBreakText", {});
     const [state,] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
     const [refreshTime, setRefreshTime] = useState<number>(Date.now());
 
-    // const args = { total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding };
-    const args = { custom, runDataArray, runDataActiveRunSurrounding, state };
+    const args = { total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding, state };
 
     // Rotate through pages
     useEffect(() => {
         const time = refreshTime - Date.now() + (pages[index].duration ?? 5) * 1000;
         const interval = setTimeout(() => {
-            // const args = { total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding };
-            const args = { custom, runDataArray, runDataActiveRunSurrounding };
+            const args = { total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding, state };
             let newIndex = 0;
-            for (let i = 1; i < pages.length + 1; i++) {
+            for (let i = 1; i < pages.length * 2; i++) {
                 newIndex = (index + i) % pages.length;
+                if (newIndex == 0) shufflePages();
                 const { condition } = pages[newIndex];
                 if (condition(args)) {
                     break;
@@ -245,8 +265,7 @@ export function Slides({ side }: { side?: boolean }) {
             setRefreshTime(Date.now());
         }, time > 0 ? time : 1);
         return () => clearInterval(interval);
-        // }, [index, total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding]);
-    }, [refreshTime, index, custom, runDataArray, runDataActiveRunSurrounding, state]);
+    }, [index, total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding, state]);
 
 
     const page = <Func {...args} />

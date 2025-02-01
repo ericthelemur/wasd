@@ -1,3 +1,5 @@
+import '../reader.graphic.css';
+
 import {
     Amount, Milestone, Milestones, Poll, Polls, Reward, Rewards, Target, Targets, Total
 } from 'types/schemas/tiltify';
@@ -7,8 +9,13 @@ import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import { useReplicant } from 'use-nodecg';
 
-import { dateFormat, formatAmount, sortMapSingle, timeFormat } from '../utils';
+import { formatAmount, sortMapSingle } from '../utils';
 import { ProgressBar } from './progress';
+import { BarChartFill, FlagFill, StarFill } from 'react-bootstrap-icons';
+
+const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit", hour12: true });
+
+const formatTime = (time: number | Date | undefined) => timeFormat.format(time).replace(" ", "");
 
 const hitBadge = <Badge bg="success-subtle" className="small text-success"> Hit</Badge>;
 
@@ -17,7 +24,7 @@ function start_date(date: string | null) {
     const start = new Date(date);
     const now = new Date(Date.now());
     if (now > start) return "";
-    return "Starts " + timeFormat.format(start) + " " + dateFormat.format(start);
+    return "Starts " + formatTime(start); // + " " + formatTime(start);
 }
 
 function end_date(date: string | null) {
@@ -26,11 +33,11 @@ function end_date(date: string | null) {
     const now = new Date(Date.now());
     const nextday = now.getTime() + (24 * 60 * 60 * 1000);
     if (nextday < end.getTime()) return "";
-    return (now < end ? "Ends " : "Ended ") + timeFormat.format(end) + " " + dateFormat.format(end);
+    return (now < end ? "Ends " : "Ended ") + formatTime(end); // + " " + formatTime(end);
 }
 
 function dates(start: string | null, end: string | null) {
-    return null;
+    if (!start && !end) return null;
     const start_txt = start_date(start);
     if (start_txt) return start_txt;
     const end_txt = end_date(end);
@@ -38,20 +45,30 @@ function dates(start: string | null, end: string | null) {
 
 }
 
-export function RewardCard({ reward }: { reward: Reward }) {
-    var date_txt = dates(reward.starts_at || null, reward.ends_at || null);
+export function RewardCard({ reward, noFold }: { reward: Reward, noFold?: boolean }) {
+    const date_txt = dates(reward.starts_at || null, reward.ends_at || null);
+
+    const summ = <h3 className="h5 d-inline">
+        <StarFill />{" "}
+        {formatAmount(reward.amount)}: {reward.name}
+        {date_txt ? (<span className="text-body-tertiary">{date_txt}</span>) : ""}
+    </h3>
+
+    const body = <>
+        {reward.quantity_remaining && reward.quantity ? `${reward.quantity_remaining}/${reward.quantity} remaining` : ""}<br />
+        {reward.description}
+    </>
+
     return (
         <Card className={(reward.quantity_remaining == 0 || (reward.ends_at && new Date(reward.ends_at).getTime() < Date.now())) ? "read" : ""}>
             <Card.Body>
-                <details className="reward">
-                    <summary>
-                        <i className="bi bi-star-fill"></i>{" "}
-                        {reward.name} for {formatAmount(reward.amount)}
-                        {date_txt ? (<span className="text-body-tertiary">{date_txt}</span>) : ""}
-                    </summary>
-                    {reward.quantity_remaining && reward.quantity ? `${reward.quantity_remaining}/${reward.quantity} remaining` : ""}<br />
-                    {reward.description}
-                </details>
+                {!noFold ? <details className="reward">
+                    <summary>{summ}</summary>
+                    {body}
+                </details> : <>
+                    {summ}
+                    {body}
+                </>}
             </Card.Body>
         </Card>
     )
@@ -83,10 +100,11 @@ export function TargetCard({ target }: { target: Target }) {
             <Card.Body>
                 <div className="target">
                     <h3 className="h5">
-                        <i className="bi bi-bullseye"></i>{" "}
+                        <StarFill />{" "}
                         {target.name} <span className="text-body-tertiary">{date_txt}</span>
                         {hit ? hitBadge : ""}
                     </h3>
+
                     <ProgressBar label={label} value={Number(target.amount_raised.value)} maxVal={Number(target.amount.value)}
                         colour2={hit ? "var(--bs-success-bg-subtle)" : "var( --bs-secondary-bg)"} />
                 </div>
@@ -134,7 +152,7 @@ export function MilestoneCard({ milestone, total }: { milestone: Milestone, tota
             <Card.Body>
                 <div className={"milestone"}>
                     <h3 className="h5">
-                        <i className="bi bi-flag-fill"></i>{" "}
+                        <FlagFill />{" "}
                         {milestone.name} {hit ? hitBadge : ""}
                     </h3>
                     <ProgressBar label={label} value={Number(total.value)} maxVal={Number(milestone.amount.value)} />
@@ -168,7 +186,7 @@ export function PollCard({ poll }: { poll: Poll }) {
             <Card.Body>
                 <div className="poll">
                     <h3 className="h5">
-                        <i className="bi bi-bar-chart-fill"></i>{" "}
+                        <BarChartFill />{" "}
                         {poll.name} <span className="ms-auto text-body-tertiary">Total: {formatAmount(poll.amount_raised)}</span>
                     </h3>
                     {poll.options.map(o => <ProgressBar key={o.name} className="mt-1" label={`${o.name} ${formatAmount(o.amount_raised)}`} value={Number(o.amount_raised.value)} maxVal={Number(poll.amount_raised.value)} complete={Number(o.amount_raised.value) >= winningVal} />)}

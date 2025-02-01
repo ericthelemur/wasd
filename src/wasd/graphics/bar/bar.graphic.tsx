@@ -2,7 +2,7 @@ import '../../../common/uwcs-bootstrap.css';
 import './bar.scss';
 import '../../../common/custom.d';
 
-import { Total } from 'nodecg-tiltify/src/types/schemas';
+import { Total } from 'types/schemas/tiltify';
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Current } from 'types/schemas';
@@ -11,14 +11,15 @@ import { useReplicant } from 'use-nodecg';
 import specialeffect from '../assets/specialeffect-small.png';
 import logo from '../assets/wasd-w.svg';
 import { AnimTextFit } from '../components/animtext';
-import { formatAmount, timeFormat } from '../utils';
+import { formatAmount } from '../utils';
 
 function VR() {
     return <div className="vr" />;
 }
 
 export function Bar() {
-    const [total, _] = useReplicant<Total>("total", { "currency": "GBP", "value": 0 }, { namespace: "nodecg-tiltify" });
+    const [total, _] = useReplicant<Total>("total", { "currency": "GBP", "value": 0 });
+    const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "numeric" });
 
     const [time, setTime] = useState(timeFormat.format(Date.now()));
 
@@ -30,7 +31,7 @@ export function Bar() {
     return (
         <div className='bar border-top'>
             <img className="logo" src={logo} />
-            <span>WASD 2024</span>
+            <span>WASD</span>
             <VR />
             <img className="logo" src={specialeffect} />
             <span className="tabnum">{total && formatAmount(total)}</span>
