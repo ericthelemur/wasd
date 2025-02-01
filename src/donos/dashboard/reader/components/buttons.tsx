@@ -1,4 +1,4 @@
-import { CENSORED, ModStatus, UNDECIDED } from 'tiltify/extension/utils/mod';
+import { APPROVED, CENSORED, ModStatus, UNDECIDED } from 'tiltify/extension/utils/mod';
 import Button from 'react-bootstrap/Button';
 import { useReplicant } from 'use-nodecg';
 
@@ -14,8 +14,8 @@ function changeModStatus(dono: Donation, to: ModStatus, property = "modstatus") 
         console.log(`Attempting to set ${property} to ${to} for ${dono.id}`);
         dono.timeToApprove = 8.64e15;
         // Confirm uncensoring
-        if (property === "modstatus" && dono.modStatus === CENSORED) {
-            var confirmUncensor = confirm("Are you sure you want to uncensor this donation?" + `\nName: ${dono.donor_name}\nMessage: ${dono.donor_comment}`);
+        if (property === "modstatus" && (dono.modStatus === CENSORED || to === CENSORED)) {
+            var confirmUncensor = confirm(`Are you sure you want to ${to !== CENSORED ? "un" : ""}censor this donation?` + `\nName: ${dono.donor_name}\nMessage: ${dono.donor_comment}`);
             if (confirmUncensor != true) return;
         }
         console.log("set-donation-" + property, [{ id: dono.id }, to]);
@@ -70,7 +70,7 @@ export function Buttons({ dono }: DonoProp) {
     }
     return (
         <div className="btn-toolbar gap-2" role="toolbar">
-            <ModButton dono={dono} true={icons.read} false={icons.unread} small={false} property="read" primaryTrue={true} extraClasses={["w-50"]} />
+            <ModButton dono={dono} true={icons.read} false={icons.unread} small={false} property="read" primaryTrue={dono.modStatus === APPROVED} extraClasses={["w-50"]} />
             <div className="btn-group flex-grow-1" role="group">
                 {censorBtn}
                 <ModButton dono={dono} true={icons.undecided} false={whitelist ? icons.censored : icons.approved} small={true} property="modStatus" primaryTrue={false} extraClasses={["bonus-btn"]} />
