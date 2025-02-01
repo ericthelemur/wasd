@@ -49,11 +49,11 @@ export function Settings(props: SettingsProps) {
 export function SettingsBasics(props: SettingsProps) {
     const disabled = props.settings.list === "incentives";
     return <>
-        <CheckSetting name="show" title="Filters" current={props.settings.show} disabled={disabled}
+        <CheckSetting name="show" title="Filters" current={props.settings.show} disabled={props.settings.list !== "live"}
             options={[icons.unread, icons.read]}
             onclick={(v) => props.setSettings({ ...props.settings, show: v })}
         />{" "}
-        <CheckSetting name="show" current={props.settings.show} disabled={disabled}
+        <CheckSetting name="show" current={props.settings.show} disabled={props.settings.list !== "live"}
             options={[icons.approved, icons.undecided, icons.censored]}
             onclick={(v) => props.setSettings({ ...props.settings, show: v })}
         />{" "}

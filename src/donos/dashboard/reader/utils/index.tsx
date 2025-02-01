@@ -30,6 +30,7 @@ export function truncate(str: string, length: number) {
 
 export interface DonoProp {
     dono: Donation
+    hideButtons?: boolean;
 }
 
 

@@ -113,7 +113,7 @@ export const live: ModAction = {
 export const all: ModAction = {
     icon: <ArchiveFill />,
     iconAction: <ArchiveFill />,
-    action: "All",
+    action: "Archive",
     category: "all",
     value: null
 }

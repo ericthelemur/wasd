@@ -52,7 +52,7 @@ export function Reader() {
 		<Container fluid="xxl">
 			<Settings settings={sortSettings} setSettings={setSortSettings} />
 			<h1 className="mt-3">Tiltify Donation Reader</h1>
-			<div className="d-flex flex-align-column align-items-end gap-3 mb-3">
+			<div className="d-flex flex-align-column align-items-end gap-3 mb-3 flex-wrap">
 				<SettingsBasics settings={sortSettings} setSettings={setSortSettings} />
 				<div><Search className='h2 me-2 mb-0' />
 					<FormControl type="text" placeholder='Search Term' style={{ width: "unset", display: "inline" }}
@@ -60,7 +60,7 @@ export function Reader() {
 				</div>
 			</div>
 			<TabSetting name="list" labels={true} current={sortSettings.list}
-				options={[icons.live, icons.all, icons.donors, icons.incentives]}
+				options={[icons.live, icons.donors, icons.incentives, icons.all]}
 				onclick={(v) => setSortSettings({ ...sortSettings, list: v })}
 			/>
 			<br />

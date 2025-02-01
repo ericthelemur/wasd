@@ -38,7 +38,7 @@ function DonationSubtitle({ dono }: DonoProp) {
 }
 
 
-export function Donation({ dono }: DonoProp) {
+export function Donation({ dono, hideButtons }: DonoProp) {
     var classes: string[] = [];
     if (dono.read !== undefined)
         classes = [dono.read ? 'read' : 'unread', dono.shown ? 'shown' : 'unshown', tripleState(dono.modStatus, 'approved', 'undecided', 'censored')];
@@ -49,7 +49,7 @@ export function Donation({ dono }: DonoProp) {
                 <DonationSubtitle dono={dono} />
                 <p className="message card-text">{dono.donor_comment || "No Message"}</p>
                 <Incentives {...dono} />
-                <Buttons dono={dono} />
+                {!hideButtons && <Buttons dono={dono} />}
             </Card.Body>
         </Card>
     );

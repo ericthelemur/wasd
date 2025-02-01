@@ -29,10 +29,16 @@ export function SortedDonations({ donos, sortSettings, setSortSettings, hideButt
 					(sortSettings.term && d.donor_name && d.donor_name.includes(sortSettings.term)) ||
 					(sortSettings.term && d.donor_comment && d.donor_comment.includes(sortSettings.term)))
 		})
-		if (donos.length === 0) return <h5>All Donations Filtered Out!</h5>
 	} else {
 		donos = [...donos] as Basedono[];
+		if (sortSettings.term.trim()) {
+			donos = donos.filter(d =>
+				(sortSettings.term && d.donor_name && d.donor_name.includes(sortSettings.term)) ||
+				(sortSettings.term && d.donor_comment && d.donor_comment.includes(sortSettings.term)));
+		}
 	}
+	if (donos.length === 0) return <h5>All Donations Filtered Out!</h5>;
+
 	const sortedDonos = donos.sort((a: Basedono | Donation, b: Basedono | Donation) => {
 		const va = sortSettings.sort === "money" ? Number(a.amount.value) : b.completed_at;
 		const vb = sortSettings.sort === "money" ? Number(b.amount.value) : a.completed_at;
@@ -42,7 +48,7 @@ export function SortedDonations({ donos, sortSettings, setSortSettings, hideButt
 
 	return (
 		<div className="donations">
-			{sortedDonos.map((d) => <DonationComponent key={d.id} dono={d as unknown as Donation} />)}
+			{sortedDonos.map((d) => <DonationComponent key={d.id} dono={d as unknown as Donation} hideButtons={hideButtons} />)}
 		</div>
 	)
 }
@@ -51,13 +57,29 @@ export function SortedDonations({ donos, sortSettings, setSortSettings, hideButt
 export function LiveDonations(props: DonoListProps) {
 	const [d, setDonos] = useReplicant<Donations>("donations", []);
 	const donos = d === undefined ? [] : d;
-	return <SortedDonations donos={donos} {...props} />
+	return <>
+		<p>
+			Use Approve / Censor to show/hide dono from appearing on stream - do this as soon as you see it. Use Read to mark when it has been read out on stream.
+			<br />
+			Use the filters above to show/hide read/unread and approved/undecided/censored donos.
+		</p>
+		<SortedDonations donos={donos} {...props} />
+	</>
 }
 
 export function AllDonations(props: DonoListProps) {
 	const [d, setDonos] = useReplicant<Alldonations>("alldonations", []);
 	const donos = d === undefined ? [] : d;
-	return <SortedDonations donos={donos} {...props} />
+	return <>
+		<p>
+			An archive of all donations.
+			<br />
+			Use Approve / Censor to show/hide dono from appearing on stream - do this as soon as you see it. Use Read to mark when it has been read out on stream.
+			<br />
+			Use the filters above to show/hide read/unread and approved/undecided/censored donos.
+		</p>
+		<SortedDonations donos={donos} {...props} hideButtons={true} />
+	</>
 }
 
 // TODO: Tiltify donations have a free text donor_name
