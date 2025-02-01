@@ -12,10 +12,7 @@ import { useReplicant } from 'use-nodecg';
 import { formatAmount, sortMapSingle } from '../utils';
 import { ProgressBar } from './progress';
 import { BarChartFill, FlagFill, StarFill } from 'react-bootstrap-icons';
-
-const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit", hour12: true });
-
-const formatTime = (time: number | Date | undefined) => timeFormat.format(time).replace(" ", "");
+import { formatTime } from 'common/utils/formats';
 
 const hitBadge = <Badge bg="success-subtle" className="small text-success"> Hit</Badge>;
 
@@ -24,7 +21,7 @@ function start_date(date: string | null) {
     const start = new Date(date);
     const now = new Date(Date.now());
     if (now > start) return "";
-    return "Starts " + formatTime(start); // + " " + formatTime(start);
+    return "Starts " + formatTime(start);
 }
 
 function end_date(date: string | null) {
@@ -33,7 +30,7 @@ function end_date(date: string | null) {
     const now = new Date(Date.now());
     const nextday = now.getTime() + (24 * 60 * 60 * 1000);
     if (nextday < end.getTime()) return "";
-    return (now < end ? "Ends " : "Ended ") + formatTime(end); // + " " + formatTime(end);
+    return (now < end ? "Ends " : "Ended ") + formatTime(end);
 }
 
 function dates(start: string | null, end: string | null) {

@@ -1,10 +1,9 @@
 import type NodeCG from '@nodecg/types';
-import type { Configschema } from '../types/schemas';
+import type { Configschema } from '../../types/schemas';
 import fs from 'fs';
 import path from 'path';
 import SpeedcontrolUtil from 'speedcontrol-util';
 import { NodeCGServer } from 'speedcontrol-util/types/nodecg/lib/nodecg-instance';
-
 
 // Define typed replicant, find schema in schemas/component/name.json
 export function Replicant<T>(name: string, component: string, args: NodeCG.Replicant.OptionsNoDefault = {}) {

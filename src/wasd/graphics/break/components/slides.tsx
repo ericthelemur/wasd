@@ -13,6 +13,7 @@ import { RunData, RunDataActiveRun, RunDataArray } from 'speedcontrol-util/types
 import { RunDataActiveRunSurrounding } from 'speedcontrol-util/types/speedcontrol/schemas';
 import { CustomBreakText, StreamState } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
+import { formatTime } from '../../../../common/utils/formats';
 
 interface PageArgs {
     total?: Total;
@@ -92,17 +93,14 @@ function CustomComp({ custom }: PageArgs) {
     return MarkdownPage({ md: custom.custom });
 }
 
-
 export function RunTime({ run, minsBehind, delay }: { run: RunData, minsBehind?: number, delay?: boolean }) {
     const date = new Date(run.scheduledS! * 1000);
-    const dateStr = date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", hour12: true }).replace(" ", "");
 
     if (delay && minsBehind) {
         const lateDate = new Date(run.scheduledS! * 1000 + (minsBehind ?? 0) * 60 * 1000);
-        const lateDateStr = lateDate.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", hour12: true }).replace(" ", "");
-        return <>{<span className="text-decoration-line-through">{dateStr}</span>} ~{lateDateStr}</>;
+        return <>{<span className="text-decoration-line-through">{formatTime(date)}</span>} ~{formatTime(lateDate)}</>;
     } else {
-        return <>{dateStr}</>;
+        return <>{formatTime(date)}</>;
     }
 }
 

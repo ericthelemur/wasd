@@ -11,7 +11,7 @@ import { useReplicant } from 'use-nodecg';
 import specialeffect from '../assets/specialeffect-small.png';
 import logo from '../assets/wasd-w.svg';
 import { AnimTextFit } from '../components/animtext';
-import { formatAmount } from '../utils';
+import { formatAmount, formatTime } from 'common/utils/formats';
 
 function VR() {
     return <div className="vr" />;
@@ -22,11 +22,13 @@ export function Bar() {
     const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "numeric" });
 
     const [time, setTime] = useState(timeFormat.format(Date.now()));
+    // const [time, setTime] = useState(formatTime(Date.now()));
 
     useEffect(() => {
         const interval = setInterval(() => setTime(timeFormat.format(Date.now())), 10000);
+        // const interval = setInterval(() => setTime(formatTime(Date.now())), 10000);
         return () => clearInterval(interval);
-    }, [setTime]);
+    }, []);
 
     return (
         <div className='bar border-top'>

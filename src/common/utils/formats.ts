@@ -1,9 +1,18 @@
 
+
 import { Amount, Donation } from 'types/schemas/tiltify';
 
-export const baseCurrFormat = (curr: string) => new Intl.NumberFormat(undefined, { style: 'currency', currency: curr });
-export const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "numeric" });
+export function baseCurrFormat(curr: string) {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: curr, currencyDisplay: "narrowSymbol" });
+}
+
 export const dateFormat = new Intl.DateTimeFormat(undefined, { day: "numeric", weekday: "short", month: "short" })
+export const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit", hour12: true, hourCycle: "h12" });
+
+export function formatTime(time: number | Date | undefined) {
+    return timeFormat.format(time).replace(" ", "");
+}
+
 
 export function formatAmount({ currency, value }: Amount) {
     return baseCurrFormat(currency).format(Number(value));
