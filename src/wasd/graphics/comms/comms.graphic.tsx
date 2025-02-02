@@ -10,7 +10,7 @@ import { useReplicant } from 'use-nodecg';
 
 import { RunCard } from '../break/components/runcard';
 import { Slides, UpNext } from '../break/components/slides';
-import { Camera, SceneInfoContext } from './components/cam';
+import { Camera, SceneInfoContext } from '../overlay/components/cam';
 
 
 function CurrentRun({ className }: { className?: string }) {
