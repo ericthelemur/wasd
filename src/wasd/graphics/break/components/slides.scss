@@ -50,12 +50,13 @@ h3 {
     border-color: white !important;
     color: white !important;
 
-    --col2: var(--bs-success-border-subtle) !important;
+    --col2: #fff5 !important;
 }
 
 .border-success {
     border-color: var(--bs-success) !important;
-    color: #a3cfbb !important;
+    // color: #a3cfbb !important;
+        --col2: var(--bs-success-border-subtle) !important;
 }
 
 .poll .text-body-tertiary {

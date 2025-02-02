@@ -3,11 +3,11 @@
 import { Amount, Donation } from 'types/schemas/tiltify';
 
 export function baseCurrFormat(curr: string) {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: curr, currencyDisplay: "narrowSymbol" });
+    return new Intl.NumberFormat("en-GB", { style: 'currency', currency: curr, currencyDisplay: "narrowSymbol" });
 }
 
-export const dateFormat = new Intl.DateTimeFormat(undefined, { day: "numeric", weekday: "short", month: "short" })
-export const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit", hour12: true, hourCycle: "h12" });
+export const dateFormat = new Intl.DateTimeFormat("en-GB", { day: "numeric", weekday: "short", month: "short" })
+export const timeFormat = new Intl.DateTimeFormat("en-GB", { hour: "numeric", minute: "2-digit", hour12: true, hourCycle: "h12" });
 
 export function formatTime(time: number | Date | undefined) {
     return timeFormat.format(time).replace(" ", "");

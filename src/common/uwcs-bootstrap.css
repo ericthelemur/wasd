@@ -45,6 +45,18 @@
     overflow: hidden;
 }
 
+.tabnum {
+    font-variant: tabular-nums;
+    -moz-font-feature-settings: "tnum";
+    -webkit-font-feature-settings: "tnum";
+    font-feature-settings: "tnum"
+}
+
+.fill {
+    position: absolute;
+    inset: 0;
+}
+
 svg.bi,
 svg[class^="bi-"],
 svg[class*=" bi-"] {

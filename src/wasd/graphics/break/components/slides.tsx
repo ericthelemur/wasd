@@ -13,7 +13,7 @@ import { RunData, RunDataActiveRun, RunDataArray } from 'speedcontrol-util/types
 import { RunDataActiveRunSurrounding } from 'speedcontrol-util/types/speedcontrol/schemas';
 import { CustomBreakText, StreamState } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
-import { formatTime } from '../../../../common/utils/formats';
+import { RunCard } from './runcard';
 
 interface PageArgs {
     total?: Total;
@@ -93,43 +93,6 @@ function CustomComp({ custom }: PageArgs) {
     return MarkdownPage({ md: custom.custom });
 }
 
-export function RunTime({ run, minsBehind, delay }: { run: RunData, minsBehind?: number, delay?: boolean }) {
-    const date = new Date(run.scheduledS! * 1000);
-
-    if (delay && minsBehind) {
-        const lateDate = new Date(run.scheduledS! * 1000 + (minsBehind ?? 0) * 60 * 1000);
-        return <>{<span className="text-decoration-line-through">{formatTime(date)}</span>} ~{formatTime(lateDate)}</>;
-    } else {
-        return <>{formatTime(date)}</>;
-    }
-}
-
-function RunCard({ run, delay, isNext }: { run: RunData, delay?: boolean, isNext?: boolean }) {
-    const [state,] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
-    if (!run || !state) return null;
-
-    const runners = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
-    const info = [runners, msToApproxTimeString((run.estimateS || 0) * 1000), run.category, run.system, run.release].filter(v => v);
-
-    // console.log("now", Date.now(), new Date(run.scheduled!), Date.now() - new Date(run.scheduled!).getUTCMilliseconds())
-    // const durStr = msToApproxTimeString(1000 * new Date(run.scheduled!).getUTCMilliseconds() - Date.now());
-
-    return <Card key={run.id}>
-        <Card.Body className='p-2'>
-            <div className="game">
-                <h2 className="fw-medium">
-                    <Textfit mode="single" max={50}>
-                        <span className="fw-bold">{run.game}</span>
-                        {!isNext && <>{" at "}<span className="fw-bold"><RunTime run={run} minsBehind={state.minsBehind} delay={delay} /></span></>}
-                    </Textfit>
-                    <Textfit mode="single" max={55}>
-                        <div style={{ marginTop: 3, fontSize: "0.6em", lineHeight: 1, opacity: run.category ? 1 : 0 }}>{info.join(" / ")}</div>
-                    </Textfit>
-                </h2>
-            </div>
-        </Card.Body>
-    </Card>
-}
 
 function RunsComp({ runDataArray, runDataActiveRunSurrounding, state }: PageArgs) {
     if (!runDataArray || !runDataActiveRunSurrounding || !state) return null;
@@ -177,28 +140,28 @@ const pages: PageCandidate[] = [{
     page: RunsComp,
     condition: (args) => !args.custom?.disabled?.runs && Boolean(args.runDataActiveRunSurrounding?.next),
     duration: 10
-}, {
-        page: CharityComp,
-        condition: (args) => !args.custom?.disabled?.charity && Boolean(args.custom?.charity)
-    }, {
-        page: AboutComp,
-        condition: (args) => !args.custom?.disabled?.about && Boolean(args.custom?.about)
-    }, {
-        page: CustomComp,
-        condition: (args) => !args.custom?.disabled?.custom && Boolean(args.custom?.custom)
-    }, {
-        page: PollsComp,
-        condition: (args) => !args.custom?.disabled?.polls && args.polls != undefined && args.polls.length > 0
-    }, {
-        page: MilestonesComp,
-        condition: (args) => !args.custom?.disabled?.milestones && args.milestones != undefined && args.milestones?.length > 0
-    }, {
-        page: RewardComp,
-        condition: (args) => !args.custom?.disabled?.rewards && args.rewards != undefined && args.rewards?.length > 0
-    }, {
-        page: TargetsComp,
-        condition: (args) => !args.custom?.disabled?.targets && args.targets != undefined && args.targets?.length > 0
-    }
+    // }, {
+    //         page: CharityComp,
+    //         condition: (args) => !args.custom?.disabled?.charity && Boolean(args.custom?.charity)
+    //     }, {
+    //         page: AboutComp,
+    //         condition: (args) => !args.custom?.disabled?.about && Boolean(args.custom?.about)
+    //     }, {
+    //         page: CustomComp,
+    //         condition: (args) => !args.custom?.disabled?.custom && Boolean(args.custom?.custom)
+    //     }, {
+    //         page: PollsComp,
+    //         condition: (args) => !args.custom?.disabled?.polls && args.polls != undefined && args.polls.length > 0
+    //     }, {
+    //         page: MilestonesComp,
+    //         condition: (args) => !args.custom?.disabled?.milestones && args.milestones != undefined && args.milestones?.length > 0
+    //     }, {
+    //         page: RewardComp,
+    //         condition: (args) => !args.custom?.disabled?.rewards && args.rewards != undefined && args.rewards?.length > 0
+    //     }, {
+    //         page: TargetsComp,
+    //         condition: (args) => !args.custom?.disabled?.targets && args.targets != undefined && args.targets?.length > 0
+}
 ]
 
 function shufflePages() {
@@ -218,7 +181,7 @@ export function UpNext({ className }: { className?: string }) {
     const [runDataArray,] = useReplicant<RunDataArray>("runDataArray", [], { namespace: "nodecg-speedcontrol" });
     const [runDataActiveRunSurrounding,] = useReplicant<RunDataActiveRunSurrounding>("runDataActiveRunSurrounding", { previous: undefined, current: undefined, next: undefined }, { namespace: "nodecg-speedcontrol" });
 
-    const runId = runDataActiveRunSurrounding?.current;
+    const runId = runDataActiveRunSurrounding?.next;
     const run = runDataArray && runId ? runDataArray.find(r => r.id === runId) : undefined;
 
     return <div className="text-center">
@@ -229,7 +192,7 @@ export function UpNext({ className }: { className?: string }) {
 
 export function Slides({ side }: { side?: boolean }) {
     const [index, setIndex] = useState(0);
-    const [Func, setFunc] = useState<PageComp>(() => AboutComp);
+    const [Func, setFunc] = useState<PageComp>(() => RunsComp);
 
     const [total,] = useReplicant<Total>("total", { "currency": "GBP", "value": 0 });
     const [milestones,] = useReplicant<Milestones>("milestones", []);
