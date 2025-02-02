@@ -31,7 +31,7 @@ export function Bar() {
     }, []);
 
     return (
-        <div className='bar border-top'>
+        <div className="bar">
             <img className="logo" src={logo} />
             <span>WASD</span>
             <VR />
@@ -47,7 +47,7 @@ export function Bar() {
 
 export function BarAnnouncement() {
     const [current,] = useReplicant<Current>("current", { "text": "", "msgID": null, "endTime": 0 });
-    return <AnimTextFit transitionName='fade-wait' enterTimeout={400} animKey={current?.msgID ?? ""} className="ticker">
+    return <AnimTextFit transitionName='fade-wait' enterTimeout={2000} leaveTimeout={2000} animKey={current?.msgID ?? ""} className="ticker">
         <span>{current?.text || ""}</span>
     </AnimTextFit>
 }

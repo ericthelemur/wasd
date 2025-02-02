@@ -29,16 +29,16 @@ function IconComp({ icon }: { icon?: Icon }) {
 }
 
 function SocialIcon({ social }: { social: string }) {
-    const [socials,] = useReplicant<Socials>("socials", defaultSocials(), { namespace: "nodecg-people-control" });
+    const [socials,] = useReplicant<Socials>("socials", defaultSocials());
     const icon = socials ? socials[social] : undefined;
     return <IconComp icon={icon} />;
 }
 
 function SocialComp({ social }: { social?: Social }) {
-    return <div className="vcentre gap-2" style={{ fontSize: "0.7em", height: "22px" }} >
+    return <div className="vcentre gap-2" style={{ fontSize: "0.7em", height: "25px" }} >
         {social ? <>
             <SocialIcon social={social.social} />
-            <Textfit mode="multi" max={22} style={{ fontSize: "22px", height: "25px" }} className="social vcentre lh-1 flex-gs">
+            <Textfit mode="multi" max={22} style={{ fontSize: "22px", height: "25px", overflow: "visible !important" }} className="social vcentre lh-1 flex-gs">
                 {social.name}
             </Textfit>
         </> : " "}
@@ -57,7 +57,7 @@ export function CategoryComp({ cat }: { cat: Category }) {
     // Quite ugly, but transition element is kinda awkward here
     if (!cat) return <div>No category exists</div>
 
-    const [bank,] = useReplicant<PeopleBank>("peopleBank", {}, { namespace: "nodecg-people-control" })
+    const [bank,] = useReplicant<PeopleBank>("peopleBank", {})
 
     const [personIndex, setPersonIndex] = useState<number>(0);
     const [personID, setPersonID] = useState<string>("");
@@ -117,7 +117,7 @@ export function CategoryComp({ cat }: { cat: Category }) {
     // Periodically move to next social index for person
     // Move to next person if out of socials
     useEffect(() => {
-        var time = person && person.socials && person.socials.length >= 3 ? 6000 / person.socials.length : 2000;
+        var time = person && person.socials && person.socials.length >= 3 ? 10000 / person.socials.length : 5000;
         // const time = 3000;
         const timeout = setInterval(() => {
             if (!person) return;
@@ -148,7 +148,7 @@ export function CategoryComp({ cat }: { cat: Category }) {
 }
 
 export function PeopleComp({ cat }: { cat?: string }) {
-    const [people,] = useReplicant<People>("people", { all: { name: "All", people: [] } }, { namespace: "nodecg-people-control" })
+    const [people,] = useReplicant<People>("people", { all: { name: "All", people: [] } })
     if (!people) return <></>;
     const category = people[cat ?? "all"];
     return <CategoryComp cat={category} />

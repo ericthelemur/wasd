@@ -32,6 +32,7 @@
     font-family: 'Montserrat', sans-serif;
 
     --bs-border-color: var(--bs-emphasis-color);
+    border-top: var(--bw) solid;
 
     &>* {
         margin-bottom: 0;
@@ -91,13 +92,43 @@
 }
 
 
+// .fade-wait-leave {
+//     opacity: 1;
+// }
+
+// .fade-wait-leave.fade-wait-leave-active {
+//     opacity: 0;
+//     transition: opacity 0.4s ease-in;
+// }
+
+// .fade-wait-enter {
+//     opacity: 0 !important;
+// }
+
+// .fade-wait-enter.fade-wait-enter-active {
+//     opacity: 1 !important;
+//     /* Delay the enter animation until the leave completes */
+//     transition: opacity 1s linear 0.6s;
+//         -webkit-transition: opacity 1s linear 0.6s;
+// }
+
+// .fade-wait-height {
+//     transition: height 0.4s ease-in-out 0.6s;
+// }
+
+:root {
+    --enter-time: 0.4s;
+    --leave-time: 0.4s;
+}
+
 .fade-wait-leave {
     opacity: 1;
+    transition-delay: 0;
 }
 
 .fade-wait-leave.fade-wait-leave-active {
     opacity: 0;
-    transition: opacity 0.4s ease-in;
+    transition: opacity var(--leave-time) ease-in;
 }
 
 .fade-wait-enter {
@@ -106,10 +137,9 @@
 
 .fade-wait-enter.fade-wait-enter-active {
     opacity: 1;
-    /* Delay the enter animation until the leave completes */
-    transition: opacity 0.4s ease-in 0.6s;
+    transition: opacity var(--enter-time) ease-out var(--leave-time);
 }
 
 .fade-wait-height {
-    transition: height 0.4s ease-in-out 0.6s;
+    transition: height calc(var(--enter-time)) ease-in-out;
 }

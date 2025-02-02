@@ -23,7 +23,7 @@
 .fade-wait-enter.fade-wait-enter-active {
     opacity: 1;
     /* Delay the enter animation until the leave completes */
-    transition: opacity var(--enter-time) ease-in var(--leave-time);
+    transition: opacity var(--enter-time) ease-in // var(--leave-time);
 }
 
 .fade-wait-height {

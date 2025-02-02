@@ -7,6 +7,7 @@
 
 :root {
     --bs-btn-font-size: 1em !important;
+    --bw: 6px;
 }
 
 .btn-primary {
