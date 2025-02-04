@@ -72,13 +72,13 @@ function movePool(source: Pool, dest: Pool, mid: MsgRef, before: MsgRef | null) 
 // Messages
 const defaultMsg: () => Message = () => { return { text: "New Message", priority: 0 } }
 
-listenTo("addMessage", ({ pid, before }, ack) => {
+listenTo("addMessage", ({ pid, before, text }, ack) => {
     const pool: Pool = pid === "queue" ? queue.value : pools.value[pid];
     if (!pool) return sendError(ack, "Pool does not exist");
 
     const temp = pid === "queue";
     const id = genID(temp ? "temp" : "msg", Object.keys(bank));
-    const msg: Message = defaultMsg();
+    const msg = text ? { text, priority: 0 } : defaultMsg();
     if (temp) msg.type = "temp";
 
     bank.value[id] = msg;
@@ -86,16 +86,21 @@ listenTo("addMessage", ({ pid, before }, ack) => {
     if (pools.value["archive"]) addToPool({ id: id }, pools.value["archive"], null);
 })
 
-listenTo("removeMessage", ({ mid, noArchive }, ack) => {
+
+
+export function deleteMessage(msgid: string, noArchive?: boolean) {
     // if (!(mid in bank.value)) return sendError(ack, "Message does not exist");
-    queue.value.msgs = queue.value.msgs.filter(m => m.id !== mid);
-    const wasIn = Object.keys(pools.value).filter((name) => removeFromPool(mid, pools.value[name]));
+    queue.value.msgs = queue.value.msgs.filter(m => m.id !== msgid);
+    const wasIn = Object.keys(pools.value).filter((name) => removeFromPool(msgid, pools.value[name]));
     if (noArchive || (wasIn.length == 1 && wasIn[0] == "archive")) {
-        delete bank.value[mid];
+        delete bank.value[msgid];
     } else if (pools.value["archive"]) {
-        addToPool({ id: mid }, pools.value["archive"], null);
+        addToPool({ id: msgid }, pools.value["archive"], null);
     }
-})
+}
+
+listenTo("removeMessage", (data) => deleteMessage(data.mid, data.noArchive));
+
 
 listenTo("movePool", ({ aref: mid, oldpid, newpid, before }) => {
     movePool(pools.value[oldpid], pools.value[newpid], mid, before);

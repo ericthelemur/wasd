@@ -112,7 +112,7 @@ function BarIframe() {
 	})
 
 	return <div ref={parRef} style={{ transform: `scale(${scale})`, transformOrigin: "top left" }} className='w-100 overflow-none'>
-		<iframe ref={iframeRef} src={nodecg.bundleConfig.barURL ?? "/bundles/wasd/graphics/wasd/graphics/bar/bar.graphic.html"} height="70" width="1920" className="sticky-top" />
+		<iframe ref={iframeRef} src={nodecg.bundleConfig.barURL ?? "/bundles/wasd/graphics/wasd/graphics/wasd/bar/bar.graphic.html"} height="70" width="1920" className="sticky-top" />
 	</div>
 }
 
