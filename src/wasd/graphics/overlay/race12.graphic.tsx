@@ -47,13 +47,13 @@ function Overlay({ aspect }: { aspect: [number, number] }) {
     const infoInSidebar = 9 * aspect[0] < 16 * aspect[1];
     console.log(aspect, infoInSidebar);
 
-    return <div className="fill d-flex outer flex-column h-100 justify-content-between" style={{ fontFamily: "Montserrat", fontWeight: "600" }}>
+    return <div className="fill d-flex outer flex-column h-100 justify-content-between" style={{ fontFamily: "Montserrat", fontWeight: "600", marginRight: "calc(2 * var(--bw)", marginBottom: "calc(2 * var(--bw)" }}>
         {/* <Sidebar className="flex-gs" vertical={infoInSidebar} /> */}
         <div className="d-flex">
-            <div style={{ width: "calc(50% + 0.5 * var(--bw))", marginRight: "calc(-1 * var(--bw))" }}>
+            <div style={{ flexGrow: 1, marginRight: "calc(1 * var(--bw))" }}>
                 <Camera camName="GAME-1" aspectRatio={`${aspect[0]} / ${aspect[1]}`} />
             </div>
-            <div style={{ width: "calc(50% + 0.5 * var(--bw))" }}>
+            <div style={{ flexGrow: 1 }}>
                 <Camera camName="GAME-2" aspectRatio={`${aspect[0]} / ${aspect[1]}`} />
             </div>
         </div>
@@ -63,14 +63,14 @@ function Overlay({ aspect }: { aspect: [number, number] }) {
                 <Camera camName="CAM-1" aspectRatio="4 / 3" />
             </div>
             <div className="d-flex vcentre mx-3 my-3 gap-3 position-relative" style={{ flex: "1 1 0", paddingTop: "var(--bw)" }}>
-                <div className="h-100 m-3 position-relative d-flex" style={{ width: "60%" }}>
+                <div className="h-100 m-3 position-relative d-flex" style={{ width: "50%" }}>
                     <Game />
                 </div>
-                <div className="position-relative vstack" style={{ width: "40%" }}>
-                    <div className="w-100 position-relative" style={{ height: "50%", flexShrink: 1 }}>
+                <div className="position-relative vstack" style={{ width: "50%" }}>
+                    <div className="w-100 position-relative" style={{ height: "60%", flexShrink: 1 }}>
                         <TimerComp textfit={true} />
                     </div>
-                    <div className="w-100 position-relative" style={{ height: "50%" }}>
+                    <div className="w-100 position-relative" style={{ height: "40%" }}>
                         <img src={SpecialEffect} className="h-100 w-100 object-fit-contain" />
                     </div>
                 </div>
