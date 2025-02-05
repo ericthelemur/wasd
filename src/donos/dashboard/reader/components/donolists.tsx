@@ -72,11 +72,7 @@ export function AllDonations(props: DonoListProps) {
 	const donos = d === undefined ? [] : d;
 	return <>
 		<p>
-			An archive of all donations.
-			<br />
-			Use Approve / Censor to show/hide dono from appearing on stream - do this as soon as you see it. Use Read to mark when it has been read out on stream.
-			<br />
-			Use the filters above to show/hide read/unread and approved/undecided/censored donos.
+			An archive of all donations, occasionally Live could miss one - sort and search only.
 		</p>
 		<SortedDonations donos={donos} {...props} hideButtons={true} />
 	</>

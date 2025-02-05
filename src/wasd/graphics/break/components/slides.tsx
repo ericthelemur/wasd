@@ -33,7 +33,7 @@ function MilestonesComp({ milestones, total }: PageArgs) {
     const chosen = findMilestones(milestones, total, 3);
     if (!chosen) return null;
     return <>
-        <h3>Donation Milestones:</h3>
+        <h1>Donation Milestones:</h1>
         <div className="upcoming vstack fb">
             {chosen.map(m => <MilestoneCard key={m.id} milestone={m} total={total} />)}
         </div>
@@ -43,7 +43,7 @@ function MilestonesComp({ milestones, total }: PageArgs) {
 function PollsComp({ polls }: PageArgs) {
     if (!polls) return null;
     return <>
-        <h3>Donation Polls:</h3>
+        <h1>Donation Polls:</h1>
         <div className="upcoming vstack fb">
             {sortMapSingle(polls, t => Number(t.amount_raised.value), p => <PollCard key={p.id} poll={p} />, true, 2)}
         </div>
@@ -53,7 +53,7 @@ function PollsComp({ polls }: PageArgs) {
 function TargetsComp({ targets }: PageArgs) {
     if (!targets) return null;
     return <>
-        <h3>Donation Targets:</h3>
+        <h1>Donation Targets:</h1>
         <div className="upcoming vstack fb">
             {sortMapSingle(targets, t => Number(t.amount_raised.value) - 0.1 * Number(t.amount.value), t => <TargetCard key={t.id} target={t} />, false, 3)}
         </div>
@@ -63,7 +63,7 @@ function TargetsComp({ targets }: PageArgs) {
 function RewardComp({ rewards }: PageArgs) {
     if (!rewards) return null;
     return <>
-        <h3>Donation Rewards:</h3>
+        <h1>Donation Rewards:</h1>
         <div className="upcoming vstack fb">
             {sortMapSingle(rewards, t => Number(t.highlighted), r => <RewardCard key={r.id} reward={r} noFold={true} />, false, 3)}
         </div>
@@ -109,7 +109,8 @@ function RunsComp({ runDataArray, runDataActiveRunSurrounding, state }: PageArgs
         return runDataArray!.slice(runIndex, runIndex + amount);
     }
 
-    const nextRuns = getNextRuns(3);
+    let nextRuns = getNextRuns(4);
+    nextRuns = nextRuns.slice(1);
     if (!nextRuns) return null;
 
     let delaying = true;
@@ -127,9 +128,6 @@ function RunsComp({ runDataArray, runDataActiveRunSurrounding, state }: PageArgs
     </>
 }
 
-// const pages = [AboutComp, MilestonesComp, RunsComp, CharityComp, PollsComp, TargetsComp, RunsComp];
-// const pages = [AboutComp, RunsComp, CharityComp, RunsComp];
-
 interface PageCandidate {
     page: (args: PageArgs) => React.JSX.Element | null;
     condition: (args: PageArgs) => boolean;
@@ -137,30 +135,30 @@ interface PageCandidate {
 }
 
 const pages: PageCandidate[] = [{
-    page: RunsComp,
-    condition: (args) => !args.custom?.disabled?.runs && Boolean(args.runDataActiveRunSurrounding?.next),
-    duration: 10
+    //     page: RunsComp,
+    //     condition: (args) => !args.custom?.disabled?.runs && Boolean(args.runDataActiveRunSurrounding?.next),
+    //     duration: 10
     // }, {
-    //         page: CharityComp,
-    //         condition: (args) => !args.custom?.disabled?.charity && Boolean(args.custom?.charity)
-    //     }, {
-    //         page: AboutComp,
-    //         condition: (args) => !args.custom?.disabled?.about && Boolean(args.custom?.about)
-    //     }, {
-    //         page: CustomComp,
-    //         condition: (args) => !args.custom?.disabled?.custom && Boolean(args.custom?.custom)
-    //     }, {
-    //         page: PollsComp,
-    //         condition: (args) => !args.custom?.disabled?.polls && args.polls != undefined && args.polls.length > 0
-    //     }, {
-    //         page: MilestonesComp,
-    //         condition: (args) => !args.custom?.disabled?.milestones && args.milestones != undefined && args.milestones?.length > 0
-    //     }, {
-    //         page: RewardComp,
-    //         condition: (args) => !args.custom?.disabled?.rewards && args.rewards != undefined && args.rewards?.length > 0
-    //     }, {
-    //         page: TargetsComp,
-    //         condition: (args) => !args.custom?.disabled?.targets && args.targets != undefined && args.targets?.length > 0
+    //     page: CharityComp,
+    //     condition: (args) => !args.custom?.disabled?.charity && Boolean(args.custom?.charity)
+    // }, {
+    //     page: AboutComp,
+    //     condition: (args) => !args.custom?.disabled?.about && Boolean(args.custom?.about)
+    // }, {
+    //     page: CustomComp,
+    //     condition: (args) => !args.custom?.disabled?.custom && Boolean(args.custom?.custom)
+    // }, {
+    page: PollsComp,
+    condition: (args) => !args.custom?.disabled?.polls && args.polls != undefined && args.polls.length > 0
+    // }, {
+    //     page: MilestonesComp,
+    //     condition: (args) => !args.custom?.disabled?.milestones && args.milestones != undefined && args.milestones?.length > 0
+    // }, {
+    //     page: RewardComp,
+    //     condition: (args) => !args.custom?.disabled?.rewards && args.rewards != undefined && args.rewards?.length > 0
+    // }, {
+    //     page: TargetsComp,
+    //     condition: (args) => !args.custom?.disabled?.targets && args.targets != undefined && args.targets?.length > 0
 }
 ]
 
