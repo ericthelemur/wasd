@@ -11,6 +11,7 @@ export type ListenerTypes = {
     addMessage: {
         pid: string;
         before: MsgRef | null;
+        text?: string;
     }
 
     removeMessage: {

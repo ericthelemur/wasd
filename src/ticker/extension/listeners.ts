@@ -37,13 +37,14 @@ const defaultPool: () => Pool = () => { return { name: "New Pool", priority: 0, 
 listenTo("addPool", () => {
     const id = genID("pool", Object.keys(pools.value));
     pools.value[id] = defaultPool();
-})
+});
+
 listenTo("removePool", ({ pid }, ack) => {
     const pool: Pool = pools.value[pid];
     if (!pool) return sendError(ack, "Pool does not exist");
     if (!pool.msgs) return sendError(ack, "Empty pool before deleting");
     delete pools.value[pid];
-})
+});
 
 function removeFromPool(ref: MsgRef | string, pool: Pool) {
     const ind = typeof ref === "string" ? findMsgIDIndex(pool, ref) : findMsgRefIndex(pool, ref);
@@ -87,7 +88,6 @@ listenTo("addMessage", ({ pid, before, text }, ack) => {
 })
 
 
-
 export function deleteMessage(msgid: string, noArchive?: boolean) {
     // if (!(mid in bank.value)) return sendError(ack, "Message does not exist");
     queue.value.msgs = queue.value.msgs.filter(m => m.id !== msgid);
@@ -113,8 +113,9 @@ listenTo("dequeue", ({ aref }) => removeFromPool(aref, queue.value));
 listenTo("skipTo", ({ aref }) => {
     const index = findQueueMsgRefIndex(queue.value, aref);
     if (index === -1) return;
-    queue.value.msgs.splice(0, index);
-})
+    queue.value.msgs.splice(0, index, ...queue.value.msgs.filter(m => bank.value[m.id].type == "temp"));
+});
+
 listenTo("unlink", ({ aref }) => {
     const oldMsg = bank.value[aref.id];
     const newID = genID("temp", Object.keys(bank.value));
@@ -123,6 +124,7 @@ listenTo("unlink", ({ aref }) => {
         "priority": oldMsg.priority,
         "type": "temp"
     }
+
     const index = findQueueMsgRefIndex(queue.value, aref);
     queue.value.msgs[index] = { id: newID, time: Date.now() };
-})
+});

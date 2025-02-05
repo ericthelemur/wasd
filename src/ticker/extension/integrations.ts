@@ -6,7 +6,7 @@ import { addToPool, deleteMessage, findMsgIDIndex } from './listeners';
 import { bank, pools, queue } from './replicants';
 import { RunData } from 'speedcontrol-util/types/speedcontrol';
 import { streamState } from '../../wasd/extension/replicants';
-import { formatAmount, formatTime } from '../../common/utils/formats';
+import { formatAmount, formatAmounts, formatTime } from '../../common/utils/formats';
 import { sendTo } from '../messages';
 
 const nodecg = getNodeCG();
@@ -47,7 +47,6 @@ function upcoming() {
         const sc = getSpeedControlUtil();
 
         const runs = getNextRuns(3, sc);
-        console.log(runs);
         for (let i = runs.length; i < 3; i++) {
             deleteMessage(`upcoming-${i}`);
         }
@@ -65,7 +64,8 @@ function upcoming() {
 }
 
 nodecg.listenFor("show-dono", (dono: Donation) => {
-    const msg = `${dono.donor_name} has donated ${formatAmount(dono.amount)}! Thanks`;
+    let msg = `Thanks ${dono.donor_name} for donating ${formatAmounts(dono.amount, dono.displayAmount)}!`;
+    if (dono.donor_comment) msg += " They say: " + dono.donor_comment;
     sendTo("addMessage", { pid: "queue", before: queue.value.msgs[0] ?? null, text: msg });
 })
 
