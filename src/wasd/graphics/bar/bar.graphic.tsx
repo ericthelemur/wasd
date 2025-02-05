@@ -47,9 +47,11 @@ export function Bar() {
 
 export function BarAnnouncement() {
     const [current,] = useReplicant<Current>("current", { "text": "", "msgID": null, "endTime": 0 });
-    return <AnimTextFit transitionName='fade-wait' enterTimeout={2000} leaveTimeout={2000} animKey={current?.msgID ?? ""} className="ticker">
-        <span>{current?.text || ""}</span>
-    </AnimTextFit>
+    return <div className="tickerouter">
+        <AnimTextFit transitionName='fade-wait' enterTimeout={500} leaveTimeout={1000} animKey={current?.msgID ?? ""} className="ticker lh-1">
+            {current?.text || ""}
+        </AnimTextFit>
+    </div>
 }
 
 
