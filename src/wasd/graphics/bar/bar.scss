@@ -73,10 +73,16 @@
             justify-content: center;
             align-items: center;
             white-space: unset !important;
+            text-wrap: balance;
+            font-weight: 500 !important;
 
             &>div {
                 height: fit-content;
-                max-height: 67px;
+                max-height: 55px;
+            }
+
+            &>div>span {
+                font-weight: 500 !important;
             }
         }
     }

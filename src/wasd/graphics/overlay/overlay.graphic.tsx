@@ -39,7 +39,7 @@ function fetchFromParams(): URLParams {
 }
 
 function VR() {
-    return <div style={{ height: "100%", width: "var(--bw)", margin: "0 calc(-1 * var(--bw))", backgroundColor: "white" }} />
+    return <div style={{ height: "100%", width: "var(--bw)", backgroundColor: "white" }} className="mv-5" />
 }
 
 function Overlay({ aspect }: { aspect: [number, number] }) {
@@ -49,12 +49,12 @@ function Overlay({ aspect }: { aspect: [number, number] }) {
     console.log(aspect, infoInSidebar);
 
     return <div className="fill d-flex outer" style={{ fontFamily: "Montserrat", fontWeight: "600" }}>
-        <Sidebar className="flex-gs" vertical={infoInSidebar} />
-        <VR />
+        <Sidebar className="flex-gs" vertical={infoInSidebar} style={{ marginRight: "var(--bw)" }} />
         <div className="d-flex flex-column">
-            <Camera camName={sceneInfo.name === "RUN-1" ? "GAME-1" : "GAME-2"} aspectRatio={`${aspect[0]} / ${aspect[1]}`} dims={infoInSidebar ? [null, 1010] : [1520, null]} />
-            {!infoInSidebar && <div className="d-flex vcentre flex-gs mx-4 my-2 gap-3">
+            <Camera camName={sceneInfo.name === "RUN-1" ? "GAME-1" : "GAME-2"} aspectRatio={`${aspect[0]} / ${aspect[1]}`} dims={infoInSidebar ? [null, 1010] : [1520, null]} style={{ borderRight: "none" }} />
+            {!infoInSidebar && <div className="d-flex vcentre flex-gs px-4 py-2 gap-3" style={{ borderLeft: "var(--bw) white solid" }}>
                 <Game />
+                <VR />
                 <TimerComp />
             </div>}
         </div>

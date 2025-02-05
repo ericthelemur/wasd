@@ -17,22 +17,25 @@ function fd(a: number, b: number, e: number = 1) {
     return Math.abs(a - b) < e;
 }
 
-function calculateTransform(ot: ObsTransform, t: { x: number, y: number, w: number, h: number }): Partial<ObsTransform> {
+function calculateTransform(ot: ObsTransform, t: { x: number, y: number, w: number, h: number }, inset: number = 0): Partial<ObsTransform> {
     // Calculate scale to fill
     const srcAspect = ot.sourceWidth / ot.sourceHeight;
     const newW = Math.max(t.w, t.h * srcAspect);
     const scale = newW / ot.sourceWidth;
     const newH = newW / srcAspect;
     // Calculate crop of excess
-    const cropX = (newW - t.w) / scale;
-    const cropY = (newH - t.h) / scale;
+    let cropX = (newW - t.w) / scale;
+    let cropY = (newH - t.h) / scale;
+
+    if (cropX < 1) cropX = 0;
+    if (cropY < 1) cropY = 0;
     return {
         positionX: t.x, positionY: t.y, scaleX: scale, scaleY: scale,
         cropLeft: cropX / 2, cropRight: cropX / 2, cropTop: cropY / 2, cropBottom: cropY / 2
     }
 }
 
-export function Camera({ camName, aspectRatio, dims, style }: { camName: string, aspectRatio: string, dims?: [number | string | null, number | string | null], style?: CSSProperties }) {
+export function Camera({ camName, aspectRatio, dims, style, flexGrow }: { camName: string, aspectRatio: string, dims?: [number | string | null, number | string | null], style?: CSSProperties, flexGrow?: number }) {
     const ref = useRef<HTMLDivElement>(null);
 
     const sceneInfo = useContext(SceneInfoContext);
@@ -51,12 +54,13 @@ export function Camera({ camName, aspectRatio, dims, style }: { camName: string,
     // Send updates to OBS when cameras move
     useEffect(() => {
         function moveOBSSrc(force: boolean = false) {
-            console.log("Moving poll", force, sceneSource)
             if (!sceneSource) return;
-            const dims = ref.current!.getBoundingClientRect();
+            let d = ref.current!.getBoundingClientRect();
+            const inset = 6;
+            const dims = { x: d.x + inset, y: d.y + inset, width: d.width - 2 * inset, height: d.height - 2 * inset };
             if (force || (!fd(dims.x, lastPos.x) || !fd(dims.y, lastPos.y) || !fd(dims.width, lastPos.w) || !fd(dims.height, lastPos.h))) {
                 const target = { x: dims.x, y: dims.y, w: dims.width, h: dims.height };
-                const newTransform = calculateTransform(sceneSource.sceneItemTransform, target);
+                const newTransform = calculateTransform(sceneSource.sceneItemTransform, target, 6);
                 setLastPos(target);
                 nodecg.sendMessage("moveItem", { sceneName: sceneInfo.name, sceneItemId: sceneSource.sceneItemId, transform: newTransform } as OBSMsgTypes["moveItem"])
             }
@@ -72,17 +76,13 @@ export function Camera({ camName, aspectRatio, dims, style }: { camName: string,
         };
     }, [ref, sceneSource, lastPos]);
 
-    const innerArgs: CSSProperties = {};
-    const outerArgs: CSSProperties = {};
-    if (dims && dims[0] !== null) {
-        if (typeof dims[0] === "string" && dims[0].includes("%")) outerArgs.width = dims[0];
-        else innerArgs.width = dims[0];
+    const camStyle: CSSProperties = { aspectRatio: aspectRatio };
+    if (dims && dims[0] !== null) camStyle.width = dims[0];
+    if (dims && dims[1] !== null) camStyle.height = dims[1];
+    if (flexGrow) {
+        camStyle.flexGrow = flexGrow;
+        camStyle.flexShrink = flexGrow;
     }
-    if (dims && dims[1] !== null) {
-        if (typeof dims[1] === "string" && dims[1].includes("%")) outerArgs.height = dims[1];
-        else innerArgs.height = dims[1];
-    }
-    return <div className="cam-border" style={{ ...outerArgs, ...style }}>
-        <div ref={ref} id={camName} className="cam" style={{ ...innerArgs, aspectRatio: aspectRatio }} />
-    </div>
+
+    return <div ref={ref} id={camName} className="cam" style={{ ...camStyle, ...style }} />;
 }

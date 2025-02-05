@@ -11,7 +11,7 @@ export function Game({ vertical }: { vertical?: boolean }) {
     const run = sceneInfo.run;
     const info = [run?.category, run?.system, run?.release].filter(v => v);
 
-    return <div className={"position-relative flex-gs mb-0 " + (vertical ? "h-0 w-100" : "h-100 w-0")}>
+    return <div className={"position-relative flex-gs mb-0 " + (vertical ? "h-0 w-100" : "h-100 w-0")} style={{ borderLeft: "var(--bw) white" }}>
         {run?.game && <FittingText className='text-center lh-1 text-wrap-balance' max={72}>
             {run?.game}
             <div style={{ marginTop: 6, fontSize: "60%" }}>{info.join(" / ")}</div>

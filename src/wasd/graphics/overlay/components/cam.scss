@@ -5,9 +5,10 @@
 
 .cam {
     box-sizing: content-box;
+    border: currentColor solid var(--bw);
 }
 
-.cam-border {
-    border: currentColor solid var(--bw);
-    width: 100%;
-}
+// .cam-border {
+//     border: currentColor solid var(--bw);
+//     width: 100%;
+// }
