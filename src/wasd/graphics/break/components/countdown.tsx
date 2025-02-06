@@ -9,7 +9,7 @@ export function CountdownComp() {
     const [cdText] = useReplicant<CountdownText>("countdownText", "Back Soon");
     if (!countdown) return null;
 
-    return <div className="countdown fw-semibold">
+    return <div className="countdown fw-semibold flex-grow-1">
         <div className="msg text-center">{cdText}</div>
         <div className="time tabnum text-center lh-1">{msToApproxTimeString(countdown.state == "running" ? countdown.value : 0)}</div>
     </div>

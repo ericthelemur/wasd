@@ -26,14 +26,12 @@ if (nodecg.bundleConfig.freecurrencyapi_key) {
         .then((r) => r.json())
         .then((j) => {
             conversionRates = j.data;
-            console.log(conversionRates);
-            nodecg.log.info("Conversion rates loaded, refreshing all conversions");
             convertAll();
         });
 } else convertAll();
 
 function convertAll() {
-    nodecg.log.info("Converting all values for donations");
+    nodecg.log.info("Re-converting all display amounts for donations");
 
     donations.value.forEach(convertValue);
 }

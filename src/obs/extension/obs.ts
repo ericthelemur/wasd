@@ -269,7 +269,7 @@ export class OBSUtility extends OBSWebSocket {
 
 
     private async _tryCallOBS<Type extends keyof OBSRequestTypes>(requestType: Type, requestData?: OBSRequestTypes[Type], ack?: NodeCG.Acknowledgement, errMsg?: string, catchF?: (e: any) => {}) {
-        this.log.info("Calling", requestType, "with", requestData);
+        this.log.debug("Calling", requestType, "with", requestData);
         return this.call(requestType, requestData).then((res) => {
             if (ack && !ack.handled) ack();
             return res;

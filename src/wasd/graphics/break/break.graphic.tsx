@@ -15,7 +15,8 @@ function VR() {
 
 export function Break() {
     return <div className='break h-100 d-flex h1'>
-        <div className="sidebar">
+        <div className="sidebar p-5">
+            <div></div>
             <CountdownComp />
             <CurrentSong />
         </div>
