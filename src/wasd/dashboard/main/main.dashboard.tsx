@@ -3,7 +3,7 @@ import '../../../common/uwcs-bootstrap.css';
 import { duration } from 'moment';
 import React, { FormEvent, useEffect, useRef, useState } from 'react';
 import {
-    ArrowCounterclockwise, BrushFill, PauseFill, PenFill, PlayFill, SendFill
+    ArrowCounterclockwise, BrushFill, Controller, PauseFill, PenFill, PlayFill, SendFill
 } from 'react-bootstrap-icons';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
@@ -28,6 +28,7 @@ import type NodeCG from '@nodecg/types';
 import { RunDataActiveRun, RunDataArray, RunFinishTimes } from 'speedcontrol-util/types/speedcontrol';
 import { msToTimeString } from 'countdown/utils';
 import { RunDataActiveRunSurrounding } from 'speedcontrol-util/types/speedcontrol/schemas';
+import clone from 'clone';
 
 declare const nodecg: NodeCG.ServerAPI;
 
@@ -93,25 +94,61 @@ function AllStatuses() {
 }
 
 
+function findRunType(programScene: ProgramScene | undefined, runDataArray: RunDataArray | undefined, runDataActiveRunSurrounding: RunDataActiveRunSurrounding | undefined, current = true) {
+    // Pull run type from OBS first (if getting current), then from run customData
+    if (current && programScene && programScene.name) {
+        if (programScene.name.endsWith("-1")) return "1";
+        else if (programScene.name.endsWith("-2")) return "2";
+        else if (programScene.name.endsWith("-RACE")) return "RACE";
+    }
+
+    if (runDataArray && runDataActiveRunSurrounding) {
+        const runId = current ? runDataActiveRunSurrounding.current : runDataActiveRunSurrounding.next;
+        const run = runDataArray && runDataArray.find(r => r.id === runId);
+        if (run && run.customData.scene) {
+            if (run.customData.scene.endsWith("-1")) return "1";
+            else if (run.customData.scene.endsWith("-2")) return "2";
+            else if (run.customData.scene.endsWith("-RACE")) return "RACE";
+        }
+    }
+    return undefined;
+}
+
+
 function MainControls() {
     const [lastScene, setLastScene] = useState("");
     const [programScene,] = useReplicant<ProgramScene>("programScene", null);
     const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
     const [obsStatus,] = useReplicant<ObsStatus>("obsStatus", { connection: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false });
-
+    const [runDataArray,] = useReplicant<RunDataArray>("runDataArray", [], { namespace: "nodecg-speedcontrol" });
+    const [runDataActiveRunSurrounding,] = useReplicant<RunDataActiveRunSurrounding>("runDataActiveRunSurrounding", { previous: undefined, current: undefined, next: undefined }, { namespace: "nodecg-speedcontrol" });
 
     if (!state || !obsStatus) return null;
+
     function goToScene(newSceneName: string) {
         if (programScene) setLastScene(programScene.name);
         sendToOBS("transition", { sceneName: newSceneName });
     }
-    const args = { lastScene, goToScene, programScene: programScene?.name || "", controlRecording: obsStatus.controlRecording }
-    return <Tabs id="main-state-tabs" activeKey={state.state} onSelect={s => s && setState({ ...state, state: s } as StreamState)}>
-        <Tab eventKey="BREAK" title="BREAK"><BreakControls {...args} /></Tab>
-        <Tab eventKey="INTRO" title="INTRO"><IntroControls {...args} /></Tab>
-        <Tab eventKey="RUN" title="RUN"><RunControls {...args} /></Tab>
-        <Tab eventKey="OUTRO" title="OUTRO"><OutroControls {...args} /></Tab>
-    </Tabs>
+
+    const args = {
+        lastScene, goToScene, programScene: programScene?.name || "", controlRecording: obsStatus.controlRecording,
+        currentType: findRunType(programScene, runDataArray, runDataActiveRunSurrounding, true),
+        nextType: findRunType(programScene, runDataArray, runDataActiveRunSurrounding, false),
+    }
+    return <>
+        <Stack direction="horizontal" gap={1}>
+            <b>RUN:</b>
+            <Badge bg={args.currentType ? "success" : "danger"}><Controller /> RUN-{args.currentType || "UNKNOWN"}</Badge>
+            <Badge bg="info">Next: {args.nextType || "UNKNOWN"}</Badge>
+        </Stack>
+
+        <Tabs id="main-state-tabs" activeKey={state.state} onSelect={s => s && setState({ ...state, state: s } as StreamState)}>
+            <Tab eventKey="BREAK" title="BREAK"><BreakControls {...args} /></Tab>
+            <Tab eventKey="INTRO" title="INTRO"><IntroControls {...args} /></Tab>
+            <Tab eventKey="RUN" title="RUN"><RunControls {...args} /></Tab>
+            <Tab eventKey="OUTRO" title="OUTRO"><OutroControls {...args} /></Tab>
+        </Tabs>
+    </>
 }
 
 interface ControlPage {
@@ -119,6 +156,29 @@ interface ControlPage {
     goToScene: (newSceneName: string) => void;
     programScene: string;
     controlRecording: boolean;
+    currentType?: string;
+    nextType?: string;
+}
+
+
+function ToBreakButton({ goToScene, programScene, controlRecording }: ControlPage) {
+    const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
+    const [obsStatus,] = useReplicant<ObsStatus>("obsStatus", { connection: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false });
+    const [runDataArray,] = useReplicant<RunDataArray>("runDataArray", [], { namespace: "nodecg-speedcontrol" });
+    const [runDataActiveRunSurrounding,] = useReplicant<RunDataActiveRunSurrounding>("runDataActiveRunSurrounding", { previous: undefined, current: undefined, next: undefined }, { namespace: "nodecg-speedcontrol" });
+
+    const isRecording = controlRecording && obsStatus?.connection == "connected" && obsStatus?.recording;
+    return <Button onClick={() => {
+        isRecording && sendToOBS("stopRecording");
+        setState({ ...state, state: "BREAK" });
+        goToScene("BREAK");
+        // Update Twitch title when going to break, so we are in the right category
+        if (runDataActiveRunSurrounding && runDataActiveRunSurrounding.next) {
+            const runId = runDataActiveRunSurrounding.next;
+            const run = runDataArray && runDataArray.find(r => r.id === runId);
+            if (run) nodecg.sendMessageToBundle("modifyRun", "nodecg-speedcontrol", { runData: run, updateTwitch: true })
+        }
+    }}>BREAK Phase (Scene BREAK{isRecording && "; Rec stop"}; Twitch Title)</Button>
 }
 
 function CountdownRow() {
@@ -127,14 +187,11 @@ function CountdownRow() {
 
     function playPauseCountdown(e: FormEvent) {
         e.preventDefault();
-        if (countdown!.state == "ended") {
-            sendToCountdown("countdown.start");
-        } else if (countdown!.state == "running") {
-            sendToCountdown("countdown.pause");
-        } else if (countdown!.state == "paused") {
-            sendToCountdown("countdown.unpause");
-        }
+        if (countdown!.state == "ended") sendToCountdown("countdown.start");
+        else if (countdown!.state == "running") sendToCountdown("countdown.pause");
+        else if (countdown!.state == "paused") sendToCountdown("countdown.unpause");
     }
+
     const going = countdown.state == "running";
     return <InputGroup className="d-flex">
         <Button className="flex-grow-1" variant={going ? "outline-primary" : "primary"} onClick={playPauseCountdown}>{going ? "Pause" : "Play"} Countdown</Button>
@@ -155,20 +212,21 @@ function BreakControls({ goToScene, programScene, controlRecording }: ControlPag
             setState({ ...state, state: "INTRO" });
             goToScene("COMMS");
             nodecg.sendMessageToBundle("changeToNextRun", "nodecg-speedcontrol");
-            controlRecording && obsStatus?.connection == "connected" && sendToOBS("startRecording")
+            controlRecording && obsStatus?.connection == "connected" && sendToOBS("startRecording");
         }}
         >Intro Phase (Scene COMMS{controlRecording && "; Rec start"})</Button>
     </div>
 }
 
-function IntroControls({ lastScene, goToScene, programScene, controlRecording }: ControlPage) {
+
+function IntroControls({ lastScene, goToScene, programScene, controlRecording, currentType: t }: ControlPage) {
     const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
     const [obsStatus,] = useReplicant<ObsStatus>("obsStatus", { connection: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false });
 
     return <div className="vstack gap-2">
         <Button disabled={programScene == "COMMS"} variant="outline-primary" onClick={() => goToScene("COMMS")}>Scene COMMS (no runner)</Button>
-        <Button disabled={programScene == "COMMS-1"} onClick={() => goToScene("COMMS-1")}>Scene COMMS-# (no game)</Button>
-        <Button variant="primary" onClick={() => { setState({ ...state, state: "RUN" }); goToScene("RUN-1"); }}>RUN Phase (Scene RUN-#)</Button>
+        <Button disabled={programScene == `COMMS-${t}`} onClick={() => goToScene(`COMMS-${t}`)}>Scene COMMS-{t} (no game)</Button>
+        <Button variant="primary" onClick={() => { setState({ ...state, state: "RUN" }); goToScene(`RUN-${t}`); }}>RUN Phase (Scene RUN-{t})</Button>
         <Button variant="outline-primary" onClick={() => {
             controlRecording && obsStatus?.connection == "connected" && obsStatus?.recording && sendToOBS("stopRecording");
             setState({ ...state, state: "BREAK" });
@@ -177,36 +235,18 @@ function IntroControls({ lastScene, goToScene, programScene, controlRecording }:
     </div>
 }
 
-nodecg.listenFor("modifyRun", "nodecg-speedcontrol", (data) => {
-    console.log(data);
-})
-
-function OutroControls({ lastScene, goToScene, programScene, controlRecording }: ControlPage) {
+function OutroControls(args: ControlPage) {
+    const { lastScene, goToScene, programScene, controlRecording, currentType: t } = args;
     const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
-    const [runDataArray,] = useReplicant<RunDataArray>("runDataArray", [], { namespace: "nodecg-speedcontrol" });
-    const [runDataActiveRunSurrounding,] = useReplicant<RunDataActiveRunSurrounding>("runDataActiveRunSurrounding", { previous: undefined, current: undefined, next: undefined }, { namespace: "nodecg-speedcontrol" });
-    const [obsStatus,] = useReplicant<ObsStatus>("obsStatus", { connection: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false });
-
 
     return <div className="vstack gap-2">
-        <Button disabled={programScene == "COMMS-1"} onClick={() => goToScene("COMMS-1")}>Scene COMMS-# (no game)</Button>
+        <Button disabled={programScene == `COMMS-${t}`} onClick={() => goToScene(`COMMS-${t}`)}>Scene COMMS-{t} (no game)</Button>
         <Button disabled={programScene == "COMMS"} variant="outline-primary" onClick={() => goToScene("COMMS")}>Scene COMMS (no runner)</Button>
-        <Button onClick={() => {
-            controlRecording && obsStatus?.connection == "connected" && obsStatus?.recording && sendToOBS("stopRecording");
-            setState({ ...state, state: "BREAK" });
-            goToScene("BREAK");
-            // Update Twitch title when going to break, so we are in the right category
-            if (runDataActiveRunSurrounding && runDataActiveRunSurrounding.next) {
-                const runId = runDataActiveRunSurrounding.next;
-                const run = runDataArray && runDataArray.find(r => r.id === runId);
-                if (run) nodecg.sendMessageToBundle("modifyRun", "nodecg-speedcontrol", { runData: run, updateTwitch: true })
-            }
-            // sendTo("setTwitchToNextRun");
-            // nodecg.sendMessageToBundle("changeToNextRun", "nodecg-speedcontrol");
-        }}>BREAK Phase (Scene BREAK{controlRecording && "; Rec stop"}; Next Run)</Button>
-        <Button variant="outline-primary" onClick={() => { setState({ ...state, state: "RUN" }); goToScene("RUN-1") }}>Back to RUN Phase (Scene RUN-#)</Button>
+        <ToBreakButton {...args} />
+        <Button variant="outline-primary" onClick={() => { setState({ ...state, state: "RUN" }); goToScene(`RUN-${t}`) }}>Back to RUN Phase (Scene RUN-{t})</Button>
     </div>
 }
+
 
 function TimerButton() {
     const [run,] = useReplicant<RunDataActiveRun>("runDataActiveRun", { id: "", teams: [], customData: {} }, { namespace: "nodecg-speedcontrol" });
@@ -225,17 +265,18 @@ function TimerButton() {
         {timer?.state != "running" ? "Start" : "Stop"} Run Timer</Button>
 }
 
-function RunControls({ lastScene, goToScene, programScene }: ControlPage) {
+function RunControls({ lastScene, goToScene, programScene, currentType: t }: ControlPage) {
     const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK", "minsBehind": 0 });
 
     return <div className="vstack gap-2">
         <TimerButton />
-        <Button disabled={programScene == "RUN-1"} onClick={() => { goToScene("RUN-1") }}>Scene RUN-#</Button>
-        <Button disabled={programScene == "COMMS-1"} variant="outline-primary" onClick={() => { goToScene("COMMS-1") }}>Scene COMMS-#</Button>
+        <Button disabled={programScene == `RUN-${t}`} onClick={() => { goToScene(`RUN-${t}`) }}>Scene RUN-{t}</Button>
+        <Button disabled={programScene == `COMMS-${t}`} variant="outline-primary" onClick={() => { goToScene(`COMMS-${t}`) }}>Scene COMMS-{t}</Button>
         <Button disabled={programScene == "COMMS"} variant="outline-primary" onClick={() => { goToScene("COMMS") }}>Scene COMMS</Button>
-        <Button onClick={() => { setState({ ...state, state: "OUTRO" }); goToScene("COMMS-1"); }}>State OUTRO (Scene COMMS-#)</Button>
+        <Button onClick={() => { setState({ ...state, state: "OUTRO" }); goToScene(`COMMS-${t}`); }}>State OUTRO (Scene COMMS-{t})</Button>
     </div>
 }
+
 
 function MainForm() {
     const [obsStatus,] = useReplicant<ObsStatus>("obsStatus", { connection: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false });
