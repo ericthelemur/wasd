@@ -3,7 +3,7 @@ import '../../../common/uwcs-bootstrap.css';
 import { duration } from 'moment';
 import React, { FormEvent, useEffect, useRef, useState } from 'react';
 import {
-    ArrowCounterclockwise, BrushFill, Controller, PauseFill, PenFill, PlayFill, SendFill
+    ArrowCounterclockwise, BrushFill, Controller, Link45deg, PauseFill, PenFill, PlayFill, SendFill
 } from 'react-bootstrap-icons';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
@@ -25,7 +25,7 @@ import { sendTo as sendToCountdown } from '../../../countdown/messages';
 import { PreviewScene, ProgramScene, ObsStatus } from 'types/schemas';
 import { Timer } from 'speedcontrol-util/types/speedcontrol/schemas/timer';
 import type NodeCG from '@nodecg/types';
-import { RunDataActiveRun, RunDataArray, RunFinishTimes } from 'speedcontrol-util/types/speedcontrol';
+import { RunData, RunDataActiveRun, RunDataArray, RunFinishTimes } from 'speedcontrol-util/types/speedcontrol';
 import { msToTimeString } from 'countdown/utils';
 import { RunDataActiveRunSurrounding } from 'speedcontrol-util/types/speedcontrol/schemas';
 import clone from 'clone';
@@ -117,11 +117,13 @@ function findRunType(programScene: ProgramScene | undefined, runDataArray: RunDa
 
 function MainControls() {
     const [lastScene, setLastScene] = useState("");
+    const [showReassignment, setReassignment] = useState(false);
     const [programScene,] = useReplicant<ProgramScene>("programScene", null);
     const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
     const [obsStatus,] = useReplicant<ObsStatus>("obsStatus", { connection: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false });
     const [runDataArray,] = useReplicant<RunDataArray>("runDataArray", [], { namespace: "nodecg-speedcontrol" });
     const [runDataActiveRunSurrounding,] = useReplicant<RunDataActiveRunSurrounding>("runDataActiveRunSurrounding", { previous: undefined, current: undefined, next: undefined }, { namespace: "nodecg-speedcontrol" });
+    const [run,] = useReplicant<RunDataActiveRun>("runDataActiveRun", { id: "", teams: [], customData: {} }, { namespace: "nodecg-speedcontrol" });
 
     if (!state || !obsStatus) return null;
 
@@ -130,24 +132,46 @@ function MainControls() {
         sendToOBS("transition", { sceneName: newSceneName });
     }
 
+    function setRunType(runType: string | null, run: RunData | undefined) {
+        if (!run) return;
+        if (run.customData.scene && !confirm(`Set run type to ${runType}`)) return;
+        setReassignment(false);
+
+        let newData = clone(run);
+        newData.customData.scene = runType ? `RUN-${runType}` : "";
+        nodecg.sendMessageToBundle("modifyRun", "nodecg-speedcontrol", { runData: newData, updateTwitch: false })
+    }
+
     const args = {
         lastScene, goToScene, programScene: programScene?.name || "", controlRecording: obsStatus.controlRecording,
         currentType: findRunType(programScene, runDataArray, runDataActiveRunSurrounding, true),
         nextType: findRunType(programScene, runDataArray, runDataActiveRunSurrounding, false),
     }
+
     return <>
         <Stack direction="horizontal" gap={1}>
             <b>RUN:</b>
-            <Badge bg={args.currentType ? "success" : "danger"}><Controller /> RUN-{args.currentType || "UNKNOWN"}</Badge>
+            <Badge bg={args.currentType ? "success" : "danger"} onClick={() => setReassignment(!showReassignment)} style={{ cursor: "pointer" }}><Controller /> RUN-{args.currentType || "UNKNOWN"}</Badge>
             <Badge bg="info">Next: {args.nextType || "UNKNOWN"}</Badge>
         </Stack>
 
-        <Tabs id="main-state-tabs" activeKey={state.state} onSelect={s => s && setState({ ...state, state: s } as StreamState)}>
-            <Tab eventKey="BREAK" title="BREAK"><BreakControls {...args} /></Tab>
-            <Tab eventKey="INTRO" title="INTRO"><IntroControls {...args} /></Tab>
-            <Tab eventKey="RUN" title="RUN"><RunControls {...args} /></Tab>
-            <Tab eventKey="OUTRO" title="OUTRO"><OutroControls {...args} /></Tab>
-        </Tabs>
+        {args.currentType || state.state == "BREAK" ?
+            <Tabs id="main-state-tabs" activeKey={state.state} onSelect={s => s && setState({ ...state, state: s } as StreamState)}>
+                <Tab eventKey="BREAK" title="BREAK"><BreakControls {...args} /></Tab>
+                <Tab eventKey="INTRO" title="INTRO"><IntroControls {...args} /></Tab>
+                <Tab eventKey="RUN" title="RUN"><RunControls {...args} /></Tab>
+                <Tab eventKey="OUTRO" title="OUTRO"><OutroControls {...args} /></Tab>
+            </Tabs>
+            : <UnknownControls {...args} />}
+
+        {(showReassignment || !args.currentType) && <InputGroup className="d-flex">
+            <InputGroup.Text>Set:</InputGroup.Text>
+            <Button className="flex-grow-1" variant="outline-primary" onClick={() => setRunType("1", run)}>RUN-1</Button>
+            <Button className="flex-grow-1" variant="outline-primary" onClick={() => setRunType("2", run)}>RUN-2</Button>
+            <Button className="flex-grow-1" variant="outline-primary" onClick={() => setRunType("RACE", run)}>RACE</Button>
+            <Button className="flex-grow-1" variant="outline-primary" onClick={() => setRunType(null, run)}>Unset</Button>
+        </InputGroup>}
+
     </>
 }
 
@@ -180,6 +204,18 @@ function ToBreakButton({ goToScene, programScene, controlRecording }: ControlPag
         }
     }}>BREAK Phase (Scene BREAK{isRecording && "; Rec stop"}; Twitch Title)</Button>
 }
+
+function UnknownControls(args: ControlPage) {
+    const { goToScene, programScene, controlRecording } = args;
+    const [run,] = useReplicant<RunDataActiveRun>("runDataActiveRun", { id: "", teams: [], customData: {} }, { namespace: "nodecg-speedcontrol" });
+
+
+    return <div className="vstack gap-2">
+        <Button variant="outline-primary" onClick={() => goToScene(programScene == "BREAK" ? "COMMS" : "BREAK")}>{programScene == "BREAK" ? "Scene COMMS" : "Scene BREAK"}</Button>
+        <ToBreakButton {...args} />
+    </div>
+}
+
 
 function CountdownRow() {
     const [countdown,] = useReplicant<Countdown>("countdown", { "value": 0, "state": "paused" });
