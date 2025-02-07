@@ -63,8 +63,8 @@ function Overlay({ aspect }: { aspect: [number, number] }) {
                 <Camera camName="CAM-1" aspectRatio="4 / 3" />
             </div>
             <div className="d-flex vcentre mx-3 my-3 gap-3 position-relative" style={{ flex: "1 1 0", paddingTop: "var(--bw)" }}>
-                <div className="h-100 m-3 position-relative d-flex" style={{ width: "50%" }}>
-                    <Game />
+                <div className="h-100 m-3 position-relative d-flex" style={{ width: "50%", fontSize: "0.7em" }}>
+                    <Game race={true} />
                 </div>
                 <div className="position-relative vstack" style={{ width: "50%" }}>
                     <div className="w-100 position-relative" style={{ height: "60%", flexShrink: 1 }}>
