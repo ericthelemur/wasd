@@ -51,12 +51,21 @@ function upcoming() {
             deleteMessage(`upcoming-${i}`);
         }
 
+        const minsBehind = streamState.value.minsBehind || 0;
+        let delay = true;
+
         runs.forEach((run, i) => {
-            const dateStr = formatTime(new Date(run.scheduled!));
+            let dateStr = formatTime(new Date(run.scheduled!));
             const runners = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
             const term = ["next", "2nd", "3rd"][i];
 
-            const msg = `${run.game} ${runners ? "with " : ""}${runners} coming up ${term} at ${dateStr}`;
+            if (!run.category) delay = false;
+
+            if (delay && minsBehind) {
+                const lateDateStr = new Date(run.scheduledS! * 1000 + (minsBehind ?? 0) * 60 * 1000);
+                dateStr = `~~${dateStr}~~ ${formatTime(lateDateStr)}`;
+            }
+            let msg = `**${run.game}** ${runners ? "with " : ""}${runners} coming up ${term} at **${dateStr}**`;
 
             updateOrCreateMsg("runs", `upcoming-${i}`, msg, i * 10, Math.pow(2, 2 - i), "Upcoming Runs", 0.5);
         });

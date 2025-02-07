@@ -2,7 +2,6 @@ import clone from 'clone';
 import { RunData } from 'speedcontrol-util/types/speedcontrol';
 import { SceneData } from 'types/schemas';
 
-import { getNodeCG } from '../../common/utils';
 import { sc, sceneData } from './replicants';
 
 function checkRun(run: RunData, assigned: SceneData) {

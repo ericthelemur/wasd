@@ -3,15 +3,17 @@ import './bar.scss';
 import '../../../common/custom.d';
 
 import { Total } from 'types/schemas/tiltify';
+import Markdown from 'markdown-to-jsx';
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Current } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
-import specialeffect from '../assets/specialeffect-small.png';
+import specialeffect from '../assets/specialeffect-exclam.png';
 import logo from '../assets/wasd-w.svg';
 import { AnimTextFit } from '../components/animtext';
 import { formatAmount, formatTime } from 'common/utils/formats';
+import { SafeMarkdown } from '../../../common/utils/barmarkdown';
 
 function VR() {
     return <div className="vr" />;
@@ -49,7 +51,7 @@ export function BarAnnouncement() {
     const [current,] = useReplicant<Current>("current", { "text": "", "msgID": null, "endTime": 0 });
     return <div className="tickerouter">
         <AnimTextFit transitionName='fade-wait' enterTimeout={500} leaveTimeout={1000} animKey={current?.msgID ?? ""} className="ticker lh-1">
-            {current?.text || ""}
+            <SafeMarkdown>{current?.text || ""}</SafeMarkdown>
         </AnimTextFit>
     </div>
 }

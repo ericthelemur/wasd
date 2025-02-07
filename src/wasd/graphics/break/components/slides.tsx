@@ -3,6 +3,7 @@ import { msToApproxTimeString } from '../../../../countdown/utils';
 import './slides.scss';
 
 import Markdown from 'markdown-to-jsx';
+import { useReplicant } from 'use-nodecg';
 import { findMilestones, MilestoneCard, PollCard, RewardCard, TargetCard } from 'donos/dashboard/reader/components/incentives';
 import { sortMapSingle } from 'donos/dashboard/reader/utils';
 import { Milestones, Polls, Rewards, Targets, Total } from 'types/schemas/tiltify';
@@ -12,7 +13,6 @@ import { Textfit } from 'react-textfit';
 import { RunData, RunDataActiveRun, RunDataArray } from 'speedcontrol-util/types/speedcontrol';
 import { RunDataActiveRunSurrounding } from 'speedcontrol-util/types/speedcontrol/schemas';
 import { CustomBreakText, StreamState } from 'types/schemas';
-import { useReplicant } from 'use-nodecg';
 import { RunCard } from './runcard';
 
 interface PageArgs {
@@ -135,30 +135,30 @@ interface PageCandidate {
 }
 
 const pages: PageCandidate[] = [{
-    //     page: RunsComp,
-    //     condition: (args) => !args.custom?.disabled?.runs && Boolean(args.runDataActiveRunSurrounding?.next),
-    //     duration: 10
-    // }, {
-    //     page: CharityComp,
-    //     condition: (args) => !args.custom?.disabled?.charity && Boolean(args.custom?.charity)
-    // }, {
-    //     page: AboutComp,
-    //     condition: (args) => !args.custom?.disabled?.about && Boolean(args.custom?.about)
-    // }, {
-    //     page: CustomComp,
-    //     condition: (args) => !args.custom?.disabled?.custom && Boolean(args.custom?.custom)
-    // }, {
+    page: RunsComp,
+    condition: (args) => !args.custom?.disabled?.runs && Boolean(args.runDataActiveRunSurrounding?.next),
+    duration: 10
+}, {
+    page: CharityComp,
+    condition: (args) => !args.custom?.disabled?.charity && Boolean(args.custom?.charity)
+}, {
+    page: AboutComp,
+    condition: (args) => !args.custom?.disabled?.about && Boolean(args.custom?.about)
+}, {
+    page: CustomComp,
+    condition: (args) => !args.custom?.disabled?.custom && Boolean(args.custom?.custom)
+}, {
     page: PollsComp,
     condition: (args) => !args.custom?.disabled?.polls && args.polls != undefined && args.polls.length > 0
-    // }, {
-    //     page: MilestonesComp,
-    //     condition: (args) => !args.custom?.disabled?.milestones && args.milestones != undefined && args.milestones?.length > 0
-    // }, {
-    //     page: RewardComp,
-    //     condition: (args) => !args.custom?.disabled?.rewards && args.rewards != undefined && args.rewards?.length > 0
-    // }, {
-    //     page: TargetsComp,
-    //     condition: (args) => !args.custom?.disabled?.targets && args.targets != undefined && args.targets?.length > 0
+}, {
+    page: MilestonesComp,
+    condition: (args) => !args.custom?.disabled?.milestones && args.milestones != undefined && args.milestones?.length > 0
+}, {
+    page: RewardComp,
+    condition: (args) => !args.custom?.disabled?.rewards && args.rewards != undefined && args.rewards?.length > 0
+}, {
+    page: TargetsComp,
+    condition: (args) => !args.custom?.disabled?.targets && args.targets != undefined && args.targets?.length > 0
 }
 ]
 

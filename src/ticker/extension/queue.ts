@@ -97,4 +97,10 @@ function playNextPause() {
 }
 
 const now = Date.now();
-if (current.value && !current.value.pause && current.value.endTime < now) playNext();
+if (current.value && !current.value.pause && current.value.endTime < now) playNextPause();
+
+current.on("change", (newVal, oldVal) => {
+    if (oldVal && oldVal.pause) {   // If was paused, and passing time, try playing
+        if (newVal.endTime < Date.now()) playNextPause();
+    }
+})
