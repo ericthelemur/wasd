@@ -138,7 +138,7 @@ if (build.shared) {
         default: {
           ...commonBrowserTargetProps,
           distDir: './shared',
-          publicUrl: `/bundles/wasd/shared`,
+          publicUrl: `/external`,
         },
       },
       defaultConfig: '@parcel/config-default',

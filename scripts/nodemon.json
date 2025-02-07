@@ -4,7 +4,7 @@
         "src/index.extension.ts",
         "src/types/*"
     ],
-    "exec": "npm run build -- --extension && npm run start",
+    "exec": "./scripts/build.mjs -- --extension && npm run start",
     "ext": "js,ts,json,yaml",
     "delay": 500,
     "ignoreRoot": [

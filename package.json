@@ -73,7 +73,7 @@
         "title": "Schedule Adjuster",
         "width": 2,
         "file": "wasd/dashboard/scheduleadjuster/schedule.dashboard.html",
-        "headerColor": "#FF0000"
+        "headerColor": "#525F78"
       },
       {
         "name": "main",
@@ -135,10 +135,28 @@
         "singleInstance": false
       },
       {
-        "file": "wasd/graphics/overlay/COMMS.html",
+        "file": "wasd/graphics/comms/COMMS.html",
         "width": 1920,
         "height": 1010,
-        "singleInstance": false
+        "singleInstance": true
+      },
+      {
+        "file": "wasd/graphics/comms/COMMS-1.html",
+        "width": 1920,
+        "height": 1010,
+        "singleInstance": true
+      },
+      {
+        "file": "wasd/graphics/comms/COMMS-2.html",
+        "width": 1920,
+        "height": 1010,
+        "singleInstance": true
+      },
+      {
+        "file": "wasd/graphics/comms/COMMS-RACE.html",
+        "width": 1920,
+        "height": 1010,
+        "singleInstance": true
       }
     ]
   },
