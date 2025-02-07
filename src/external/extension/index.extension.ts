@@ -13,7 +13,7 @@ router.get('/test', (req, res) => {
     res.send('You are authorized as external!');
 });
 
-const mainPages: string[] = ["mute.html"];
+const mainPages: string[] = ["mute.html", "donos.html"];
 
 router.get("/:file", (req, res, next) => {
     console.log(req.params.file, mainPages.includes(req.params.file));

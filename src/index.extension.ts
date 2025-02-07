@@ -14,4 +14,5 @@ module.exports = function (nodecg: NodeCG.ServerAPI) {
     require("./people/extension/index.extension");
     require("./ticker/extension/index.extension");
     require("./wasd/extension/index.extension");
+    require("./external/extension/index.extension");
 };
