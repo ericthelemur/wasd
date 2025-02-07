@@ -38,11 +38,15 @@ export function CommsBase({ children, width }: PropsWithChildren<{ width: number
                     {children}
                 </div>
                 <div className="mt-3 hstack gap-4 w-100" style={{ maxWidth: width }}>
-                    <div className='flex-gs'>
-                        <CurrentRun />
+                    <div className='flex-gs position-relative' style={{ height: 200 }}>
+                        <div style={{ position: "absolute", inset: 0 }}>
+                            <CurrentRun />
+                        </div>
                     </div>
-                    <div className='flex-gs'>
-                        <UpNext />
+                    <div className='flex-gs position-relative' style={{ height: 200 }}>
+                        <div style={{ position: "absolute", inset: 0 }}>
+                            <UpNext />
+                        </div>
                     </div>
                 </div>
 

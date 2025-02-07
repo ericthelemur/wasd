@@ -10,4 +10,5 @@ export interface CurrentSong {
 	artist: string;
 	albumArt: string;
 	playing: boolean;
+	connected: boolean;
 }

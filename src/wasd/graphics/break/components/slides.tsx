@@ -135,30 +135,30 @@ interface PageCandidate {
 }
 
 const pages: PageCandidate[] = [{
-    page: RunsComp,
-    condition: (args) => !args.custom?.disabled?.runs && Boolean(args.runDataActiveRunSurrounding?.next),
-    duration: 10
-}, {
-    page: CharityComp,
-    condition: (args) => !args.custom?.disabled?.charity && Boolean(args.custom?.charity)
-}, {
-    page: AboutComp,
-    condition: (args) => !args.custom?.disabled?.about && Boolean(args.custom?.about)
-}, {
-    page: CustomComp,
-    condition: (args) => !args.custom?.disabled?.custom && Boolean(args.custom?.custom)
-}, {
+    //     page: RunsComp,
+    //     condition: (args) => !args.custom?.disabled?.runs && Boolean(args.runDataActiveRunSurrounding?.next),
+    //     duration: 10
+    // }, {
+    //     page: CharityComp,
+    //     condition: (args) => !args.custom?.disabled?.charity && Boolean(args.custom?.charity)
+    // }, {
+    //     page: AboutComp,
+    //     condition: (args) => !args.custom?.disabled?.about && Boolean(args.custom?.about)
+    // }, {
+    //     page: CustomComp,
+    //     condition: (args) => !args.custom?.disabled?.custom && Boolean(args.custom?.custom)
+    // }, {
     page: PollsComp,
     condition: (args) => !args.custom?.disabled?.polls && args.polls != undefined && args.polls.length > 0
-}, {
-    page: MilestonesComp,
-    condition: (args) => !args.custom?.disabled?.milestones && args.milestones != undefined && args.milestones?.length > 0
-}, {
-    page: RewardComp,
-    condition: (args) => !args.custom?.disabled?.rewards && args.rewards != undefined && args.rewards?.length > 0
-}, {
-    page: TargetsComp,
-    condition: (args) => !args.custom?.disabled?.targets && args.targets != undefined && args.targets?.length > 0
+    // }, {
+    //     page: MilestonesComp,
+    //     condition: (args) => !args.custom?.disabled?.milestones && args.milestones != undefined && args.milestones?.length > 0
+    // }, {
+    //     page: RewardComp,
+    //     condition: (args) => !args.custom?.disabled?.rewards && args.rewards != undefined && args.rewards?.length > 0
+    // }, {
+    //     page: TargetsComp,
+    //     condition: (args) => !args.custom?.disabled?.targets && args.targets != undefined && args.targets?.length > 0
 }
 ]
 
@@ -190,7 +190,7 @@ export function UpNext({ className }: { className?: string }) {
 
 export function Slides({ side }: { side?: boolean }) {
     const [index, setIndex] = useState(0);
-    const [Func, setFunc] = useState<PageComp>(() => RunsComp);
+    const [Func, setFunc] = useState<PageComp>(() => AboutComp);
 
     const [total,] = useReplicant<Total>("total", { "currency": "GBP", "value": 0 });
     const [milestones,] = useReplicant<Milestones>("milestones", []);

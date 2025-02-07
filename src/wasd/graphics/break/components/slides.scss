@@ -44,6 +44,14 @@ h3 {
     gap: 1em;
 }
 
+:root {
+    --bs-success: #DAA520;
+    --bs-success-bg-subtle: #F0E68C;
+    --bs-success-rgb: "218, 165, 32";
+    --bs-success-text-emphasis: #FFD700;
+
+}
+
 .progress-custom {
     border-width: var(--bw) !important;
     margin-top: 0.25em !important;
@@ -56,8 +64,8 @@ h3 {
 .border-success {
     border-color: var(--bs-success) !important;
     // color: #a3cfbb !important;
-    --col2: #198754aa !important;
-    // color: var(--bs-success) !important;
+    --col2: #DAA52080 !important;
+    color: #EEE8AA !important;
 }
 
 .poll .text-body-tertiary {

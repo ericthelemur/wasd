@@ -4,11 +4,11 @@ import ReactCSSTransitionReplace from 'react-css-transition-replace';
 import { Textfit } from 'react-textfit';
 import { useReplicant } from 'use-nodecg';
 
-import { CurrentSong } from '../../../../types/currentSong';
+import { CurrentSong as SongType } from '../../../../types/currentSong';
 
 export function CurrentSong() {
-    const [song,] = useReplicant<CurrentSong>("currentSong", { name: "", artist: "", albumArt: "", playing: false }, { namespace: "ncg-spotify" })
-    if (!song || !song.playing) return null;
+    const [song,] = useReplicant<SongType>("currentSong", { name: "", artist: "", albumArt: "", playing: false, connected: false }, { namespace: "ncg-spotify" })
+    if (!song || !song.connected || !song.playing) return <div></div>;
 
     return <div className="song-outer card">
         <ReactCSSTransitionReplace transitionName="fade-wait" transitionEnterTimeout={1000} transitionLeaveTimeout={1000} className="w-100">
