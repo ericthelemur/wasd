@@ -22,12 +22,17 @@ export var conversionRates: ConversionRates = {
 };
 
 if (nodecg.bundleConfig.freecurrencyapi_key) {
-    fetch(`https://api.freecurrencyapi.com/v1/latest?apikey=${nodecg.bundleConfig.freecurrencyapi_key}&base_currency=${nodecg.bundleConfig.display_currency}`)
-        .then((r) => r.json())
-        .then((j) => {
-            conversionRates = j.data;
-            convertAll();
-        });
+    try {
+        fetch(`https://api.freecurrencyapi.com/v1/latest?apikey=${nodecg.bundleConfig.freecurrencyapi_key}&base_currency=${nodecg.bundleConfig.display_currency}`)
+            .then((r) => r.json())
+            .then((j) => {
+                conversionRates = j.data;
+                convertAll();
+            })
+            .catch(e => nodecg.log.error(e));
+    } catch (e) {
+        nodecg.log.error(e);
+    }
 } else convertAll();
 
 function convertAll() {
