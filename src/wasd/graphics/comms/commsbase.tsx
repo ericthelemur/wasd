@@ -29,7 +29,7 @@ function CurrentRun({ className }: { className?: string }) {
 
 export function CommsBase({ children, width }: PropsWithChildren<{ width: number }>) {
 
-    const style: CSSProperties = { width: width, height: 700, position: "relative" };
+    const style: CSSProperties = { width: width, maxHeight: 700, position: "relative" };
 
     return <div className="fill d-flex outer comms" style={{ fontFamily: "Montserrat", fontWeight: "600", fontSize: "1.75em" }}>
         <div className="d-flex justify-content-center align-items-center w-100">
@@ -37,11 +37,11 @@ export function CommsBase({ children, width }: PropsWithChildren<{ width: number
                 <div className="hstack gap-4 justify-content-center align-items-center" style={style}>
                     {children}
                 </div>
-                <div className="mt-3 hstack gap-4">
-                    <div className='w-50'>
+                <div className="mt-3 hstack gap-4 w-100" style={{ maxWidth: width }}>
+                    <div className='flex-gs'>
                         <CurrentRun />
                     </div>
-                    <div className='w-50'>
+                    <div className='flex-gs'>
                         <UpNext />
                     </div>
                 </div>
@@ -51,5 +51,5 @@ export function CommsBase({ children, width }: PropsWithChildren<{ width: number
                     <Slides side={true} />
                 </div> */}
         </div>
-    </div>
+    </div >
 }
