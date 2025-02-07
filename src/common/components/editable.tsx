@@ -14,8 +14,9 @@ export interface EditableProps {
     type?: "single" | "multi";
     className?: string;
     textClasses?: string;
-    prefix?: JSX.Element | string;
+    prefix?: JSX.Element | string;  // Migrate to prefix at some point
     container?: boolean;
+    preview?: JSX.Element | string;
 }
 
 interface SP {
@@ -40,7 +41,7 @@ export default function Editable(props: EditableProps) {
         if (wasText) setWasText(false);
         return <div className={`editable ${props.className || ""} ${props.textClasses || ""}`}
             onClick={sp(() => setEditVal(text))}>
-            {props.prefix} {text} <PenFill className="icon" />
+            {props.prefix} {props.preview || text} <PenFill className="icon" />
         </div>
     } else {
         const submit = () => {

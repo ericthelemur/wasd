@@ -3,7 +3,7 @@ import '../../../common/uwcs-bootstrap.css';
 import { klona } from 'klona';
 import { createRef, ReactElement, ReactNode, useEffect, useState } from 'react';
 import { DragDropContext, DraggableLocation, DragStart, DropResult } from 'react-beautiful-dnd';
-import { Pause, Play, PlusLg, Trash } from 'react-bootstrap-icons';
+import { ArrowCounterclockwise, Pause, Play, PlusLg, Trash } from 'react-bootstrap-icons';
 import Accordion from 'react-bootstrap/Accordion';
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
@@ -15,6 +15,7 @@ import NodeCG from '@nodecg/types';
 
 import { sendTo, sendToF } from '../../messages';
 import { PoolComp } from './components/msgpool';
+import { SafeMarkdown } from '../../../common/utils/barmarkdown';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;
 
@@ -72,7 +73,7 @@ function CurrentMsg({ current }: { current: Current }) {
 		<div className="card message m-1">
 			<div className="card-body hstack gap-2">
 				<span className="flex-grow-1 line-clamp-1">
-					{current.text}
+					<SafeMarkdown>{current.text || ""}</SafeMarkdown>
 				</span>
 				<span className="flex-shrink-0">
 					{current.pause ? "paused" : `until ${timeFormat.format(current.endTime)}`}
@@ -123,8 +124,8 @@ export function MsgControlPanel() {
 
 	const [pools,] = useReplicant<Pools>("pools", {});
 	const [bank,] = useReplicant<Bank>("bank", {});
-	const [queue,] = useReplicant<Queue>("queue", { "name": "Queue", "priority": 0, "msgs": [] });
-	const [current,] = useReplicant<Current>("current", { "text": "", "msgID": null, "endTime": 0 });
+	const [queue, setQueue] = useReplicant<Queue>("queue", { "name": "Queue", "priority": 0, "msgs": [] });
+	const [current, setCurrent] = useReplicant<Current>("current", { "text": "", "msgID": null, "endTime": 0 });
 	// console.log(pools);
 	if (!pools) return <h2>Not loaded messages</h2>;
 
@@ -180,9 +181,10 @@ export function MsgControlPanel() {
 					<div className='d-flex gap-3 h-100'>
 						<div className="w-50 overflow-auto sticky-top">
 							{current && currentMsg && (<div className="p-2">
-								<InputGroup className="card-ctrls message float-end">
-									<Button variant="outline-primary" onClick={() => current.pause = !current.pause}>{current.pause ? <Play /> : <Pause />}</Button>
-								</InputGroup>
+								<div className="hstack gap-3 card-ctrls message float-end">
+									<Button variant="outline-primary" onClick={() => setCurrent({ ...current, pause: !current.pause })}>{current.pause ? <Play /> : <Pause />}</Button>
+									<Button variant="outline-danger" onClick={() => confirm("Clear Queue?") && setQueue({ ...queue, msgs: [] } as Queue)}><ArrowCounterclockwise /></Button>
+								</div>
 								<CurrentMsg current={current} />
 							</div>)}
 							{queue && (<div className="p-2" onMouseEnter={() => setHover({ ...hv, hoverQueue: true })} onMouseLeave={() => setHover({ ...hv, hoverQueue: false })}>

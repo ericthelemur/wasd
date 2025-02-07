@@ -23,6 +23,10 @@ div.editable:not(.input) {
     &:hover>svg.icon {
         visibility: visible;
     }
+
+    & img {
+        height: 1em;
+    }
 }
 
 .editable-outer {

@@ -9,6 +9,7 @@ import { Message, MsgRef } from 'types/schemas';
 import add from '../../../../common/components/add.svg';
 import Editable from '../../../../common/components/editable';
 import { sendTo, sendToF } from '../../../messages';
+import { SafeMarkdown } from '../../../../common/utils/barmarkdown';
 
 interface MessageProps {
     id: MsgRef;
@@ -23,11 +24,12 @@ function QueueMsgBody(props: MessageProps) {
     const { message, queue } = props;
     const temp = message.type === "temp";
     const text = queue && !temp
-        ? <span className='msg-text input-group-text'><Link45deg /> {message.text}</span>
+        ? <span className='msg-text input-group-text'><Link45deg /> {<SafeMarkdown>{message.text || ""}</SafeMarkdown>}</span>
         : <>
             <Editable className='msg-text' textClasses="input-group-text"
                 prefix={queue ? <Pen className="small me-1" /> : ""}
-                text={message.text} setText={v => message.text = v} />
+                text={message.text} setText={v => message.text = v}
+                preview={<SafeMarkdown>{message.text || ""}</SafeMarkdown>} />
         </>
     const priority = queue ? undefined :
         <Editable className="priority" textClasses="input-group-text" text={message.priority.toString()}

@@ -10,7 +10,7 @@ export const dateFormat = new Intl.DateTimeFormat("en-GB", { day: "numeric", wee
 export const timeFormat = new Intl.DateTimeFormat("en-GB", { hour: "numeric", minute: "2-digit", hour12: true, hourCycle: "h12" });
 
 export function formatTime(time: number | Date | undefined) {
-    return timeFormat.format(time).replace(" ", "");
+    return timeFormat.format(time).replace(" ", "").replace(/^0:/, "12:");  // Hour Cycle seems to break sometimes, so force it
 }
 
 
