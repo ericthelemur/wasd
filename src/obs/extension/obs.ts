@@ -269,7 +269,7 @@ export class OBSUtility extends OBSWebSocket {
 
 
     private async _tryCallOBS<Type extends keyof OBSRequestTypes>(requestType: Type, requestData?: OBSRequestTypes[Type], ack?: NodeCG.Acknowledgement, errMsg?: string, catchF?: (e: any) => {}) {
-        this.log.debug("Calling", requestType, "with", requestData);
+        this.log.info("Calling", requestType, "with", requestData);
         return this.call(requestType, requestData).then((res) => {
             if (ack && !ack.handled) ack();
             return res;
@@ -288,6 +288,7 @@ export class OBSUtility extends OBSWebSocket {
 
     private _transitionListeners() {
         listenTo("transition", async (args, ack) => {
+            this.log.info("Transitioning to", args);
             try {
                 args = args ? args : {};
                 // Mark that we're starting to transition. Resets to false after SwitchScenes.
@@ -310,13 +311,13 @@ export class OBSUtility extends OBSWebSocket {
 
                 // Trigger transition, needs different calls outside studio mode
                 if (this.replicants.obsStatus.value.studioMode) {
-                    if (args.sceneName) {
-                        this._tryCallOBS('SetCurrentPreviewScene', { 'sceneName': args.sceneName },
-                            ack, 'Error setting preview scene for transition:')
-                    }
+                    this._tryCallOBS('SetCurrentProgramScene', { 'sceneName': args.sceneName },
+                        ack, 'Error setting preview scene for transition:')
 
-                    this._tryCallOBS("TriggerStudioModeTransition", undefined, ack, "Error transitioning",
-                        (e) => this.replicants.obsStatus.value.transitioning = false);
+                    // setTimeout(() => {
+                    //     this._tryCallOBS("TriggerStudioModeTransition", undefined, ack, "Error transitioning",
+                    //         (e) => this.replicants.obsStatus.value.transitioning = false);
+                    // }, 500);
                 } else {
                     if (!args.sceneName) {
                         this.ackError(ack, "Error: Cannot transition", undefined);

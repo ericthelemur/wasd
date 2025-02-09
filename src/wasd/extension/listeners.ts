@@ -17,7 +17,7 @@ function updateSceneRuns() {
     const currRun = sc.getCurrentRun();
     if (currRun) checkRun(currRun, assigned);
 
-    const upcomingRuns = sc.getNextRuns();
+    const upcomingRuns = sc.getNextRuns(10);
     // Check next runs (defaults to next 4)
     for (var i = 0; i < upcomingRuns.length; i++) {
         checkRun(upcomingRuns[i], assigned);

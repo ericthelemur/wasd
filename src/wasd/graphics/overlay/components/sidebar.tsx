@@ -27,6 +27,7 @@ export function Sidebar(props: SidebarArgs) {
                     <PeopleComp cat="commentators" />
                     {/* <People cat="tech" /> */}
                 </div>
+                <img src={WASDKeys} className="mt-3" style={{ width: "70%" }} />
                 <img src={SpecialEffect} style={{ width: "90%" }} />
                 {vertical && <><Game vertical={vertical} /><TimerComp /></>}
             </div>

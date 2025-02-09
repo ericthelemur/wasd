@@ -117,7 +117,7 @@ function RunsComp({ runDataArray, runDataActiveRunSurrounding, state }: PageArgs
     return <>
         <h1>
             Coming Up Later:{" "}
-            {state?.minsBehind && <small className="fs-2">~{Math.abs(state?.minsBehind)} mins {state?.minsBehind > 0 ? "behind" : "ahead"}</small>}
+            {state?.minsBehind ? <small className="fs-2">~{Math.abs(state?.minsBehind)} mins {state?.minsBehind > 0 ? "behind" : "ahead"}</small> : undefined}
         </h1>
         <div className="upcoming vstack fb">
             {nextRuns.map(r => {
@@ -135,30 +135,30 @@ interface PageCandidate {
 }
 
 const pages: PageCandidate[] = [{
-    //     page: RunsComp,
-    //     condition: (args) => !args.custom?.disabled?.runs && Boolean(args.runDataActiveRunSurrounding?.next),
-    //     duration: 10
-    // }, {
-    //     page: CharityComp,
-    //     condition: (args) => !args.custom?.disabled?.charity && Boolean(args.custom?.charity)
-    // }, {
-    //     page: AboutComp,
-    //     condition: (args) => !args.custom?.disabled?.about && Boolean(args.custom?.about)
-    // }, {
-    //     page: CustomComp,
-    //     condition: (args) => !args.custom?.disabled?.custom && Boolean(args.custom?.custom)
-    // }, {
+    page: RunsComp,
+    condition: (args) => !args.custom?.disabled?.runs && Boolean(args.runDataActiveRunSurrounding?.next),
+    duration: 20
+}, {
+    page: CharityComp,
+    condition: (args) => !args.custom?.disabled?.charity && Boolean(args.custom?.charity)
+}, {
+    page: AboutComp,
+    condition: (args) => !args.custom?.disabled?.about && Boolean(args.custom?.about)
+}, {
+    page: CustomComp,
+    condition: (args) => !args.custom?.disabled?.custom && Boolean(args.custom?.custom)
+}, {
     page: PollsComp,
     condition: (args) => !args.custom?.disabled?.polls && args.polls != undefined && args.polls.length > 0
-    // }, {
-    //     page: MilestonesComp,
-    //     condition: (args) => !args.custom?.disabled?.milestones && args.milestones != undefined && args.milestones?.length > 0
-    // }, {
-    //     page: RewardComp,
-    //     condition: (args) => !args.custom?.disabled?.rewards && args.rewards != undefined && args.rewards?.length > 0
-    // }, {
-    //     page: TargetsComp,
-    //     condition: (args) => !args.custom?.disabled?.targets && args.targets != undefined && args.targets?.length > 0
+}, {
+    page: MilestonesComp,
+    condition: (args) => !args.custom?.disabled?.milestones && args.milestones != undefined && args.milestones?.length > 0
+}, {
+    page: RewardComp,
+    condition: (args) => !args.custom?.disabled?.rewards && args.rewards != undefined && args.rewards?.length > 0
+}, {
+    page: TargetsComp,
+    condition: (args) => !args.custom?.disabled?.targets && args.targets != undefined && args.targets?.length > 0
 }
 ]
 
@@ -207,7 +207,7 @@ export function Slides({ side }: { side?: boolean }) {
 
     // Rotate through pages
     useEffect(() => {
-        const time = refreshTime - Date.now() + (pages[index].duration ?? 5) * 1000;
+        const time = refreshTime - Date.now() + (pages[index].duration ?? 10) * 1000;
         const interval = setTimeout(() => {
             const args = { total, milestones, polls, targets, rewards, custom, runDataArray, runDataActiveRunSurrounding, state };
             let newIndex = 0;

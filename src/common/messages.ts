@@ -28,7 +28,7 @@ export function createMessageListeners<X extends Dict>() {
     function sendToF<T extends keyof X & string>(name: T, data: X[T], prefix: string | undefined = undefined) {
         const prename = addPrefix(prefix, name);
         return () => {
-            console.debug("Sending", prename, "with", data);
+            console.log("Sending", prename, "with", data);
             return ncg.sendMessage(prename, data);
         }
     }

@@ -24,14 +24,14 @@ export function TimerComp({ textfit }: { textfit?: boolean }) {
     const sceneInfo = useContext(SceneInfoContext);
     const run = sceneInfo.run;
 
-    if (!timer || !run?.game) return <></>
+    if (!timer) return <></>
     const content = <>
         <span className="fw-bold tabnum">{timer?.time}</span>
         <span className="ms-auto tabnum" style={{ fontSize: "40%" }}>
             .{String(Math.trunc(timer?.milliseconds / 10) % 100).padStart(2, "0")}
         </span>
         <div style={{ fontSize: "40%" }}>
-            Estimate: {run?.estimate}
+            {run && <>{"Estimate:"} {run?.estimate}</>}
         </div>
     </>
 

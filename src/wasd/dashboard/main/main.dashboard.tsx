@@ -129,7 +129,11 @@ function MainControls() {
 
     function goToScene(newSceneName: string) {
         if (programScene) setLastScene(programScene.name);
-        sendToOBS("transition", { sceneName: newSceneName });
+        if (obsStatus?.studioMode) {
+
+        } else {
+            sendToOBS("transition", { sceneName: newSceneName });
+        }
     }
 
     function setRunType(runType: string | null, run: RunData | undefined) {

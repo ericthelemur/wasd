@@ -53,7 +53,7 @@ function NameComp({ name, pronouns }: { name: string, pronouns: string }) {
 
 }
 
-export function CategoryComp({ cat }: { cat: Category }) {
+export function CategoryComp({ cat, hideSocials }: { cat: Category, hideSocials?: boolean }) {
     // Quite ugly, but transition element is kinda awkward here
     if (!cat) return <div>No category exists</div>
 
@@ -140,16 +140,16 @@ export function CategoryComp({ cat }: { cat: Category }) {
                 <span key={personID}><NameComp name={person.name} pronouns={person.pronouns} /></span>
             </ReactCSSTransitionReplace>
 
-            <ReactCSSTransitionReplace key="social" transitionName="fade-wait" transitionEnterTimeout={2 * animTime} transitionLeaveTimeout={animTime}>
+            {(!hideSocials) && <ReactCSSTransitionReplace key="social" transitionName="fade-wait" transitionEnterTimeout={2 * animTime} transitionLeaveTimeout={animTime}>
                 <span key={`${personID}::${social?.id}`}><SocialComp social={social} /></span>
-            </ReactCSSTransitionReplace>
+            </ReactCSSTransitionReplace>}
         </div>
     </div>
 }
 
-export function PeopleComp({ cat }: { cat?: string }) {
+export function PeopleComp({ cat, hideSocials }: { cat?: string, hideSocials?: boolean }) {
     const [people,] = useReplicant<People>("people", { all: { name: "All", people: [] } })
     if (!people) return <></>;
     const category = people[cat ?? "all"];
-    return <CategoryComp cat={category} />
+    return <CategoryComp cat={category} hideSocials={hideSocials} />
 }

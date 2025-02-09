@@ -60,7 +60,7 @@ function Overlay({ aspect }: { aspect: [number, number] }) {
         {/* <div style={{ position: "absolute", bottom: 0, height: "calc(287px + var(--bw))", left: 0, right: 0 }} className="d-flex flex-row"> */}
         <div className="d-flex flex-row flex-grow-1 flex-shrink-1" style={{ height: 300, marginTop: "calc(-1 * var(--bw))", maxHeight: 400 }}>
             <div style={{ aspectRatio: "4 / 3", height: "100%" }}>
-                <Camera camName="CAM-1" aspectRatio="4 / 3" />
+                <Camera camName="CAM-1" aspectRatio="4 / 3" style={{ borderColor: "#eb3434" }} />
             </div>
             <div className="d-flex vcentre mx-3 my-3 gap-3 position-relative" style={{ flex: "1 1 0", paddingTop: "var(--bw)" }}>
                 <div className="h-100 m-3 position-relative d-flex" style={{ width: "50%", fontSize: "0.7em" }}>
@@ -76,7 +76,7 @@ function Overlay({ aspect }: { aspect: [number, number] }) {
                 </div>
             </div>
             <div style={{ aspectRatio: "4 / 3", height: "100%" }}>
-                <Camera camName="CAM-2" aspectRatio="4 / 3" />
+                <Camera camName="CAM-2" aspectRatio="4 / 3" style={{ borderColor: "#34abeb" }} />
             </div>
         </div>
     </div>
