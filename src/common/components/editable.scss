@@ -1,0 +1,57 @@
+div.editable:not(.input) {
+    cursor: pointer !important;
+    min-width: 3em;
+    overflow: hidden;
+    text-wrap: nowrap;
+
+    &:hover {
+        border-bottom: var(--bs-border-color) var(--bs-border-width) dotted;
+
+        &:not(.input-group-text) {
+            margin-bottom: calc(-1 * var(--bs-border-width));
+        }
+    }
+
+    &>svg.icon {
+        visibility: hidden;
+        color: var(--bs-border-color);
+        width: 0.7em;
+        height: 0.7em;
+        margin-left: 0.25em;
+    }
+
+    &:hover>svg.icon {
+        visibility: visible;
+    }
+
+    & img {
+        height: 1em;
+    }
+}
+
+.editable-outer {
+    & .btn {
+        padding: 0.1em 0.25em !important;
+    }
+}
+
+input.editable,
+.input.editable {
+    font-size: inherit;
+    font-weight: inherit;
+    padding-top: 0;
+    padding-bottom: 0;
+    flex-grow: 3 !important;
+    // min-width: 50%;
+}
+
+.input-group>div.editable:not(.input) {
+    width: 0;
+    flex-grow: 1;
+}
+
+.input-group:has(input.editable) div.editable:not(.input),
+.input-group:has(.input.editable) div.editable:not(.input) {
+    flex-grow: 0 !important;
+    flex-shrink: 1 !important;
+}

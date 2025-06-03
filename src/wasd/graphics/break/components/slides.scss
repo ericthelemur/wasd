@@ -1,0 +1,77 @@
+.card {
+    border-color: white;
+    color: white;
+    padding: 0.3em;
+    padding-bottom: 0.35em;
+    border-width: var(--bw);
+    border-radius: 15px;
+    flex-grow: 0 !important;
+    font-size: 0.9em;
+    background-color: transparent;
+}
+
+h1 {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+h2 {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+h3 {
+    font-size: 1em;
+    font-weight: bold;
+}
+
+.h5 {
+    font-size: 1em;
+    font-weight: bold;
+}
+
+
+.main {
+    text-align: center;
+}
+
+.upcoming {
+    justify-content: space-between;
+}
+
+.comms .upcoming {
+    justify-content: start;
+    gap: 1em;
+}
+
+:root {
+    --bs-success: #DAA520;
+    --bs-success-bg-subtle: #F0E68C;
+    --bs-success-rgb: "218, 165, 32";
+    --bs-success-text-emphasis: #FFD700;
+
+}
+
+.progress-custom {
+    border-width: var(--bw) !important;
+    margin-top: 0.25em !important;
+    border-color: white !important;
+    color: white !important;
+
+    --col2: #fff6 !important;
+}
+
+.border-success {
+    border-color: var(--bs-success) !important;
+    // color: #a3cfbb !important;
+    --col2: #DAA52080 !important;
+    color: #EEE8AA !important;
+}
+
+.poll .text-body-tertiary {
+    font-weight: 500;
+}
+
+.fb {
+    flex: 1 1 0;
+}

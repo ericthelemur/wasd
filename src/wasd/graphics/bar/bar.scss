@@ -1,0 +1,125 @@
+.tabnum {
+    font-variant: tabular-nums;
+    -moz-font-feature-settings: "tnum";
+    -webkit-font-feature-settings: "tnum";
+    font-feature-settings: "tnum"
+}
+
+.bar {
+    width: 1920px;
+    height: 70px;
+
+    position: relative;
+    overflow: hidden;
+    position: absolute;
+
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    padding-left: 15px;
+    padding-right: 15px;
+
+    // background-color: #351344;
+    font-size: 32px;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+
+    --bs-border-color: var(--bs-emphasis-color);
+    border-top: var(--bw) solid;
+
+    &>* {
+        margin-bottom: 0;
+        margin-top: 0;
+        width: auto;
+    }
+
+    & .logo {
+        height: 100%;
+        padding: 10px 0;
+    }
+
+    & span {
+        font-weight: bold;
+        color: var(--bs-emphasis-color);
+        margin-bottom: unset;
+        line-height: 1;
+    }
+
+
+    & .tickerouter {
+        text-align: center;
+        flex: 1 1 10px;
+        width: 10px;
+        flex-grow: 1;
+        flex-shrink: 1;
+        position: relative;
+        height: 60px;
+    }
+
+    & .ticker {
+        position: absolute;
+        width: 100%;
+        height: 60px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+
+        & .text {
+            height: 60px;
+            position: relative;
+
+            display: flex !important;
+            justify-content: center;
+            align-items: center;
+            white-space: unset !important;
+            text-wrap: balance;
+            font-weight: 500 !important;
+
+            &>div {
+                height: fit-content;
+            }
+
+            &>div>span {
+                font-weight: 500 !important;
+            }
+        }
+    }
+
+    & .vr {
+        width: var(--bs-border-width);
+        height: 70%;
+        background-color: var(--bs-border-color);
+        opacity: 1;
+        align-self: unset;
+        margin: 0 5px;
+    }
+}
+
+:root {
+    --enter-time: 0.4s;
+    --leave-time: 0.4s;
+}
+
+.fade-wait-leave {
+    opacity: 1;
+    transition-delay: 0;
+}
+
+.fade-wait-leave.fade-wait-leave-active {
+    opacity: 0;
+    transition: opacity var(--leave-time) ease-in;
+}
+
+.fade-wait-enter {
+    opacity: 0;
+}
+
+.fade-wait-enter.fade-wait-enter-active {
+    opacity: 1;
+    transition: opacity var(--enter-time) ease-out var(--leave-time);
+}
+
+.fade-wait-height {
+    transition: height calc(var(--enter-time)) ease-in-out;
+}

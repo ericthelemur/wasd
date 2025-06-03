@@ -1,0 +1,62 @@
+.badge {
+    --bs-badge-font-weight: inherit !important;
+}
+
+:root {
+    --enter-time: 0.4s;
+    --leave-time: 0.4s;
+}
+
+.fade-wait-leave {
+    opacity: 1;
+}
+
+.fade-wait-leave.fade-wait-leave-active {
+    opacity: 0;
+    transition: opacity var(--leave-time) ease-in;
+}
+
+.fade-wait-enter {
+    opacity: 0;
+}
+
+.fade-wait-enter.fade-wait-enter-active {
+    opacity: 1;
+    /* Delay the enter animation until the leave completes */
+    transition: opacity var(--enter-time) ease-in // var(--leave-time);
+}
+
+.fade-wait-height {
+    transition: height calc(var(--enter-time) + var(--leave-time)) ease-in-out;
+}
+
+.fill {
+    position: absolute;
+    inset: 0;
+}
+
+.pronouns {
+    font-size: 0.6em;
+    padding: 0.1em 0.4em;
+    border-radius: 0.375em;
+    background: #8884;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.vcentre {
+    display: flex;
+    align-items: center;
+}
+
+.name-inner {
+    height: 1.2em;
+    width: 100%;
+    position: relative;
+    // white-space: nowrap;
+}
+
+.textfit>div {
+    width: 100%;
+}

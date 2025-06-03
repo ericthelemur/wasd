@@ -1,0 +1,24 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "oengusShortcode": {
+            "type": "string"
+        },
+        "oengusScheduleSlug": {
+            "type": "string"
+        },
+        "updateMinsBehind": {
+            "type": "boolean"
+        }
+    },
+    "required": [
+        "oengusShortcode",
+        "oengusScheduleSlug"
+    ],
+    "default": {
+        "oengusShortcode": "wasd2024",
+        "oengusScheduleSlug": "1",
+        "updateMinsBehind": true
+    }
+}

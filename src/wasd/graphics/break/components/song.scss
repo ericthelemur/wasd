@@ -1,0 +1,88 @@
+.song-outer {
+    width: 100%;
+    // background-color: #2228;
+    // border-radius: 7px;
+    padding: 0 !important;
+}
+
+.song {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    // padding: 15px;
+    padding-right: none;
+
+    & .art {
+        max-width: 150px;
+        min-height: 150px;
+        height: 100%;
+        aspect-ratio: 1 / 1;
+        // border-radius: 7px;
+        overflow: hidden;
+
+        & img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+    }
+
+    & .details {
+        overflow: hidden;
+        position: relative;
+
+        flex: 1 1 0;
+        height: 100%;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        align-items: start;
+
+        padding: 0 25px;
+
+        & .name {
+            font-size: 1em;
+        }
+
+        & .artist {
+            font-size: 0.8em;
+        }
+    }
+}
+
+:root {
+    --anim-time: 0.3s;
+    --anim-delay: 0.05s;
+}
+
+
+
+.fade-wait-leave {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.fade-wait-leave.fade-wait-leave-active {
+    opacity: 0;
+    transform: translateX(-100%);
+    transition: opacity var(--anim-time) ease-in, transform var(--anim-time) linear;
+}
+
+.fade-wait-enter {
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+.fade-wait-enter.fade-wait-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition:
+        opacity var(--anim-time) ease-in calc(var(--anim-time) + var(--anim-delay)),
+        transform var(--anim-time) linear calc(var(--anim-time) + var(--anim-delay));
+}
+
+.fade-wait-height {
+    transition: height calc(2 * var(--anim-time)) ease-in-out;
+}

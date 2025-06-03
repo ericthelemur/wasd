@@ -1,0 +1,41 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "active": {
+            "type": "boolean"
+        },
+        "amount": {
+            "$ref": "../common/amount.json"
+        },
+        "amount_raised": {
+            "$ref": "../common/amount.json"
+        },
+        "ends_at": {
+            "$ref": "../common/timestamp.json"
+        },
+        "id": {
+            "$ref": "../common/uuid.json"
+        },
+        "inserted_at": {
+            "$ref": "../common/timestamp.json"
+        },
+        "legacy_id": {
+            "type": "integer"
+        },
+        "name": {
+            "type": "string"
+        },
+        "updated_at": {
+            "$ref": "../common/timestamp.json"
+        }
+    },
+    "required": [
+        "active",
+        "amount",
+        "amount_raised",
+        "ends_at",
+        "id",
+        "name"
+    ]
+}

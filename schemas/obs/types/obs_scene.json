@@ -1,0 +1,24 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"type": "object",
+	"additionalProperties": false,
+	"properties": {
+		"name": {
+			"type": "string"
+		},
+		"sources": {
+			"type": "array",
+			"items": {
+				"$ref": "obs_source.json"
+			}
+		}
+	},
+	"required": [
+		"name",
+		"sources"
+	],
+	"default": {
+		"name": "",
+		"sources": []
+	}
+}

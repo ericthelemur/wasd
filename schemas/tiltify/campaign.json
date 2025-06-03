@@ -1,0 +1,185 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "amount_raised": {
+      "$ref": "common/amount.json"
+    },
+    "avatar": {
+      "$ref": "common/image.json"
+    },
+    "cause_id": {
+      "$ref": "common/uuid.json"
+    },
+    "description": {
+      "type": "string"
+    },
+    "donate_url": {
+      "type": "string"
+    },
+    "fundraising_event_id": {
+      "$ref": "common/uuid.json"
+    },
+    "goal": {
+      "$ref": "common/amount.json"
+    },
+    "has_schedule": {
+      "type": "boolean"
+    },
+    "id": {
+      "$ref": "common/uuid.json"
+    },
+    "inserted_at": {
+      "$ref": "common/timestamp.json"
+    },
+    "legacy_id": {
+      "type": "integer"
+    },
+    "livestream": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "type"
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "original_goal": {
+      "$ref": "common/amount.json"
+    },
+    "published_at": {
+      "$ref": "common/timestamp.json"
+    },
+    "retired_at": {
+      "$ref": "common/timestamp-nullable.json"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "supporting_type": {
+      "type": "string"
+    },
+    "total_amount_raised": {
+      "$ref": "common/amount.json"
+    },
+    "updated_at": {
+      "$ref": "common/timestamp.json"
+    },
+    "url": {
+      "type": "string"
+    },
+    "user": {
+      "type": "object",
+      "properties": {
+        "avatar": {
+          "$ref": "common/image.json"
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "$ref": "common/uuid.json"
+        },
+        "legacy_id": {
+          "type": "integer"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "social": {
+          "type": "object",
+          "properties": {
+            "discord": {
+              "type": "string"
+            },
+            "facebook": {
+              "type": "string"
+            },
+            "instagram": {
+              "type": "string"
+            },
+            "snapchat": {
+              "type": "string"
+            },
+            "tiktok": {
+              "type": "string"
+            },
+            "twitch": {
+              "type": "string"
+            },
+            "twitter": {
+              "type": "string"
+            },
+            "website": {
+              "type": "string"
+            },
+            "youtube": {
+              "type": "string"
+            }
+          }
+        },
+        "total_amount_raised": {
+          "$ref": "common/amount.json"
+        },
+        "url": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "avatar",
+        "description",
+        "id",
+        "legacy_id",
+        "slug",
+        "social",
+        "total_amount_raised",
+        "url",
+        "username"
+      ]
+    },
+    "user_id": {
+      "$ref": "common/uuid.json"
+    }
+  },
+  "required": [
+    "amount_raised",
+    "avatar",
+    "cause_id",
+    "description",
+    "donate_url",
+    "fundraising_event_id",
+    "goal",
+    "has_schedule",
+    "id",
+    "inserted_at",
+    "legacy_id",
+    "livestream",
+    "name",
+    "original_goal",
+    "published_at",
+    "retired_at",
+    "slug",
+    "status",
+    "supporting_type",
+    "total_amount_raised",
+    "updated_at",
+    "url",
+    "user",
+    "user_id"
+  ]
+}

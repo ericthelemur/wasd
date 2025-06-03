@@ -1,0 +1,63 @@
+:root {
+    --transition-in-time: 0 !important;
+    --transition-out-time: 0 !important;
+}
+
+.h-0 {
+    height: 0 !important;
+}
+
+.w-0 {
+    width: 0 !important;
+}
+
+.person div.editable {
+    width: fit-content;
+}
+
+.accordion-body,
+.accordion-button {
+    padding: 0.5em;
+}
+
+
+.input-group-text {
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: hidden;
+    text-wrap: wrap;
+    text-wrap: stable;
+    text-align: left;
+    display: inline;
+}
+
+.input-group {
+    width: unset;
+    flex-wrap: nowrap;
+
+    & .input-group-text {
+        padding: 0.1em 0.5em;
+    }
+
+    & .btn {
+        padding: 0.1em 0.25em !important;
+    }
+}
+
+.fill {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.social-dropdown.show {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    z-index: 200000;
+}
+
+.pool {
+    min-height: 1em;
+}

@@ -1,0 +1,23 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "run": {
+            "oneOf": [
+                {
+                    "$ref": "../../../../nodecg-speedcontrol/schemas/reused/RunData.json"
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        }
+    },
+    "required": [
+        "name",
+        "run"
+    ]
+}

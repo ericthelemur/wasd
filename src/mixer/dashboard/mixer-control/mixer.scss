@@ -1,0 +1,31 @@
+.h-0 {
+    height: 0 !important;
+}
+
+.w-0 {
+    width: 0 !important;
+}
+
+.mute-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 1em !important;
+    margin: 1em 0 !important;
+}
+
+.mute-buttons>.btn {
+    padding: 2rem !important;
+    flex-grow: 1;
+}
+
+.mute-indicator {
+    padding: 2em 0 !important;
+}
+
+@media (max-width: 576px) {
+    .mute-buttons {
+        flex-wrap: nowrap;
+        flex-direction: column;
+    }
+}

@@ -10,115 +10,235 @@
   },
   "nodecg": {
     "compatibleRange": "^2.0.0",
-    "bundleDependencies": {
-      "nodecg-ticker-control": "*"
-    },
     "dashboardPanels": [
       {
-        "name": "countdown-control",
-        "title": "Countdown",
+        "name": "countdown",
+        "title": "Break Countdown",
         "width": 2,
-        "file": "countdown.dashboard.html",
+        "file": "countdown/dashboard/countdown/countdown.dashboard.html",
         "headerColor": "#525F78"
+      },
+      {
+        "name": "dono-reader",
+        "title": "Donation Reader",
+        "file": "donos/dashboard/reader/reader.graphic.html",
+        "fullbleed": true,
+        "headerColor": "#525F78"
+      },
+      {
+        "name": "mixer-control",
+        "title": "Mixer Control",
+        "width": 3,
+        "file": "mixer/dashboard/mixer-control/mixer.dashboard.html",
+        "headerColor": "#525F78"
+      },
+      {
+        "name": "mute-control",
+        "title": "Commentator Mute Control",
+        "width": 3,
+        "file": "mixer/dashboard/mute/mute.dashboard.html",
+        "headerColor": "#525F78"
+      },
+      {
+        "name": "obs-control",
+        "title": "OBS Control",
+        "width": 3,
+        "file": "obs/dashboard/obs-control/obscontrol.dashboard.html",
+        "headerColor": "#525F78"
+      },
+      {
+        "name": "people",
+        "title": "People",
+        "width": 3,
+        "file": "people/dashboard/people-control/people.dashboard.html",
+        "headerColor": "#525F78"
+      },
+      {
+        "name": "people-run",
+        "title": "People",
+        "width": 4,
+        "file": "people/dashboard/people-control/people.dashboard.html",
+        "workspace": "run modifications",
+        "headerColor": "#525F78"
+      },
+      {
+        "name": "ticker-control",
+        "title": "Ticker Control",
+        "fullbleed": true,
+        "file": "ticker/dashboard/ticker-control/tickercontrol.dashboard.html",
+        "headerColor": "#525F78"
+      },
+      {
+        "name": "scheduleadjuster",
+        "title": "Schedule Adjuster",
+        "width": 2,
+        "file": "wasd/dashboard/scheduleadjuster/schedule.dashboard.html",
+        "headerColor": "#525F78"
+      },
+      {
+        "name": "main",
+        "title": "Main",
+        "width": 3,
+        "file": "wasd/dashboard/main/main.dashboard.html",
+        "headerColor": "#FF0000"
+      },
+      {
+        "name": "editor",
+        "title": "Replicant Editor",
+        "width": 4,
+        "file": "dev/dashboard/dev.dashboard.html",
+        "headerColor": "#525F78",
+        "workspace": "ZZZ - Dev"
       }
     ],
     "graphics": [
       {
-        "file": "bar/bar.graphic.html",
+        "file": "wasd/graphics/bar/bar.graphic.html",
         "width": 1920,
         "height": 70,
         "singleInstance": false
       },
       {
-        "file": "background/background.graphic.html",
+        "file": "wasd/graphics/background/background.graphic.html",
         "width": 1920,
         "height": 1080,
         "singleInstance": false
       },
       {
-        "file": "overlay/RUN-1.html",
+        "file": "wasd/graphics/overlay/RUN-1.html",
         "width": 1920,
         "height": 1010,
         "singleInstance": true
       },
       {
-        "file": "overlay/RUN-2.html",
+        "file": "wasd/graphics/overlay/RUN-2.html",
         "width": 1920,
         "height": 1010,
         "singleInstance": true
       },
       {
-        "file": "overlay/RUN-RACE.html",
+        "file": "wasd/graphics/overlay/RUN-RACE.html",
         "width": 1920,
         "height": 1010,
         "singleInstance": true
       },
       {
-        "file": "overlay/RUN-BACKUP.html",
+        "file": "wasd/graphics/overlay/RUN-BACKUP.html",
         "width": 1920,
         "height": 1010,
         "singleInstance": true
       },
       {
-        "file": "break/BREAK.html",
+        "file": "wasd/graphics/break/BREAK.html",
         "width": 1920,
         "height": 1010,
         "singleInstance": false
       },
       {
-        "file": "overlay/COMMS.html",
+        "file": "wasd/graphics/comms/COMMS.html",
         "width": 1920,
         "height": 1010,
-        "singleInstance": false
+        "singleInstance": true
+      },
+      {
+        "file": "wasd/graphics/comms/COMMS-1.html",
+        "width": 1920,
+        "height": 1010,
+        "singleInstance": true
+      },
+      {
+        "file": "wasd/graphics/comms/COMMS-2.html",
+        "width": 1920,
+        "height": 1010,
+        "singleInstance": true
+      },
+      {
+        "file": "wasd/graphics/comms/COMMS-RACE.html",
+        "width": 1920,
+        "height": 1010,
+        "singleInstance": true
       }
     ]
   },
   "scripts": {
-    "start": "cd .. && npm run start",
-    "build": "cross-env-shell node ../wasd-common/shared/scripts/build.mjs $npm_package_name",
-    "watch": "npm run build -- --watch",
+    "start": "cd ../.. && node -r source-map-support/register --trace-uncaught index.js",
+    "build": "node scripts/build.mjs",
+    "watch": "npm run build -- --watch --browser",
     "clean": "npm run build -- --clean-only",
-    "types": "nodecg schema-types",
-    "nodemon": "nodemon --config ../wasd-common/shared/nodemon.json",
+    "types": "node scripts/types.mjs",
+    "nodemon": "nodemon --config scripts/nodemon.json",
     "dev": "concurrently --kill-others \"npm run watch -- --types\" \"npm run watch -- --browser\" \"npm run nodemon\""
   },
   "dependencies": {
+    "@parcel/config-default": "^2.12.0",
+    "@parcel/core": "^2.12.0",
+    "@parcel/reporter-cli": "^2.12.0",
+    "@parcel/resolver-glob": "^2.13.0",
+    "@parcel/transformer-sass": "2.12.0",
+    "@parcel/validator-typescript": "^2.12.0",
+    "chalk": "5.3.0",
     "clone": "^2.1.2",
+    "fs-extra": "11.2.0",
+    "get-current-line": "^7.4.0",
+    "json-edit-react": "^1.17.1",
+    "json-schema-defaults": "0.4.0",
+    "json-schema-to-typescript": "15.0.3",
+    "markdown-to-jsx": "^7.4.1",
+    "moment": "^2.30.0",
+    "obs-websocket-js": "^5.0.3",
+    "osc": "2.4.4",
+    "path-browserify": "^1.0.1",
     "react": "^18.2.0",
-    "react-beautiful-dnd": "^13.1.1",
+    "react-beautiful-dnd": "13.1.1",
     "react-bootstrap": "^2.9.1",
     "react-bootstrap-icons": "^1.10.3",
     "react-contenteditable": "^3.3.7",
     "react-css-transition-replace": "^5.0.1",
-    "react-dom": "^18.2.0",
+    "react-dom": "18.3.1",
     "react-fitty": "^1.0.1",
-    "markdown-to-jsx": "^7.4.1",
     "react-textfit": "git+http://github.com/ericthelemur/react-textfit.git",
+    "react-toastify": "^11.0.3",
     "react-transition-group": "^4.4.5",
+    "speedcontrol-util": "^0.6.1",
+    "tiltify-api-client": "^2.2.1",
+    "tiny-typed-emitter": "2.1.0",
     "ts-node": "^10.9.1",
-    "moment": "^2.30.0",
-    "use-nodecg": "github:ericthelemur/use-nodecg",
-    "nodecg-people-control": "1.0.0",
-    "nodecg-tiltify": "1.0.0",
-    "nodecg-dono-control": "1.0.0",
-    "nodecg-obs-control": "1.0.0",
-    "speedcontrol-util": "^0.6.1"
+    "use-nodecg": "github:ericthelemur/use-nodecg"
   },
   "devDependencies": {
     "@nodecg/types": "^2.0.0",
     "@types/clone": "^2.1.4",
-    "@types/node": "^18",
+    "@types/node": "^22.9.0",
     "@types/obs-studio": "^2.17.2",
-    "@types/react": "^18.2.0",
-    "@types/react-beautiful-dnd": "^13.1.7",
+    "@types/react": "18.3.12",
+    "@types/react-beautiful-dnd": "13.1.8",
     "@types/react-css-transition-replace": "^2.1.7",
-    "@types/react-dom": "^18.2.0",
+    "@types/react-dom": "18.3.1",
     "@types/react-textfit": "^1.1.4",
     "concurrently": "*",
-    "glob": "^10.2.7",
+    "cross-env": "*",
+    "glob": "^11.0.0",
     "nodemon": "*",
-    "typescript": "^5.1.3",
-    "cross-env": "*"
+    "typescript": "^5.1.3"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "@parcel/bundler-default": {
+    "minBundles": 1,
+    "minBundleSize": 3000,
+    "maxParallelRequests": 20,
+    "manualSharedBundles": [
+      {
+        "name": "vendor",
+        "root": "./shared.ts",
+        "assets": [
+          "**/*"
+        ],
+        "types": [
+          "js",
+          "ts"
+        ],
+        "split": 1
+      }
+    ]
+  }
 }

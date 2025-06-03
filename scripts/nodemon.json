@@ -1,0 +1,20 @@
+{
+    "watch": [
+        "src/*/extension/*",
+        "src/index.extension.ts",
+        "src/types/*"
+    ],
+    "exec": "node ./scripts/build.mjs -- --extension && npm run start",
+    "ext": "js,ts,json,yaml",
+    "delay": 500,
+    "ignoreRoot": [
+        ".git",
+        "node_modules",
+        ".nyc_output",
+        ".parcel-cache",
+        "coverage",
+        "extension",
+        "graphics",
+        "dashboard"
+    ]
+}

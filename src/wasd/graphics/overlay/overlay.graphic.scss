@@ -1,0 +1,48 @@
+* {
+    flex-shrink: 0;
+    flex-grow: 0;
+    min-width: 0;
+    min-height: 0;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: geometricPrecision;
+    color: white !important;
+}
+
+#root {
+    overflow: hidden;
+}
+
+.tabnum {
+    font-variant: tabular-nums;
+    -moz-font-feature-settings: "tnum";
+    -webkit-font-feature-settings: "tnum";
+    font-feature-settings: "tnum"
+}
+
+.text-wrap-balance {
+    text-wrap: balance;
+}
+
+.flex-gs {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+}
+
+.textfit {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.pa {
+    position: absolute;
+    inset: 0;
+}

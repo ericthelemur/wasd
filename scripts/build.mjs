@@ -6,7 +6,8 @@
 // Native
 import { fileURLToPath } from 'url';
 import { argv } from 'process';
-import { execSync } from 'child_process';
+import fsPromises from 'fs/promises';
+import fs from 'fs';
 
 // Packages
 import { glob } from 'glob';
@@ -14,14 +15,62 @@ import { Parcel } from '@parcel/core';
 import chokidar from 'chokidar';
 
 // Ours
-import pjson from '../package.json' assert { type: 'json' };
 import debounce from './debounce.mjs';
+import types from "./typesLib.mjs";
 
-const buildAll = argv.includes('--all');
-const buildExtension = argv.includes('--extension') || buildAll;
-const buildDashboard = argv.includes('--dashboard') || buildAll;
-const buildGraphics = argv.includes('--graphics') || buildAll;
-const buildSchemas = argv.includes('--schemas') || buildAll;
+
+// Parse cmd line flags
+function argParse(def) {
+  const buildAll = argv.includes('--all');
+  const buildDefault = def || argv.includes('--default');
+  const cleanOnly = argv.includes("--clean-only");
+  const buildBrowser = argv.includes('--browser');
+  const args = {
+    extension: argv.includes('--extension') || buildAll || buildDefault,
+    dashboard: argv.includes('--dashboard') || buildAll || buildDefault || buildBrowser,
+    graphics: argv.includes('--graphics') || buildAll || buildDefault || buildBrowser,
+    shared: argv.includes('--shared') || buildAll || buildDefault, // || buildBrowser,
+    schemas: argv.includes('--schemas') || argv.includes('--types') || buildAll,
+    nodeModules: argv.includes('--node-modules'),
+    production: argv.includes('--production'),
+  }
+  // If none provided, recall taking default
+  if (!Object.values(args).find(v => v)) return argParse(true);
+
+  const watch = argv.includes('--watch');
+  const clean = argv.includes('--clean');
+  // Log what is being built
+  const selected = Object.entries(args).filter(([k, v]) => v).map(([k, v]) => k).join(", ");
+  console.log(cleanOnly ? "Cleaning" : ((clean ? "Clean " : "") + (watch ? "Watching" : "Building")), selected);
+
+  return { ...args, watch: watch, clean: clean, all: buildAll, cleanOnly: cleanOnly };
+}
+
+const build = argParse(false);
+
+// Clean files, exit if clean only
+if (build.cleanOnly || build.clean) {
+  const promises = [];
+
+  function deleteDir(path) {
+    if (fs.existsSync(path)) {
+      promises.push(fsPromises.rm(path, { recursive: true }));
+    }
+  }
+
+  if (build.schemas) deleteDir("src/types/schemas");
+  if (build.extension) deleteDir("extension");
+  if (build.dashboard) deleteDir("dashboard");
+  if (build.shared) deleteDir("shared");
+  if (build.graphics) deleteDir("graphics");
+  if (build.all || build.nodeModules) deleteDir(".parcel-cache");
+  if (build.nodeModules) deleteDir("node_modules");
+
+  await Promise.all(promises);
+  console.log("Clean complete");
+  if (build.cleanOnly) process.exit(0);
+}
+
 
 const bundlers = new Set();
 const commonBrowserTargetProps = {
@@ -31,15 +80,15 @@ const commonBrowserTargetProps = {
   context: 'browser',
 };
 
-if (buildDashboard) {
+if (build.dashboard) {
   bundlers.add(
     new Parcel({
-      entries: glob.sync('src/dashboard/**/*.html'),
+      entries: glob.sync('src/*/dashboard/**/*.html'),
       targets: {
         default: {
           ...commonBrowserTargetProps,
-          distDir: 'dashboard',
-          publicUrl: `/bundles/${pjson.name}/dashboard`,
+          distDir: './dashboard',
+          publicUrl: `/bundles/wasd/dashboard`,
         },
       },
       defaultConfig: '@parcel/config-default',
@@ -49,19 +98,22 @@ if (buildDashboard) {
           resolveFrom: fileURLToPath(import.meta.url),
         },
       ],
+      validators: {
+        "*.{ts,tsx}": ["@parcel/validator-typescript"]
+      }
     }),
   );
 }
 
-if (buildGraphics) {
+if (build.graphics) {
   bundlers.add(
     new Parcel({
-      entries: glob.sync('src/graphics/**/*.html'),
+      entries: glob.sync('src/*/graphics/**/*.html'),
       targets: {
         default: {
           ...commonBrowserTargetProps,
-          distDir: 'graphics',
-          publicUrl: `/bundles/${pjson.name}/graphics`,
+          distDir: './graphics',
+          publicUrl: `/bundles/wasd/graphics`,
         },
       },
       defaultConfig: '@parcel/config-default',
@@ -71,14 +123,42 @@ if (buildGraphics) {
           resolveFrom: fileURLToPath(import.meta.url),
         },
       ],
+      validators: {
+        "*.{ts,tsx}": ["@parcel/validator-typescript"]
+      }
     }),
   );
 }
 
-if (buildExtension) {
+if (build.shared) {
   bundlers.add(
     new Parcel({
-      entries: 'src/extension/index.extension.ts',
+      entries: glob.sync('src/*/shared/**/*.html'),
+      targets: {
+        default: {
+          ...commonBrowserTargetProps,
+          distDir: './shared',
+          publicUrl: `/external`,
+        },
+      },
+      defaultConfig: '@parcel/config-default',
+      additionalReporters: [
+        {
+          packageName: '@parcel/reporter-cli',
+          resolveFrom: fileURLToPath(import.meta.url),
+        },
+      ],
+      validators: {
+        "*.{ts,tsx}": ["@parcel/validator-typescript"]
+      }
+    }),
+  );
+}
+
+if (build.extension) {
+  bundlers.add(
+    new Parcel({
+      entries: 'src/index.extension.ts',
       targets: {
         default: {
           context: 'node',
@@ -98,8 +178,8 @@ if (buildExtension) {
 }
 
 try {
-  if (argv.includes('--watch')) {
-    if (buildSchemas) {
+  if (build.watch) {
+    if (build.schemas) {
       watchSchemas();
     }
 
@@ -117,26 +197,28 @@ try {
 
     await Promise.all(watchPromises);
   } else {
-    if (buildSchemas) {
-      doBuildSchemas();
+    if (build.schemas) {
+      await doBuildSchemas();
     }
 
     const buildPromises = [];
     for (const bundler of bundlers.values()) {
-      buildPromises.push(bundler.run());
+      buildPromises.push(bundler.run()); //.then(({ bundleGraph, buildTime }) => console.log(`Built ${bundleGraph.getBundles().length} bundles`)));
     }
 
     await Promise.all(buildPromises);
   }
 
   console.log('Bundle build completed successfully');
-} catch (_) {
+} catch (e) {
+  // throw e;
   // the reporter-cli package will handle printing errors to the user
+  console.log(e);
   process.exit(1);
 }
 
-function doBuildSchemas() {
-  execSync('npm run build:schema');
+async function doBuildSchemas() {
+  await types();
   process.stdout.write(`🔧 Built Replicant schema types!\n`);
 }
 

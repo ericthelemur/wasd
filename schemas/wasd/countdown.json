@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "number"
+    },
+    "state": {
+      "enum": [
+        "paused",
+        "running",
+        "ended"
+      ]
+    }
+  },
+  "required": [
+    "value",
+    "state"
+  ],
+  "default": {
+    "value": 0,
+    "state": "ended"
+  }
+}

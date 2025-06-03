@@ -1,0 +1,9 @@
+.cam-border,
+.cam {
+    width: unset;
+    // height: 100%;
+}
+
+.cam-border:only-child {
+    height: 100%;
+}
