@@ -53,7 +53,7 @@ export function getSpeedControlUtil(): SpeedcontrolUtil {
 }
 
 export function buildSchemaPath(parent: string, schemaName: string) {
-    const p = path.resolve(process.cwd(), 'bundles', 'wasd', 'schemas', parent, `${encodeURIComponent(schemaName)}.json`);
+    const p = path.resolve(process.cwd(), 'bundles', 'wasd', 'src', parent, 'schemas', `${encodeURIComponent(schemaName)}.json`);
     return p;
 }
 
