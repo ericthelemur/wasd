@@ -1,7 +1,7 @@
-import { tripleState } from 'tiltify/extension/utils/mod';
 import Card from 'react-bootstrap/Card';
+import { tripleState } from 'tiltify/extension/utils/mod';
 
-import { dateFormat, DonoProp, formatAmounts, timeFormat } from '../utils';
+import { dateFormat, DonoProp, formatAmount, timeFormat } from '../utils';
 import { Buttons } from './buttons';
 import { Incentives } from './dono_incentives';
 import { approved, censored, read, shown, undecided, unread, unshown } from './icons';
@@ -11,7 +11,7 @@ function DonationTitle({ dono }: DonoProp) {
         <h2 className="h5 card-title">
             <span className="name">{dono.donor_name}</span>{" "}
             <span className="donated">donated</span>{" "}
-            <span className="amount">{formatAmounts(dono.amount, dono.displayAmount)}</span>
+            <span className="amount">{formatAmount(dono.amount)}</span>
         </h2>
     )
 }

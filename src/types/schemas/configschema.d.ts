@@ -12,11 +12,6 @@ export interface Configschema {
 	tiltify_webhook_id?: string;
 	tiltify_webhook_secret?: string;
 	tiltify_campaign_id?: string;
-	display_currency?: string;
-	/**
-	 * Key for currency API, uses hardcoded values as a fallback
-	 */
-	freecurrencyapi_key?: string;
 	/**
 	 * Delay between dono being recieved and auto approval, only if enabled
 	 */

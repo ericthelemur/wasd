@@ -34,7 +34,6 @@ export interface Donation {
 	shown: boolean;
 	read: boolean;
 	timeToApprove?: number;
-	displayAmount?: Amount;
 	/**
 	 * true = approved, false = censored or null = undecided
 	 */

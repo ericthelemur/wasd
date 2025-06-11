@@ -1,13 +1,13 @@
-import { Donation, Message, MsgRef, Pool, Queue } from 'types/schemas';
 import SpeedcontrolUtil from 'speedcontrol-util';
+import { RunData } from 'speedcontrol-util/types/speedcontrol';
+import { Donation, Message, MsgRef, Pool, Queue } from 'types/schemas';
 
 import { getNodeCG, getSpeedControlUtil } from '../../common/utils';
+import { formatAmount, formatTime } from '../../common/utils/formats';
+import { streamState } from '../../wasd/extension/replicants';
+import { sendTo } from '../messages';
 import { addToPool, deleteMessage, findMsgIDIndex } from './listeners';
 import { bank, pools, queue } from './replicants';
-import { RunData } from 'speedcontrol-util/types/speedcontrol';
-import { streamState } from '../../wasd/extension/replicants';
-import { formatAmount, formatAmounts, formatTime } from '../../common/utils/formats';
-import { sendTo } from '../messages';
 
 const nodecg = getNodeCG();
 
@@ -73,7 +73,7 @@ function upcoming() {
 }
 
 nodecg.listenFor("show-dono", (dono: Donation) => {
-    let msg = `Thanks ${dono.donor_name} for donating ${formatAmounts(dono.amount, dono.displayAmount)}!`;
+    let msg = `Thanks ${dono.donor_name} for donating ${formatAmount(dono.amount)}!`;
     if (dono.donor_comment) msg += " They say: " + dono.donor_comment;
     sendTo("addMessage", { pid: "queue", before: queue.value.msgs[0] ?? null, text: msg });
 })

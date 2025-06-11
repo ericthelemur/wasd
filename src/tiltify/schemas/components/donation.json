@@ -79,9 +79,6 @@
     "timeToApprove": {
       "type": "integer"
     },
-    "displayAmount": {
-      "$ref": "../common/amount.json"
-    },
     "modStatus": {
       "description": "true = approved, false = censored or null = undecided",
       "type": [

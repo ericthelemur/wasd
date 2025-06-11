@@ -1,5 +1,5 @@
-import { isEmpty } from './utils';
 import { getNodeCG } from '../../common/utils';
+import { isEmpty } from './utils';
 
 export let WEBHOOK_MODE = true;
 
@@ -33,5 +33,4 @@ if (valid) {
 	// Then load everything else
 	require("./tiltifyHandlers");
 	require("./messages");
-	require("./utils/currency");
 }

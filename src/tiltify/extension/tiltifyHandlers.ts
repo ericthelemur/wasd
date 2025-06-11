@@ -1,16 +1,14 @@
-import TiltifyClient from "tiltify-api-client";
 import { NextFunction } from 'express';
-import { Request, Response } from "express-serve-static-core";
-import { createHmac } from "node:crypto";
+import { Request, Response } from 'express-serve-static-core';
+import { createHmac } from 'node:crypto';
 import { EventEmitter } from 'node:stream';
+import TiltifyClient from 'tiltify-api-client';
+
+import { getNodeCG } from '../../common/utils';
+import { WEBHOOK_MODE } from './index.extension';
+import * as rep from './utils/replicants';
 
 import type { Alldonations, Campaign, Donation, Donations, Donors, Milestones, Polls, Rewards, Schedule, Targets } from 'types/schemas/tiltify';
-import { WEBHOOK_MODE } from './index.extension';
-import { getNodeCG } from '../../common/utils';
-import { convertValue } from './utils/currency';
-import * as rep from "./utils/replicants";
-
-
 const nodecg = getNodeCG();
 export const tiltifyEmitter = new EventEmitter();
 
@@ -25,7 +23,6 @@ function pushUniqueDonation(donation: Donation) {
         donation.read = false;
         donation.shown = false;
         donation.modStatus = null;
-        convertValue(donation);
         tiltifyEmitter.emit("new-donation", donation);
         rep.donations.value.push(donation);
     }
