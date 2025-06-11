@@ -47,10 +47,11 @@ function config() {
 
 
 // Generate schema for a subdir
+// TODO: Also copy schemas to extensions/schemas and reference from there
 function action(inDir) {
     console.log(inDir);
     const processCwd = process.cwd();
-    const schemasDir = path.resolve(processCwd, `schemas/${inDir}`);
+    const schemasDir = path.resolve(processCwd, "src", inDir, "schemas");
     if (!fs.existsSync(schemasDir)) {
         console.error(chalk.red('Error:') + ' Input directory ("%s") does not exist', inDir);
         return;
@@ -106,11 +107,12 @@ function action(inDir) {
 export default function main() {
     // Build definitions for all sub dirs
     const processCwd = process.cwd();
-    const schemasDir = path.resolve(processCwd, 'schemas');
+    const srcDir = path.resolve(processCwd, 'src');
+    const hasSchemas = (dirent) => fs.existsSync(path.join(srcDir, dirent.name, "schemas"));
 
-    const promises = fs.readdirSync(schemasDir, { withFileTypes: true })
-        .filter(dirent => dirent.isDirectory())
-        .map(dirent => action(dirent.name));
+    const promises = fs.readdirSync(srcDir, { withFileTypes: true })
+        .filter(dirent => dirent.isDirectory() && dirent.name != "types" && hasSchemas(dirent))
+        .map(dirent => action(dirent.name))
 
     // Build config definition
     promises.push(config());
