@@ -1,17 +1,15 @@
-import { ListenerTypes } from '../messages';
+import fsPromises from 'fs/promises';
 import getCurrentLine from 'get-current-line';
 import OBSWebSocket, { OBSRequestTypes } from 'obs-websocket-js';
+import path from 'path';
 import {
-    ObsLogin, Namespaces, ObsScene, ObsSource, ObsStatus, PreviewScene, ProgramScene, SceneList
+    Namespaces, ObsLogin, ObsScene, ObsSource, ObsStatus, PreviewScene, ProgramScene, SceneList
 } from 'types/schemas/obs';
 
 import NodeCG from '@nodecg/types';
 
-import { listenTo, sendTo } from '../messages';
-import { Replicant, PrefixedReplicant, getNodeCG, getSpeedControlUtil } from '../../common/utils';
-import path from 'path';
-import fsPromises from 'fs/promises';
-import { RunDataActiveRun, RunFinishTimes } from 'speedcontrol-util/types/speedcontrol';
+import { getSpeedControlUtil, PrefixedReplicant, Replicant } from '../../common/utils';
+import { ListenerTypes, listenTo, sendTo } from '../messages';
 
 type PreTransitionProps = ListenerTypes["transition"];
 export interface Hooks {
@@ -199,8 +197,14 @@ export class OBSUtility extends OBSWebSocket {
 
     private _replicantListeners() {
         this.on("SceneListChanged", ({ scenes }) => this._updateSceneList(scenes as { sceneName: string }[]));
-        this.on("CurrentPreviewSceneChanged", (name) => this._updateSceneItems(this.replicants.previewScene, name.sceneName));
-        this.on("CurrentProgramSceneChanged", (name) => this._updateSceneItems(this.replicants.programScene, name.sceneName));
+        this.on("SceneItemCreated", ({ sceneName }) => this._updateSceneItems(this.replicants.sceneList, sceneName, sceneName));
+        this.on("SceneItemRemoved", ({ sceneName }) => this._updateSceneItems(this.replicants.sceneList, sceneName, sceneName));
+        this.on("SceneItemTransformChanged", ({ sceneName }) => this._updateSceneItems(this.replicants.sceneList, sceneName, sceneName));
+
+        this.on("CurrentPreviewSceneChanged", ({ sceneName }) => this._updateSceneItems(this.replicants.previewScene, sceneName));
+        this.on("CurrentProgramSceneChanged", ({ sceneName }) => this._updateSceneItems(this.replicants.programScene, sceneName));
+
+
         // Clear or set preview on studio mode set or unset
         this.on("StudioModeStateChanged", ({ studioModeEnabled }) => {
             this.replicants.obsStatus.value.studioMode = studioModeEnabled;
@@ -237,27 +241,32 @@ export class OBSUtility extends OBSWebSocket {
     }
 
     private _updateSceneList(scenes: { sceneName: string }[]) {
-        Promise.all(scenes.map(s =>
-            this._tryCallOBS("GetSceneItemList", { sceneName: s.sceneName })
-                .then((d) => ({ name: s.sceneName, sources: d.sceneItems } as unknown as ObsScene))
-        )).then(r =>
-            this.replicants.sceneList.value = r
-        ).catch((err) => this.ackError(undefined, "Error updating scene list", err));
+        Promise.all(scenes.map(s => this._fetchSceneInfo(s.sceneName)))
+            .then(r => this.replicants.sceneList.value = r)
+            .catch((err) => this.ackError(undefined, "Error updating scene list", err));
         return scenes;
     }
 
-    private _updateSceneItems(replicant: NodeCG.ServerReplicantWithSchemaDefault<PreviewScene>, sceneName: string) {
+    private _updateSceneItems(replicant: NodeCG.ServerReplicantWithSchemaDefault<PreviewScene | ObsScene[]>, sceneName: string, child?: string) {
         if (!sceneName) replicant.value = null;
         else {
-            this._tryCallOBS("GetSceneItemList", { sceneName: sceneName }).then(items => {
-                replicant.value = {
-                    name: sceneName,
-                    sources: items.sceneItems as unknown as ObsSource[]
+            this._fetchSceneInfo(sceneName).then(v => {
+                if (!child) replicant.value = v;
+                else {  // If passed in list, overwrite child with data
+                    let scene = (replicant.value as ObsScene[]).find(s => s.name == child);
+                    if (scene) scene.sources = v.sources;
+                    else (replicant.value as ObsScene[]).push(v);
                 }
-                return items;
-            }).catch(err => this.ackError(undefined, `Error updating ${replicant.name} scene:`, err));
+            })
+                .catch(err => this.ackError(undefined, `Error updating ${replicant.name} scene:`, err));
         }
     }
+
+    private _fetchSceneInfo(sceneName: string): Promise<ObsScene> {
+        return this._tryCallOBS("GetSceneItemList", { sceneName: sceneName })
+            .then(items => ({ name: sceneName, sources: items.sceneItems as unknown as ObsSource[] }))
+    }
+
 
     private _updateStatus() {
         return Promise.all([
@@ -270,6 +279,12 @@ export class OBSUtility extends OBSWebSocket {
 
     private async _tryCallOBS<Type extends keyof OBSRequestTypes>(requestType: Type, requestData?: OBSRequestTypes[Type], ack?: NodeCG.Acknowledgement, errMsg?: string, catchF?: (e: any) => {}) {
         this.log.info("Calling", requestType, "with", requestData);
+        if (this.replicants.obsStatus.value.connection != "connected") {
+            if (catchF) catchF("OBS is not connected");
+            this.ackError(ack, `Error calling ${requestType}: OBS is not connected`, null);
+            throw new Error("OBS is not connected");
+        }
+
         return this.call(requestType, requestData).then((res) => {
             if (ack && !ack.handled) ack();
             return res;
@@ -398,16 +413,21 @@ export class OBSUtility extends OBSWebSocket {
 
         // Recording Listeners
         listenTo("startRecording", (_, ack) => {
-            if (this.replicants.obsStatus.value.controlRecording) {
+            if (!this.replicants.obsStatus.value.controlRecording) this.ackError(ack, "Error starting recording:", "Recording Control is disabled")
+            else if (this.replicants.obsStatus.value.connection != "connected") this.ackError(ack, "Error starting recording:", "OBS is disconnected")
+            else if (this.replicants.obsStatus.value.recording) this.ackError(ack, "Error starting recording:", "Recording is already in progress")
+            else {
                 this.log.info("Starting Recording");
-                this._tryCallOBS("StartRecord", undefined, ack).catch(err => this.ackError(ack, 'Error starting recording:', err));
-            } else {
-                this.ackError(ack, 'Error starting recording:', "Recording Control is Disabled");
+                this._tryCallOBS("StartRecord", undefined, ack)
+                    .catch(err => this.ackError(ack, "Error starting recording:", err));
             }
         });
 
         listenTo("stopRecording", (_, ack) => {
-            if (this.replicants.obsStatus.value.controlRecording) {
+            if (!this.replicants.obsStatus.value.controlRecording) this.ackError(ack, "Error stopping recording:", "Recording Control is disabled")
+            else if (this.replicants.obsStatus.value.connection != "connected") this.ackError(ack, "Error stopping recording:", "OBS is disconnected")
+            else if (!this.replicants.obsStatus.value.recording) this.ackError(ack, "Error stopping recording:", "Recording is already stopped")
+            else {
                 this._tryCallOBS("StopRecord", undefined, ack).then(({ outputPath }) => {
                     // Rename OBS output to include run
                     const newFilename = getFilename();
@@ -419,8 +439,6 @@ export class OBSUtility extends OBSWebSocket {
                         .then(() => this.log.info(`Renamed ${outputPath} to ${targetPath}`))
                         .catch((e) => this.log.error(`Error renaming ${outputPath} to ${targetPath}: ${e}`)), 5000);
                 }).catch(err => this.ackError(undefined, 'Error stopping recording:', err));
-            } else {
-                this.ackError(ack, 'Error starting recording:', "Recording Control is Disabled");
             }
         });
 

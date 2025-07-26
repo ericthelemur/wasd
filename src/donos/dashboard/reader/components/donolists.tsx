@@ -2,7 +2,7 @@ import { APPROVED, CENSORED, UNDECIDED } from 'tiltify/extension/utils/mod';
 import { Alldonations, Basedono, Donation, Donations, Donor, Donors } from 'types/schemas/tiltify';
 import { useReplicant } from 'use-nodecg';
 
-import { formatAmounts } from '../utils';
+import { formatAmount } from '../utils';
 import { Donation as DonationComponent } from './donation';
 import { SortSettings } from './settings';
 
@@ -148,7 +148,7 @@ function DonorComp(props: DonorProps) {
 				<h2 className="h5 card-title d-inline">
 					<span className="name">{name}</span>{" "}
 					<span className="donated">donated</span>{" "}
-					<span className="amount">{formatAmounts({ currency: dispCurr, value: total }, undefined)}</span>{" "}
+					<span className="amount">{formatAmount({ currency: dispCurr, value: total })}</span>{" "}
 					<span className="donated">(in {donations.length} dono{donations.length == 1 ? "" : "s"})</span>
 
 				</h2>
@@ -195,7 +195,7 @@ function DonorSimpleComp({ donor, index }: { donor: Donor, index: number }) {
 			<span className="donated tabnum">#{index + 1}.</span>{" "}
 			<span className="name">{donor!.name}</span>{" "}
 			<span className="donated">donated</span>{" "}
-			<span className="amount">{formatAmounts(donor!.amount, undefined)}</span>
+			<span className="amount">{formatAmount(donor!.amount)}</span>
 		</h2>
 	</div>
 }
