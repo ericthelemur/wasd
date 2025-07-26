@@ -1,35 +1,30 @@
 import '../../../common/uwcs-bootstrap.css';
 
-import { duration } from 'moment';
-import React, { FormEvent, useEffect, useRef, useState } from 'react';
+import clone from 'clone';
+import { msToTimeString } from 'countdown/utils';
+import { FormEvent, useState } from 'react';
 import {
-    ArrowCounterclockwise, BrushFill, Controller, Link45deg, PauseFill, PenFill, PlayFill, SendFill
+    ArrowCounterclockwise, BrushFill, Controller, PlayFill, RecordFill, Wifi
 } from 'react-bootstrap-icons';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
-import FloatingLabel from 'react-bootstrap/FloatingLabel';
-import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
-import Modal from 'react-bootstrap/Modal';
+import Stack from 'react-bootstrap/Stack';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import { createRoot } from 'react-dom/client';
-import { Configschema, ConnStatus, Countdown, StreamState, XrStatus } from 'types/schemas';
-import { useReplicant } from 'use-nodecg';
-import { RecordFill, Wifi } from 'react-bootstrap-icons';
-import Stack from 'react-bootstrap/Stack';
-
-import { sendTo } from '../../messages';
-import { sendTo as sendToOBS } from '../../../obs/messages';
-import { sendTo as sendToCountdown } from '../../../countdown/messages';
-import { PreviewScene, ProgramScene, ObsStatus } from 'types/schemas';
-import { Timer } from 'speedcontrol-util/types/speedcontrol/schemas/timer';
-import type NodeCG from '@nodecg/types';
-import { RunData, RunDataActiveRun, RunDataArray, RunFinishTimes } from 'speedcontrol-util/types/speedcontrol';
-import { msToTimeString } from 'countdown/utils';
+import { RunData, RunDataActiveRun, RunDataArray } from 'speedcontrol-util/types/speedcontrol';
 import { RunDataActiveRunSurrounding } from 'speedcontrol-util/types/speedcontrol/schemas';
-import clone from 'clone';
+import { Timer } from 'speedcontrol-util/types/speedcontrol/schemas/timer';
+import {
+    ConnStatus, Countdown, ObsStatus, PreviewScene, ProgramScene, StreamState, XrStatus
+} from 'types/schemas';
+import { useReplicant } from 'use-nodecg';
 
+import { sendTo as sendToCountdown } from '../../../countdown/messages';
+import { sendTo as sendToOBS } from '../../../obs/messages';
+
+import type NodeCG from '@nodecg/types';
 declare const nodecg: NodeCG.ServerAPI;
 
 function OBSStatus({ status }: { status?: ConnStatus }) {
@@ -237,6 +232,7 @@ function CountdownRow() {
         <Button className="flex-grow-1" variant={going ? "outline-primary" : "primary"} onClick={playPauseCountdown}>{going ? "Pause" : "Play"} Countdown</Button>
         <InputGroup.Text className={going ? "text-danger" : ""}>{msToTimeString(countdown.value)}</InputGroup.Text>
         <Button variant="outline-primary" style={{ flexGrow: 0 }} onClick={(e) => { e.preventDefault(); sendToCountdown("countdown.add", 60 * 1000); }}>+1m</Button>
+        <Button variant="outline-primary" style={{ flexGrow: 0 }} onClick={(e) => { e.preventDefault(); sendToCountdown("countdown.reset"); }}><ArrowCounterclockwise /></Button>
     </InputGroup>
 }
 
@@ -252,7 +248,6 @@ function BreakControls({ goToScene, programScene, controlRecording }: ControlPag
             setState({ ...state, state: "INTRO" });
             goToScene("COMMS");
             nodecg.sendMessageToBundle("changeToNextRun", "nodecg-speedcontrol");
-            controlRecording && obsStatus?.connection == "connected" && sendToOBS("startRecording");
         }}
         >Intro Phase (Scene COMMS{controlRecording && "; Rec start"})</Button>
     </div>
@@ -267,11 +262,7 @@ function IntroControls({ lastScene, goToScene, programScene, controlRecording, c
         <Button disabled={programScene == "COMMS"} variant="outline-primary" onClick={() => goToScene("COMMS")}>Scene COMMS (no runner)</Button>
         <Button disabled={programScene == `COMMS-${t}`} onClick={() => goToScene(`COMMS-${t}`)}>Scene COMMS-{t} (no game)</Button>
         <Button variant="primary" onClick={() => { setState({ ...state, state: "RUN" }); goToScene(`RUN-${t}`); }}>RUN Phase (Scene RUN-{t})</Button>
-        <Button variant="outline-primary" onClick={() => {
-            controlRecording && obsStatus?.connection == "connected" && obsStatus?.recording && sendToOBS("stopRecording");
-            setState({ ...state, state: "BREAK" });
-            goToScene("BREAK");
-        }}>Back to BREAK Phase (Scene BREAK{controlRecording && "; Rec stop"})</Button>
+        <Button variant="outline-primary" onClick={() => { setState({ ...state, state: "BREAK" }); goToScene("BREAK"); }}>Back to BREAK Phase (Scene BREAK{controlRecording && "; Rec stop"})</Button>
     </div>
 }
 
