@@ -44,9 +44,10 @@ async function drawKey(loupedeck: LoupedeckDevice, index: number, content: CellC
     let ctx = canvas.getContext('2d');
 
     // Fill background
-    ctx.fillStyle = content.bg || "darkgrey";
+    ctx.fillStyle = content.bg || "#222222";
     ctx.fillRect(0, 0, w, w);
 
+    // Load and convert SVG to coloured base64 URL
     let img;
     if (content.imgType && content.img) {
         let imgStr = content.img;
@@ -65,11 +66,10 @@ async function drawKey(loupedeck: LoupedeckDevice, index: number, content: CellC
         }
 
     }
-    const heightMultiplier = content.text && img ? 0.5 : 1.0;   // If both, split display
+    const heightMultiplier = content.text && img ? 0.5 : 1.0;   // If both text & image, split display 50/50
     const padding = 3;
 
     if (img) {  // Draw image if present
-        console.log(img?.width, img?.height);
         img.width = w * heightMultiplier - 2 * padding;
         img.height = w * heightMultiplier - 2 * padding;
 
@@ -77,16 +77,19 @@ async function drawKey(loupedeck: LoupedeckDevice, index: number, content: CellC
     }
 
     if (content.text) { // Draw text if present
+        // Split into lines, then wrap each line into 15 chars max
+        // Mark new lines with \n at start, wrapped lines do not (for limiting font size later)
         let lines = content.text.split("\n");
-        lines = lines.flatMap(l => l.match(/.{1,15}/g) || []);  // Break lines at 15 chars
-        // wrap?
+        lines = lines.flatMap(l => ("\n" + l).match(/\n?.{1,15}/g) || []);  // Break lines at 15 chars
 
         const top = (1 - heightMultiplier) * canvas.height;
         const lineHeight = Math.floor((heightMultiplier * canvas.height - 2 * padding) / lines.length);
-        const config: Partial<DrawOptions> = { minSize: 5, maxSize: 200, vAlign: 'center', hAlign: 'center', fitMethod: 'box', textFillStyle: content.colour || "white" };
 
+        // Render each line
         lines.forEach((l, i) => {
-            drawText(ctx as any, l, titleFont,
+            // Reduce font size for wrapped lines - avoids trailing line being large font
+            const config: Partial<DrawOptions> = { minSize: 5, maxSize: l.startsWith("\n") ? 25 : 10, vAlign: 'center', hAlign: 'center', fitMethod: 'box', textFillStyle: content.colour || "white" };
+            drawText(ctx as any, l.trim(), titleFont,
                 {
                     x: padding,
                     y: top + i * lineHeight + padding,
