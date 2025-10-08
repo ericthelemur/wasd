@@ -5,10 +5,12 @@ import { endianness } from 'os';
 import { BackpackFill } from 'react-bootstrap-icons';
 
 import {
-    listLoupedecks, LoupedeckBufferFormat, LoupedeckDevice, LoupedeckDisplayId, openLoupedeck
+    listLoupedecks, LoupedeckBufferFormat, LoupedeckControlInfo, LoupedeckControlType,
+    LoupedeckDevice, LoupedeckDisplayId, LoupedeckTouchEventData, openLoupedeck
 } from '@loupedeck/node';
 
 import { getNodeCG } from '../../common/utils';
+import { sendTo } from '../messages';
 
 const log = new (getNodeCG().Logger)("Loupedeck");
 
@@ -16,7 +18,8 @@ async function connect() {
     let myLoupedeck: LoupedeckDevice | null = null;
     let tryCount = 6;
     while (!myLoupedeck) {
-        const loupedecks = await listLoupedecks()
+        const loupedecks = await listLoupedecks();
+        console.log(loupedecks);
         if (loupedecks && loupedecks.length > 0) {
             const ld = await openLoupedeck(loupedecks[0].path)
                 .catch((err) => console.error("Failed connecting to Loupedeck", err));
@@ -108,26 +111,50 @@ async function drawKey(loupedeck: LoupedeckDevice, index: number, content: CellC
         .catch(e => log.error("Error drawing Loupedeck key", e));
 }
 
+const nodecg = getNodeCG();
 function demo() {
     let ld: LoupedeckDevice | null;
     connect().then(async (myLoupedeck) => {
+        console.log("Connected to Loupedeck")
         ld = myLoupedeck;
-        myLoupedeck.blankDevice(true, true);
-        myLoupedeck.on('down', (info) => {
+        myLoupedeck.blankDevice(true, true).catch(e => log.error("Error blanking device", e));
+
+        myLoupedeck.on('down', (info: LoupedeckControlInfo) => {
             log.info('control down', info)
+            if (info.type == LoupedeckControlType.Button) {
+                sendTo("loupedeck.buttonDown", { button: info.index });
+            } else {
+                sendTo("loupedeck.knobDown", { knob: info.index })
+            }
         })
 
         myLoupedeck.on('up', (info) => {
-            log.info('control up', info)
+            log.info('control up', info);
+            if (info.type == LoupedeckControlType.Button) {
+                sendTo("loupedeck.buttonUp", { button: info.index });
+            } else {
+                sendTo("loupedeck.knobUp", { knob: info.index })
+            }
         })
 
         myLoupedeck.on('rotate', (info, delta) => {
             log.info('control rotate', info, delta)
+            if (info.type != LoupedeckControlType.Rotary) return;
+            sendTo("loupedeck.knobRotate", { knob: info.index, amount: delta });
         })
 
-        myLoupedeck.on("touchend", (info) => {
-            log.info("touch end", JSON.stringify(info.changedTouches))
-        })
+        function screenTouch(info: LoupedeckTouchEventData, isStart: boolean) {
+            log.info("touch", isStart ? "start" : "end", JSON.stringify(info.changedTouches))
+            info.changedTouches.forEach((press) => {
+                if (press.x < 0 || press.y < 0) return;
+                if (ld && (press.x > ld.displayMain.width || press.y > ld.displayMain.height)) return;
+                if (press.target.key === undefined) return;
+
+                sendTo(isStart ? "loupedeck.screenDown" : "loupedeck.screenUp", { key: press.target.key });
+            })
+        }
+        myLoupedeck.on("touchstart", info => screenTouch(info, true));
+        myLoupedeck.on("touchend", info => screenTouch(info, false));
 
         myLoupedeck.on('error', (error) => {
             log.error(error)
@@ -148,15 +175,14 @@ function demo() {
         // drawKey(myLoupedeck, 13, "Test Text", svg).catch(e => log.error("Error drawing key", e));
     });
 
-    function handler() {
+    getNodeCG().addListener("serverStopping", () => {
         if (ld) {
-            log.info("Disconnecting from Loupedeck")
-            ld.close();
-        }
-    }
+            console.log("Disconnecting from LD");
+            ld.blankDevice(true, true).catch(() => { });
+            ld.close().catch(() => { });
 
-    [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach((eventType) => {
-        process.on(eventType, handler);
+            (ld as any).connection.close().catch(() => { });
+        }
     });
 }
 
