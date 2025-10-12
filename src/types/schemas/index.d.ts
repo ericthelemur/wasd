@@ -3,6 +3,8 @@ export * from './common';
 // @ts-ignore
 export * from './donos';
 // @ts-ignore
+export * from './loupedeck';
+// @ts-ignore
 export * from './mixer';
 // @ts-ignore
 export * from './obs';

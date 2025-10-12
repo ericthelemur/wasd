@@ -7,6 +7,7 @@
     "exec": "node ./scripts/build.mjs -- --extension && npm run start",
     "ext": "js,ts,json,yaml",
     "delay": 500,
+    "signal": "SIGINT",
     "ignoreRoot": [
         ".git",
         "node_modules",

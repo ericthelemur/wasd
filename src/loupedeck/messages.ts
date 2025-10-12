@@ -1,18 +1,21 @@
-import { createMessageListeners } from '../common/messages';
+import { createMessageListenersBundle } from '../common/messages';
+import { LoupeLogin } from '../types/schemas';
 
-type ListenerTypes = {
-    "loupedeck.connect": undefined,
-    "loupedeck.disconnect": undefined,
+export type ListenerTypes = {
+    "connect": Partial<LoupeLogin>,
+    "disconnect": undefined,
 
-    "loupedeck.screenDown": { key: number },
-    "loupedeck.screenUp": { key: number },
+    "screenDown": { key: number },
+    "screenUp": { key: number },
 
-    "loupedeck.buttonDown": { button: number },
-    "loupedeck.buttonUp": { button: number },
+    "buttonDown": { button: number },
+    "buttonUp": { button: number },
 
-    "loupedeck.knobRotate": { knob: number, amount: number },
-    "loupedeck.knobDown": { knob: number },
-    "loupedeck.knobUp": { knob: number },
+    "knobRotate": { knob: number, amount: number },
+    "knobDown": { knob: number },
+    "knobUp": { knob: number },
 }
 
-export const { sendTo, sendToF, listenTo } = createMessageListeners<ListenerTypes>();
+const listeners = createMessageListenersBundle<ListenerTypes>("loupedeck");
+export default listeners;
+export const { listenTo, sendTo, sendToF } = listeners;
