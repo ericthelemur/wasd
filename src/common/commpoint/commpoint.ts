@@ -22,13 +22,14 @@ export abstract class CommPoint<
     R extends Replicants<S, L>
 > {
     protected namespace: string;
-    protected reconnectInterval = 10;
     protected nodecg = getNodeCG();
     public log: NodeCG.Logger;
 
     public replicants: R;
     protected listeners: ListenersT<M>;
 
+    protected reconnectInterval = 1;
+    protected retryPeriod: number = -1;
     protected _reconnectInterval: NodeJS.Timeout | undefined = undefined;
 
 
@@ -54,7 +55,7 @@ export abstract class CommPoint<
         this.replicants.status.once('change', newVal => {
             // If we were connected last time, try connecting again now.
             if (newVal && (newVal.connected === 'connected' || newVal.connected === 'connecting')) {
-                this.listeners.sendTo("connect", {});
+                this.reconnect();
             }
         });
 
@@ -63,35 +64,61 @@ export abstract class CommPoint<
         this._checkConnectionPoll();
     }
 
-    protected async _connectInternal() {
+    protected stopRetry() {
+        this.retryPeriod = 0;
+        if (this._reconnectInterval) {
+            clearInterval(this._reconnectInterval);
+            this._reconnectInterval = undefined;
+        }
+    }
+
+
+    async connect(isRetry: boolean = false) {
         let err: string | null = null;
         await this._connect().then(() => {
+            this.stopRetry();
             this.replicants.status.value.connected = "connected";
             this.log.info("Successfully connected");
             this._setupListeners().catch((e) => this.log.error("Error creating listeners", e));
             err = null;
         }).catch((e) => {
-            this.replicants.status.value.connected = "error";
-            this.log.error("Error connecting", e);
+            if (!isRetry) {
+                this.replicants.status.value.connected = "error";
+                this.log.error("Error connecting", e);
+            }
             err = "Error connecting " + e;
         });
         return err;
     }
 
+    async disconnect() {
+        this.stopRetry();
+
+        let err: string | null = null;
+        await this._disconnect().then(() => {
+            this.replicants.status.value.connected = "disconnected";
+            this.log.info("Successfully disconnected");
+            err = null;
+        }).catch((e) => {
+            this.replicants.status.value.connected = "error";
+            this.log.error("Error disconnecting", e);
+            err = "Error disconnecting " + e;
+        });
+        return err;
+    }
+
+
     protected async _connectHandler(params: M["connect"], ack: NodeCG.Acknowledgement | undefined) {
         // Handle instruction to connect
 
-        if (this._reconnectInterval) {
-            clearInterval(this._reconnectInterval);
-            this._reconnectInterval = undefined;
-        }
+        this.stopRetry();
 
         this.log.info("Starting connection...");
         this.replicants.status.value.connected = "connecting";
 
         this.replicants.login.value = { ...this.replicants.login.value, ...params };
 
-        await this._connectInternal().then((err) => {
+        await this.connect().then((err) => {
             if (ack && !ack.handled) ack(err);
         })
     }
@@ -100,19 +127,9 @@ export abstract class CommPoint<
         // Handle instruction to disconnect
 
         this.log.info("Starting disconnect...");
-        if (this._reconnectInterval) {
-            clearInterval(this._reconnectInterval);
-            this._reconnectInterval = undefined;
-        }
-
-        this._disconnect().then(() => {
-            this.replicants.status.value.connected = "disconnected";
-            this.log.info("Successful requested disconnected");
-        }).catch((e) => {
-            this.replicants.status.value.connected = "error";
-            this.log.error("Error disconnecting", e);
-            sendError(ack, "Error disconnecting " + e);
-        });
+        await this.disconnect().then(err => {
+            if (ack && !ack.handled) ack(err);
+        })
     }
 
     protected _checkConnectionPoll() {
@@ -121,18 +138,29 @@ export abstract class CommPoint<
             if (this.replicants.status.value.connected == "connected") {
                 const connected = await this.isConnected();
                 if (!connected) {
-                    this._reconnect();
+                    await this._disconnect();
+                    this.reconnect();
                 }
             }
         }, 10 * 1000);
     }
 
-    private _reconnect() {
+    protected reconnect() {
         // If unexpectedly disconnected, attempt reconnection every reconnectInterval seconds
         if (this._reconnectInterval) return;
 
         this.replicants.status.value.connected = "connecting";
-        this.log.warn(`Attempting reconnection every ${this.reconnectInterval}s.`);
-        this._reconnectInterval = setInterval(this._connectInternal, this.reconnectInterval * 1000);
+        this.retryPeriod = this.reconnectInterval;
+        this._reconnectInterval = setTimeout(() => this._reconnect(), this.retryPeriod * 1000);
+    }
+
+    protected async _reconnect() {
+        this.log.warn(`Retrying ${this.namespace} connection`);
+        const err = await this.connect();
+        if (err) {
+            this.log.warn(`Retrying connection again in ${this.retryPeriod}s`);
+            this.retryPeriod *= 2;
+            this._reconnectInterval = setTimeout(() => this._reconnect(), this.retryPeriod * 1000);
+        }
     }
 }

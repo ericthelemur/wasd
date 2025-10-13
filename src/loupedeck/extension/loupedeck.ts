@@ -41,32 +41,32 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeStatus, LoupeLogin,
         if (this.loupedeck) await this.loupedeck.close().catch((e) => this.log.warn("Error closing", e));
         this.loupedeck = null;
 
-        let tryCount = 6;
-        while (tryCount > 0) {
-            let path;
-            if (this.replicants.login.value.path) {
-                path = this.replicants.login.value.path;
+        // let tryCount = 6;
+        // while (tryCount > 0) {
+        let path;
+        if (this.replicants.login.value.path) {
+            path = this.replicants.login.value.path;
+        } else {
+            const loupedecks = await listLoupedecks();
+            if (loupedecks && loupedecks.length > 0) {
+                path = loupedecks[0].path;
             } else {
-                const loupedecks = await listLoupedecks();
-                if (loupedecks && loupedecks.length > 0) {
-                    path = loupedecks[0].path;
-                } else {
-                    this.log.error("No Loupedecks found");
-                }
+                throw "No Loupedecks found";
             }
-
-            if (path) {
-                const ld = await openLoupedeck(path)
-                    .catch((err) => console.error("Failed connecting to Loupedeck", err));
-                if (ld) {
-                    this.loupedeck = ld;
-                    return;
-                }
-            }
-            tryCount--;
-            await new Promise(r => setTimeout(r, 5000));  // Wait longer if not in startup
         }
-        throw new Error("Initial Connection attempts failed");
+
+        if (path) {
+            const ld = await openLoupedeck(path)
+                .catch((err) => { throw "Failed connecting to Loupedeck" + err });
+            if (ld) {
+                this.loupedeck = ld;
+                return;
+            }
+        }
+        // tryCount--;
+        // await new Promise(r => setTimeout(r, 5000));  // Wait longer if not in startup
+        // }
+        throw "Connection Failed";
     }
 
     async _disconnect() {
@@ -214,6 +214,8 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeStatus, LoupeLogin,
                     }, config);
             })
         }
+        // const buffer = canvas.toBuffer('image/png')
+        // fs.writeFileSync(`key${index}.png`, buffer)
 
         // Dispatch canvas to Loupedeck
         let buffer = canvas.toBuffer("raw");
