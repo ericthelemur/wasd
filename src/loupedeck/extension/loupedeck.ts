@@ -7,10 +7,11 @@ import { BackpackFill } from 'react-bootstrap-icons';
 import {
     listLoupedecks, LoupedeckBufferFormat, LoupedeckControlInfo, LoupedeckControlType,
     LoupedeckDevice, LoupedeckDisplayId, LoupedeckTouchEventData, openLoupedeck
-} from '@loupedeck/node';
+} from '@ericthelemur/node';
 import NodeCG from '@nodecg/types';
 
 import { CommPoint, Messages, Replicants } from '../../common/commpoint/commpoint';
+import { addExitTask } from '../../common/exit-hooks';
 import { getNodeCG, Replicant, sendSuccess } from '../../common/utils';
 import { CellData, ConnStatus, LoupeDisplay, LoupeLogin, LoupeStatus } from '../../types/schemas';
 import listeners, { ListenerTypes, listenTo, sendTo } from '../messages';
@@ -35,14 +36,14 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeStatus, LoupeLogin,
             status: Replicant<LoupeStatus>("loupeStatus", "loupedeck"),
             display: Replicant<LoupeDisplay>("loupeDisplay", "loupedeck")
         }, listeners);
+
+        addExitTask(async (err, cb) => await this._disconnect(true).catch(() => { }).then(() => cb()));
     }
 
     async _connect() {
         if (this.loupedeck) await this.loupedeck.close().catch((e) => this.log.warn("Error closing", e));
         this.loupedeck = null;
 
-        // let tryCount = 6;
-        // while (tryCount > 0) {
         let path;
         if (this.replicants.login.value.path) {
             path = this.replicants.login.value.path;
@@ -60,18 +61,19 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeStatus, LoupeLogin,
                 .catch((err) => { throw "Failed connecting to Loupedeck" + err });
             if (ld) {
                 this.loupedeck = ld;
+                this.log.info("Connected to", ld.modelName);
                 return;
             }
         }
-        // tryCount--;
-        // await new Promise(r => setTimeout(r, 5000));  // Wait longer if not in startup
-        // }
         throw "Connection Failed";
     }
 
-    async _disconnect() {
+    async _disconnect(cleanup = false) {
         if (this.loupedeck) {
+            if (!cleanup) this.log.info("Disconnecting LD");
+            if (!cleanup) await this.loupedeck.blankDevice(true, true).catch(() => { });
             await this.loupedeck.close();
+            if (!cleanup) this.log.info("Disconnected LD");
         }
     }
 
@@ -85,6 +87,9 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeStatus, LoupeLogin,
     async _setupListeners() {
         await this._interactionListeners();
 
+        if (this.loupedeck) {
+            console.log(this.loupedeck?.modelSpec);
+        }
         const svg = await fetch("https://icons.getbootstrap.com/assets/icons/backpack-fill.svg").then(r => r.text());
         Promise.all([
             this.drawKey(0, { text: "Test" }),

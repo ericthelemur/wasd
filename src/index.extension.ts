@@ -4,6 +4,7 @@ import { storeNodeCG } from './common/utils';
 
 module.exports = function (nodecg: NodeCG.ServerAPI) {
     storeNodeCG(nodecg);
+    require("./common/exit-hooks");
 
     require("./tiltify/extension/index.extension");
     require("./countdown/extension/index.extension");
@@ -17,3 +18,28 @@ module.exports = function (nodecg: NodeCG.ServerAPI) {
     require("./wasd/extension/index.extension");
     require("./external/extension/index.extension");
 };
+
+// process.on("beforeExit", () => {
+//     console.log("Before Exit");
+// });
+
+// process.on("exit", () => {
+//     console.log("Exit");
+// });
+
+// process.on("uncaughtException", () => {
+//     console.log("Uncaught Exception");
+//     // process.exit(0);
+// });
+
+// function signalHandler() {
+//     console.log("SIG");
+//     process.exit();
+// }
+
+// // Make sure to exit on interrupt
+// process.on('SIGINT', signalHandler)
+// process.on('SIGTERM', signalHandler)
+// process.on('SIGQUIT', signalHandler)
+
+
