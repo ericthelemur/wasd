@@ -29,6 +29,7 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeStatus, LoupeLogin,
     display: NodeCG.ServerReplicantWithSchemaDefault<LoupeDisplay>
 }> {
     loupedeck: LoupedeckDevice | null = null;
+    currentDisplay: (CellData | null)[] =  [];
 
     constructor() {
         super("loupedeck", {
@@ -85,24 +86,25 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeStatus, LoupeLogin,
     }
 
     async _setupListeners() {
+        if (!this.loupedeck) return;
         await this._interactionListeners();
 
-        if (this.loupedeck) {
-            console.log(this.loupedeck?.modelSpec);
-        }
-        const svg = await fetch("https://icons.getbootstrap.com/assets/icons/backpack-fill.svg").then(r => r.text());
-        Promise.all([
-            this.drawKey(0, { text: "Test" }),
-            this.drawKey(1, { text: "Quite Long Text Test" }),
-            this.drawKey(2, { imgType: "svgURL", img: "https://icons.getbootstrap.com/assets/icons/backpack-fill.svg", bg: "red", colour: "blue" }),
-            this.drawKey(3, { imgType: "svg", img: svg }),
-            this.drawKey(4, { text: "SVG & Text", imgType: "svgURL", img: "https://icons.getbootstrap.com/assets/icons/backpack-fill.svg" }),
-            this.drawKey(5, { text: "Quite Long\nNew Line" }),
-            this.drawKey(6, { text: "Very Very Long Long Single Single Line Line Test Test Test Test" }),
-        ]).catch(e => this.log.error("Error drawing keys", e))
+        this.currentDisplay = Array(this.loupedeck.lcdKeyColumns * this.loupedeck.lcdKeyRows).fill(null);
 
-        // const svg = await fetch("https://icons.getbootstrap.com/assets/icons/backpack-fill.svg").then(r => r.text());
-        // drawKey(myLoupedeck, 13, "Test Text", svg).catch(e => log.error("Error drawing key", e));
+        this.replicants.display.on("change", async newVal => {
+            console.log(newVal);
+            for (let i = 0; i < this.currentDisplay.length; i++) {
+                const newCell = newVal[i], oldCell = this.currentDisplay[i];
+                if (newCell === oldCell) continue;  // If equal don't do anything (likely only covers null === null case)
+
+                if (!oldCell || !newCell) {     // If previously empty or setting to empty, draw
+                    await this.drawKey(i, newCell).catch(e => this.log.error("Error drawing key", e));
+                } else if (newCell.text != oldCell.text || newCell.colour != oldCell.colour || newCell.bg != oldCell.bg || newCell.imgType != oldCell.imgType || newCell.img != oldCell.img) {
+                    await this.drawKey(i, newCell).catch(e => this.log.error("Error drawing key", e));;   // If difference in any field, redraw
+                }
+                this.currentDisplay[i] = newCell;
+            }
+        })
     }
 
     async _interactionListeners() {
@@ -155,15 +157,20 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeStatus, LoupeLogin,
 
 
 
-    async drawKey(index: number, content: CellData) {
+    async drawKey(index: number, content: CellData | null) {
         if (!this.loupedeck || !titleFont) return false;
+        this.log.info("Drawing key", index);
         const w = this.loupedeck.lcdKeySize;
         let canvas = Canvas.createCanvas(w, w);
         let ctx = canvas.getContext('2d');
 
         // Fill background
-        ctx.fillStyle = content.bg || "#222222";
+        ctx.fillStyle = content ? (content.bg ? content.bg : "#222222"): "black";
         ctx.fillRect(0, 0, w, w);
+        if (!content) {
+            this.drawCanvas(index, canvas);
+            return;
+        };
 
         // Load and convert SVG to coloured base64 URL
         let img;
@@ -177,13 +184,21 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeStatus, LoupeLogin,
                     });
                 case "svg": // Fall through
                     const coloured = imgStr.replace("currentColor", content.colour || "white");
-                    const b64 = Buffer.from(coloured).toString("base64");
-                    img = await Canvas.loadImage(`data:image/svg+xml;base64,${b64}`);
+                    const b64SVG = Buffer.from(coloured).toString("base64");
+                    img = await Canvas.loadImage(`data:image/svg+xml;base64,${b64SVG}`);
                     break;
 
                 case "pngURL":
+                    imgStr = await fetch(content.img).then(r => r.text()).catch(e => {
+                        this.log.error(`Error fetching SVG for LD index ${index} from URL ${content.img}`);
+                        return "";
+                    });
+                    imgStr = Buffer.from(imgStr).toString("base64");
                 case "png":
+                    img = await Canvas.loadImage(`data:image/png;base64,${imgStr}`);
                     break;
+                case "base64":
+                    img = await Canvas.loadImage(imgStr);
             }
 
         }
@@ -219,14 +234,31 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeStatus, LoupeLogin,
                     }, config);
             })
         }
+
+        // Dispatch canvas to Loupedeck
+        await this.drawCanvas(index, canvas);
+    }
+
+    async drawCanvas(index: number, canvas: Canvas.Canvas) {
+        // Dispatch canvas to Loupedeck
+
         // const buffer = canvas.toBuffer('image/png')
         // fs.writeFileSync(`key${index}.png`, buffer)
 
-        // Dispatch canvas to Loupedeck
+        if (!this.loupedeck) return;
         let buffer = canvas.toBuffer("raw");
-        const rem = endianness() == "LE" ? 3 : 0;
-        const RGBBuffer = buffer.filter((_, i) => i % 4 != rem); // Remove alpha channel (sorry! jank)
-        await this.loupedeck.drawKeyBuffer(index, RGBBuffer as any, LoupedeckBufferFormat.RGB)
+
+        const output = Buffer.alloc((buffer.length * 3 / 4));
+        for (let i=0, j=0; i < buffer.length; i += 4, j += 3) {
+            // Remove alpha channel and reverse endian
+            // TODO: consider system endianness
+            output[j+0] = buffer[i+2];
+            output[j+1] = buffer[i+1];
+            output[j+2] = buffer[i+0];
+        }
+
+        // const RGBBuffer = buffer.filter((_, i) => i % 4 != rem); // Remove alpha channel (sorry! jank)
+        await this.loupedeck.drawKeyBuffer(index, output, LoupedeckBufferFormat.RGB)
             .catch(e => this.log.error("Error drawing Loupedeck key", e));
     }
 }

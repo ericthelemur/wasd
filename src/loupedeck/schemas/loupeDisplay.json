@@ -2,7 +2,14 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "array",
     "items": {
-        "$ref": "types/cellData.json"
+        "oneOf": [
+            {
+                "$ref": "types/cellData.json"
+            },
+            {
+                "type": "null"
+            }
+        ]
     },
     "default": []
 }

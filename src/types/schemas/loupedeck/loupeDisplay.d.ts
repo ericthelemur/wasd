@@ -5,13 +5,13 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type LoupeDisplay = CellData[];
+export type LoupeDisplay = (CellData | null)[];
 
 export interface CellData {
 	text?: string;
 	colour?: string;
 	bg?: string;
-	imgType?: 'svg' | 'png' | 'svgURL' | 'pngURL';
+	imgType?: 'svg' | 'png' | 'svgURL' | 'pngURL' | 'base64';
 	img?: string;
 	[k: string]: unknown;
 }

@@ -17,7 +17,8 @@
                 "svg",
                 "png",
                 "svgURL",
-                "pngURL"
+                "pngURL",
+                "base64"
             ]
         },
         "img": {
