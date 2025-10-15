@@ -14,6 +14,8 @@ export type ListenerTypes = {
     "knobRotate": { knob: number, amount: number },
     "knobDown": { knob: number },
     "knobUp": { knob: number },
+
+    "setButtonColour": { button: number, colour: [number, number, number] }
 }
 
 const listeners = createMessageListenersBundle<ListenerTypes>("loupedeck");

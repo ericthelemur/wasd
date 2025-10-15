@@ -1,19 +1,17 @@
 import Canvas from 'canvas';
 import drawText, { DrawOptions } from 'node-canvas-text';
 import opentype from 'opentype.js';
-import { endianness } from 'os';
-import { BackpackFill } from 'react-bootstrap-icons';
 
 import {
     listLoupedecks, LoupedeckBufferFormat, LoupedeckControlInfo, LoupedeckControlType,
-    LoupedeckDevice, LoupedeckDisplayId, LoupedeckTouchEventData, openLoupedeck
+    LoupedeckDevice, LoupedeckTouchEventData, openLoupedeck
 } from '@ericthelemur/node';
 import NodeCG from '@nodecg/types';
 
-import { CommPoint, Messages, Replicants } from '../../common/commpoint/commpoint';
+import { CommPoint } from '../../common/commpoint/commpoint';
 import { addExitTask } from '../../common/exit-hooks';
-import { getNodeCG, Replicant, sendSuccess } from '../../common/utils';
-import { CellData, ConnStatus, LoupeDisplay, LoupeLogin, LoupeStatus } from '../../types/schemas';
+import { Replicant } from '../../common/utils';
+import { CellData, LoupeDisplay, LoupeLogin, LoupeStatus } from '../../types/schemas';
 import listeners, { ListenerTypes, listenTo, sendTo } from '../messages';
 
 let titleFont: opentype.Font | null = null;
@@ -29,7 +27,8 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeStatus, LoupeLogin,
     display: NodeCG.ServerReplicantWithSchemaDefault<LoupeDisplay>
 }> {
     loupedeck: LoupedeckDevice | null = null;
-    currentDisplay: (CellData | null)[] =  [];
+    currentDisplay: (CellData | null)[] = [];
+    imgCache: { [url: string]: string } = {};
 
     constructor() {
         super("loupedeck", {
@@ -89,8 +88,14 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeStatus, LoupeLogin,
         if (!this.loupedeck) return;
         await this._interactionListeners();
 
-        this.currentDisplay = Array(this.loupedeck.lcdKeyColumns * this.loupedeck.lcdKeyRows).fill(null);
+        // Set button colours
+        listenTo("setButtonColour", ({ button, colour }) => {
+            if (!this.loupedeck) return;
+            this.loupedeck.setButtonColor({ id: button, red: colour[0], green: colour[1], blue: colour[2] }).catch(e => this.log.error("Error setting button colour", e));
+        })
 
+        // Draw Key Images from replicant
+        this.currentDisplay = Array(this.loupedeck.lcdKeyColumns * this.loupedeck.lcdKeyRows).fill(null);
         this.replicants.display.on("change", async newVal => {
             console.log(newVal);
             for (let i = 0; i < this.currentDisplay.length; i++) {
@@ -165,7 +170,7 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeStatus, LoupeLogin,
         let ctx = canvas.getContext('2d');
 
         // Fill background
-        ctx.fillStyle = content ? (content.bg ? content.bg : "#222222"): "black";
+        ctx.fillStyle = content ? (content.bg ? content.bg : "#222222") : "black";
         ctx.fillRect(0, 0, w, w);
         if (!content) {
             this.drawCanvas(index, canvas);
@@ -190,7 +195,7 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeStatus, LoupeLogin,
 
                 case "pngURL":
                     imgStr = await fetch(content.img).then(r => r.text()).catch(e => {
-                        this.log.error(`Error fetching SVG for LD index ${index} from URL ${content.img}`);
+                        this.log.error(`Error fetching PNG for LD index ${index} from URL ${content.img}`);
                         return "";
                     });
                     imgStr = Buffer.from(imgStr).toString("base64");
@@ -249,12 +254,12 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeStatus, LoupeLogin,
         let buffer = canvas.toBuffer("raw");
 
         const output = Buffer.alloc((buffer.length * 3 / 4));
-        for (let i=0, j=0; i < buffer.length; i += 4, j += 3) {
+        for (let i = 0, j = 0; i < buffer.length; i += 4, j += 3) {
             // Remove alpha channel and reverse endian
             // TODO: consider system endianness
-            output[j+0] = buffer[i+2];
-            output[j+1] = buffer[i+1];
-            output[j+2] = buffer[i+0];
+            output[j + 0] = buffer[i + 2];
+            output[j + 1] = buffer[i + 1];
+            output[j + 2] = buffer[i + 0];
         }
 
         // const RGBBuffer = buffer.filter((_, i) => i % 4 != rem); // Remove alpha channel (sorry! jank)
