@@ -10,8 +10,8 @@ import NodeCG from '@nodecg/types';
 
 import { CommPoint } from '../../common/commpoint/commpoint';
 import { addExitTask } from '../../common/exit-hooks';
-import { Replicant } from '../../common/utils';
-import { CellData, LoupeDisplay, LoupeLogin, LoupeStatus } from '../../types/schemas';
+import { BundleReplicant, Replicant } from '../../common/utils';
+import { CellData, Display, Login, Status } from '../../types/schemas/loupedeck';
 import listeners, { ListenerTypes, listenTo, sendTo } from '../messages';
 
 let titleFont: opentype.Font | null = null;
@@ -21,23 +21,25 @@ try {
     console.error("Error loading Montserrat font");
 }
 
-export class Loupedeck extends CommPoint<ListenerTypes, LoupeStatus, LoupeLogin, {
-    status: NodeCG.ServerReplicantWithSchemaDefault<LoupeStatus>,
-    login: NodeCG.ServerReplicantWithSchemaDefault<LoupeLogin>,
-    display: NodeCG.ServerReplicantWithSchemaDefault<LoupeDisplay>
-}> {
+export type LoupeReplicants = {
+    status: Status,
+    login: Login,
+    display: Display
+}
+
+export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
     loupedeck: LoupedeckDevice | null = null;
     currentDisplay: (CellData | null)[] = [];
     imgCache: { [url: string]: string } = {};
 
     constructor() {
         super("loupedeck", {
-            login: Replicant<LoupeLogin>("loupeLogin", "loupedeck"),
-            status: Replicant<LoupeStatus>("loupeStatus", "loupedeck"),
-            display: Replicant<LoupeDisplay>("loupeDisplay", "loupedeck")
+            login: BundleReplicant("login", "loupedeck"),
+            status: BundleReplicant("status", "loupedeck"),
+            display: BundleReplicant("display", "loupedeck")
         }, listeners);
 
-        addExitTask(async (err, cb) => await this._disconnect(true).catch(() => { }).then(() => cb()));
+        addExitTask((err, cb) => this._disconnect(true).catch(() => { }).then(() => cb()));
     }
 
     async _connect() {

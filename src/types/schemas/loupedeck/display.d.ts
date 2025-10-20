@@ -5,7 +5,7 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type LoupeDisplay = (CellData | null)[];
+export type Display = (CellData | null)[];
 
 export interface CellData {
 	text?: string;

@@ -12,6 +12,12 @@ export function Replicant<T>(name: string, component: string, args: NodeCG.Repli
     return nodecg.Replicant<T>(name, { "schemaPath": path, ...args }) as unknown as NodeCG.ServerReplicantWithSchemaDefault<T>;
 }
 
+export function BundleReplicant<T>(name: string, namespace: string, args: NodeCG.Replicant.OptionsNoDefault = {}) {
+    const path = args["schemaPath"] ? args["schemaPath"] : buildSchemaPath(namespace, name);
+    if (!fs.existsSync(path)) nodecg.log.error(`Cannot find schema ${path} for replicant ${namespace}/${name}`);
+    return nodecg.Replicant<T>(name, namespace, { "schemaPath": path, ...args }) as unknown as NodeCG.ServerReplicantWithSchemaDefault<T>;
+}
+
 export function addPrefix(prefix: string | undefined, name: string) {
     return prefix ? `${prefix}:${name}` : name;
 }

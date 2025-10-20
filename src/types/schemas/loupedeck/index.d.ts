@@ -1,7 +1,7 @@
 /* eslint-disable */
 // @ts-ignore
-export * from './loupeDisplay';
+export * from './display';
 // @ts-ignore
-export * from './loupeLogin';
+export * from './login';
 // @ts-ignore
-export * from './loupeStatus';
+export * from './status';

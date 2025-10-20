@@ -5,7 +5,9 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface LoupeLogin {
-	path?: null | string;
+export type ConnStatus = 'connected' | 'connecting' | 'disconnected' | 'error';
+
+export interface Status {
+	connected: ConnStatus;
 	[k: string]: unknown;
 }

@@ -1,8 +1,8 @@
 import { createMessageListenersBundle } from '../common/messages';
-import { LoupeLogin } from '../types/schemas';
+import { Login } from '../types/schemas/loupedeck';
 
 export type ListenerTypes = {
-    "connect": Partial<LoupeLogin>,
+    "connect": Partial<Login>,
     "disconnect": undefined,
 
     "screenDown": { key: number },

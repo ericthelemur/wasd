@@ -1,7 +1,7 @@
 import NodeCG from '@nodecg/types';
 
 import { ListenersT } from '../messages';
-import { getNodeCG, Replicant, sendError, sendSuccess } from '../utils';
+import { getNodeCG } from '../utils';
 
 type Dict = { [name: string]: unknown };
 
@@ -12,20 +12,25 @@ export type Messages<C> = {
 };
 
 export type ConnStatus = 'connected' | 'connecting' | 'disconnected' | 'error';
-export type Replicants<S extends { connected: ConnStatus }, L> = {
-    status: NodeCG.ServerReplicantWithSchemaDefault<S>,
-    login: NodeCG.ServerReplicantWithSchemaDefault<L>
+export type ReplicantTypes<S extends { connected: ConnStatus }, L> = {
+    status: S,
+    login: L
 }
 
+// Type forces all replicants to be included
+export type Replicants<R> = { [replicant in keyof R]-?: NodeCG.ServerReplicantWithSchemaDefault<R[replicant]> };
+
 export abstract class CommPoint<
-    M extends Messages<L>, S extends { connected: ConnStatus; }, L,
-    R extends Replicants<S, L>
+    M extends Messages<L>,
+    R extends ReplicantTypes<S, L>,
+    S extends { connected: ConnStatus; } = R["status"],
+    L = R["login"]
 > {
     protected namespace: string;
     protected nodecg = getNodeCG();
     public log: NodeCG.Logger;
 
-    public replicants: R;
+    public replicants: Replicants<R>;
     protected listeners: ListenersT<M>;
 
     protected reconnectInterval = 1;
@@ -33,7 +38,7 @@ export abstract class CommPoint<
     protected _reconnectInterval: NodeJS.Timeout | undefined = undefined;
 
 
-    constructor(namespace: string, replicants: R, listeners: ListenersT<M>) {
+    constructor(namespace: string, replicants: Replicants<R>, listeners: ListenersT<M>) {
         this.nodecg = getNodeCG();
         this.log = new this.nodecg.Logger(namespace);
 
@@ -41,7 +46,7 @@ export abstract class CommPoint<
         this.replicants = replicants;
         this.listeners = listeners;
 
-        this.log.info(`${namespace} comm point built`);
+        this.log.debug(`${namespace} comm point constructed`);
 
         this._connectionListeners();
     }
