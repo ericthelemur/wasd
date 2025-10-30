@@ -1,4 +1,5 @@
 import Canvas from 'canvas';
+import clone from 'clone';
 import drawText, { DrawOptions } from 'node-canvas-text';
 import opentype from 'opentype.js';
 
@@ -6,7 +7,6 @@ import {
     listLoupedecks, LoupedeckBufferFormat, LoupedeckControlInfo, LoupedeckControlType,
     LoupedeckDevice, LoupedeckTouchEventData, openLoupedeck
 } from '@ericthelemur/node';
-import NodeCG from '@nodecg/types';
 
 import { CommPoint } from '../../common/commpoint/commpoint';
 import { addExitTask } from '../../common/exit-hooks';
@@ -30,7 +30,10 @@ export type LoupeReplicants = {
 export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
     loupedeck: LoupedeckDevice | null = null;
     currentDisplay: (CellData | null)[] = [];
-    imgCache: { [url: string]: string } = {};
+    currentBuffers: (Buffer<ArrayBuffer> | null)[] = [];
+
+    whiteBuffer: Buffer<ArrayBuffer> | null = null;
+    blackBuffer: Buffer<ArrayBuffer> | null = null;
 
     constructor() {
         super("loupedeck", {
@@ -42,7 +45,7 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         addExitTask((err, cb) => this._disconnect(true).catch(() => { }).then(() => cb()));
     }
 
-    async _connect() {
+    override async _connect() {
         if (this.loupedeck) await this.loupedeck.close().catch((e) => this.log.warn("Error closing", e));
         this.loupedeck = null;
 
@@ -70,7 +73,7 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         throw "Connection Failed";
     }
 
-    async _disconnect(cleanup = false) {
+    override async _disconnect(cleanup = false) {
         if (this.loupedeck) {
             if (!cleanup) this.log.info("Disconnecting LD");
             if (!cleanup) await this.loupedeck.blankDevice(true, true).catch(() => { });
@@ -79,16 +82,20 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         }
     }
 
-    async isConnected() {
+    override async isConnected() {
         // If cannot fetch serial number, must be disconnected
         let connected = true;
         await this.loupedeck?.getSerialNumber().catch(() => connected = false);
         return connected;
     }
 
-    async _setupListeners() {
+    override async _setupListeners() {
         if (!this.loupedeck) return;
         await this._interactionListeners();
+
+        // Generate blank buffers for drawing later
+        this.whiteBuffer = this.convertCanvasToBuffer(this.generateCanvasColour(this.loupedeck.lcdKeySize, "white")[0]);
+        this.blackBuffer = this.convertCanvasToBuffer(this.generateCanvasColour(this.loupedeck.lcdKeySize, "black")[0]);
 
         // Set button colours
         listenTo("setButtonColour", ({ button, colour }) => {
@@ -98,18 +105,16 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
 
         // Draw Key Images from replicant
         this.currentDisplay = Array(this.loupedeck.lcdKeyColumns * this.loupedeck.lcdKeyRows).fill(null);
+        this.currentBuffers = Array(this.loupedeck.lcdKeyColumns * this.loupedeck.lcdKeyRows).fill(null);
         this.replicants.display.on("change", async newVal => {
-            console.log(newVal);
             for (let i = 0; i < this.currentDisplay.length; i++) {
                 const newCell = newVal[i], oldCell = this.currentDisplay[i];
-                if (newCell === oldCell) continue;  // If equal don't do anything (likely only covers null === null case)
-
-                if (!oldCell || !newCell) {     // If previously empty or setting to empty, draw
-                    await this.drawKey(i, newCell).catch(e => this.log.error("Error drawing key", e));
-                } else if (newCell.text != oldCell.text || newCell.colour != oldCell.colour || newCell.bg != oldCell.bg || newCell.imgType != oldCell.imgType || newCell.img != oldCell.img) {
-                    await this.drawKey(i, newCell).catch(e => this.log.error("Error drawing key", e));;   // If difference in any field, redraw
+                if (!newCell && !oldCell) {  // If equal don't do anything (likely only covers null === null case)
+                } else if (!newCell || !oldCell || newCell.text != oldCell.text || newCell.colour != oldCell.colour || newCell.bg != oldCell.bg || newCell.imgType != oldCell.imgType || newCell.img != oldCell.img) {
+                    this.currentBuffers[i] = null;
+                    this.drawKey(i, newCell).catch(e => this.log.error("Error drawing key", e));;   // If difference in any field, redraw
                 }
-                this.currentDisplay[i] = newCell;
+                this.currentDisplay[i] = clone(newCell);
             }
         })
     }
@@ -143,7 +148,9 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
             sendTo("knobRotate", { knob: info.index, amount: delta });
         })
 
+
         const maxWidth = this.loupedeck.displayMain.width, maxHeight = this.loupedeck.displayMain.height;
+        const flashOnTouch = this.flashOnTouch.bind(this);
         function screenTouch(info: LoupedeckTouchEventData, isStart: boolean) {
             // log.info("touch", isStart ? "start" : "end", JSON.stringify(info.changedTouches))
             info.changedTouches.forEach((press) => {
@@ -151,6 +158,7 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
                 if (press.x > maxWidth || press.y > maxHeight) return;
                 if (press.target.key === undefined) return;
 
+                flashOnTouch(press.target.key, isStart);
                 sendTo(isStart ? "screenDown" : "screenUp", { key: press.target.key });
             })
         }
@@ -162,22 +170,51 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         })
     }
 
+    flashOnTouch(key: number, isStart: boolean) {
+        if (!this.loupedeck) return;
+        if (isStart) {
+            this.loupedeck.drawKeyBuffer(key, this.whiteBuffer!, LoupedeckBufferFormat.RGB).catch(e => { });
+        } else {
+            if (this.currentBuffers[key]) this.loupedeck.drawKeyBuffer(key, this.currentBuffers[key], LoupedeckBufferFormat.RGB).catch(e => { });
+            else this.drawKey(key, this.replicants.display.value[key]).catch(e => { });
+        }
+    }
 
+
+    // Drawing Key Content
 
     async drawKey(index: number, content: CellData | null) {
-        if (!this.loupedeck || !titleFont) return false;
+        // Parent drawing key's content function
+        if (!this.loupedeck) return;
         this.log.info("Drawing key", index);
-        const w = this.loupedeck.lcdKeySize;
+
+        if (!content) {     // Draw solid black if no content
+            this.loupedeck.drawKeyBuffer(index, this.blackBuffer!, LoupedeckBufferFormat.RGB);
+            return;
+        };
+
+        const canvas = await this.drawContent(index, content);  // Draw content onto canvas
+        if (!canvas) return;
+        await this.drawCanvas(index, canvas);   // Convert canvas to buffer and draw
+    }
+
+    generateCanvasColour(w: number, bg?: string): [Canvas.Canvas, Canvas.CanvasRenderingContext2D] {
+        // Generate canvas filled with a colour
         let canvas = Canvas.createCanvas(w, w);
         let ctx = canvas.getContext('2d');
 
-        // Fill background
-        ctx.fillStyle = content ? (content.bg ? content.bg : "#222222") : "black";
+        ctx.fillStyle = bg ? bg : "#222222";
         ctx.fillRect(0, 0, w, w);
-        if (!content) {
-            this.drawCanvas(index, canvas);
-            return;
-        };
+        return [canvas, ctx];
+    }
+
+    async drawContent(index: number, content: CellData) {
+        // Draw key's content into canvas. content may have fields: text, colour & bg (may be any CSS colour), imgType & img
+        // imgType denotes type of img data - may be png or svg, either a url (svgURL/pngURL) or the raw string/bytes (svg/png) or raw base64 resource uri)
+
+        if (!this.loupedeck || !titleFont) return;
+        const w = this.loupedeck.lcdKeySize;
+        const [canvas, ctx] = this.generateCanvasColour(w, content.bg);
 
         // Load and convert SVG to coloured base64 URL
         let img;
@@ -241,18 +278,10 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
                     }, config);
             })
         }
-
-        // Dispatch canvas to Loupedeck
-        await this.drawCanvas(index, canvas);
+        return canvas;
     }
 
-    async drawCanvas(index: number, canvas: Canvas.Canvas) {
-        // Dispatch canvas to Loupedeck
-
-        // const buffer = canvas.toBuffer('image/png')
-        // fs.writeFileSync(`key${index}.png`, buffer)
-
-        if (!this.loupedeck) return;
+    convertCanvasToBuffer(canvas: Canvas.Canvas) {
         let buffer = canvas.toBuffer("raw");
 
         const output = Buffer.alloc((buffer.length * 3 / 4));
@@ -263,6 +292,18 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
             output[j + 1] = buffer[i + 1];
             output[j + 2] = buffer[i + 0];
         }
+        return output;
+    }
+
+    async drawCanvas(index: number, canvas: Canvas.Canvas) {
+        // Dispatch canvas to Loupedeck
+
+        // const buffer = canvas.toBuffer('image/png')
+        // fs.writeFileSync(`key${index}.png`, buffer)
+
+        if (!this.loupedeck) return;
+        const output = this.convertCanvasToBuffer(canvas);
+        this.currentBuffers[index] = output;
 
         // const RGBBuffer = buffer.filter((_, i) => i % 4 != rem); // Remove alpha channel (sorry! jank)
         await this.loupedeck.drawKeyBuffer(index, output, LoupedeckBufferFormat.RGB)
