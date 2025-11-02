@@ -8,8 +8,7 @@
 export interface Login {
 	enabled: boolean;
 	ip: string;
-	localPort?: number;
-	xr18: boolean;
+	port?: number;
 	suppress?: boolean;
 	[k: string]: unknown;
 }

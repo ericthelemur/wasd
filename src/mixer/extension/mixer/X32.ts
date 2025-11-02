@@ -94,10 +94,10 @@ export class X32Utility extends TypedEmitter<X32Events> {
         status.value.connection = "connecting";
 
         this.conn = new osc.UDPPort({
-            localAddress: '0.0.0.0',
-            localPort: login.value.localPort,
+            // localAddress: '0.0.0.0',
+            // localPort: 55667,
             remoteAddress: login.value.ip,
-            remotePort: login.value.xr18 ? 10024 : 10023,
+            remotePort: login.value.port || 10024,
             metadata: true,
         });
 

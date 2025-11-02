@@ -8,11 +8,8 @@
         "ip": {
             "type": "string"
         },
-        "localPort": {
+        "port": {
             "type": "integer"
-        },
-        "xr18": {
-            "type": "boolean"
         },
         "suppress": {
             "type": "boolean"
@@ -26,7 +23,6 @@
     "default": {
         "enabled": true,
         "ip": "192.168.1.99",
-        "localPort": 10024,
-        "xr18": true
+        "port": 10024
     }
 }

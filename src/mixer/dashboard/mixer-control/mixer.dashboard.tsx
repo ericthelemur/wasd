@@ -10,7 +10,8 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
 import Stack from 'react-bootstrap/Stack';
 import { createRoot } from 'react-dom/client';
-import { Configschema, Login, XrStatus } from 'types/schemas';
+import { Configschema } from 'types/schemas';
+import { Login, XrStatus } from 'types/schemas/mixer';
 import { useReplicant } from 'use-nodecg';
 
 import NodeCG from '@nodecg/types';
@@ -40,16 +41,16 @@ export function MixerStatuses() {
 }
 
 function ConnectForm() {
-	const [login,] = useReplicant<Login>("login", { "enabled": false, "ip": "", "xr18": true });
+	const [login,] = useReplicant<Login>("login", { "enabled": false, "ip": "", "port": 10024 });
 	const urlElem = useRef<HTMLInputElement>(null);
-	// const portElem = useRef<HTMLInputElement>(null);
+	const portElem = useRef<HTMLInputElement>(null);
 
 	function connect(e: FormEvent) {
 		e.preventDefault();
 		nodecg.log.info('Attempting to connect', urlElem.current?.value/*, portElem.current?.value*/);
 		(sendTo("connect", {
 			ip: urlElem.current!.value,
-			// localPort: portElem.current!.valueAsNumber || undefined
+			localPort: portElem.current!.valueAsNumber || undefined
 		}) as unknown as Promise<void>
 		).then(() => nodecg.log.info('successfully connected to xr18'))
 			.catch((err: any) => nodecg.log.error('failed to connect to xr18:', err));
@@ -60,9 +61,9 @@ function ConnectForm() {
 			<FloatingLabel className="flex-grow-1" controlId="url" label="Mixer IP">
 				<Form.Control ref={urlElem} placeholder="192.168.1.99" defaultValue={login?.ip} />
 			</FloatingLabel>
-			{/* <FloatingLabel controlId="port" label="port">
-				<Form.Control ref={portElem} type="number" inputMode="numeric" placeholder="10024" defaultValue={login?.localPort ?? 10024} />
-			</FloatingLabel> */}
+			<FloatingLabel controlId="port" label="port">
+				<Form.Control ref={portElem} type="number" inputMode="numeric" placeholder="10024" defaultValue={login?.port ?? 10024} />
+			</FloatingLabel>
 			<Button type="submit">Connect</Button>
 		</Form>
 	)

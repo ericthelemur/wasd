@@ -7,3 +7,4 @@ bower_components
 /shared
 /extension
 *.log
+.venv
