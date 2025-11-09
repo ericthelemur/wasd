@@ -178,7 +178,7 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
             this.loupedeck.drawKeyBuffer(key, this.whiteBuffer!, LoupedeckBufferFormat.RGB).catch(e => { });
         } else {
             if (this.currentBuffers[key]) this.loupedeck.drawKeyBuffer(key, this.currentBuffers[key], LoupedeckBufferFormat.RGB).catch(e => { });
-            else this.drawKey(key, this.replicants.display.value[key]).catch(e => { });
+            else this.drawKey(key, this.replicants.display.value.pages[this.replicants.display.value.current][key]).catch(e => { });
         }
     }
 

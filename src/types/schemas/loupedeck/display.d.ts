@@ -5,8 +5,15 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type Display = (CellData | null)[];
+export type Screen = CellData[];
 
+export interface Display {
+	current: string;
+	pages: {
+		default: Screen;
+		[k: string]: Screen;
+	};
+}
 export interface CellData {
 	text?: string;
 	colour?: string;

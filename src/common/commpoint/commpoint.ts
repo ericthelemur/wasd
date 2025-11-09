@@ -11,7 +11,7 @@ export type Messages<C> = {
     [name: string]: any
 };
 
-export type ConnStatus = 'connected' | 'connecting' | 'disconnected' | 'error';
+export type ConnStatus = "connected" | "connecting" | "disconnected" | "error" | "retrying";
 export type ReplicantTypes<S extends { connected: ConnStatus }, L> = {
     status: S,
     login: L
@@ -57,9 +57,9 @@ export abstract class CommPoint<
     abstract isConnected(): Promise<boolean>;
 
     protected _connectionListeners() {
-        this.replicants.status.once('change', newVal => {
+        this.replicants.status.once("change", newVal => {
             // If we were connected last time, try connecting again now.
-            if (newVal && (newVal.connected === 'connected' || newVal.connected === 'connecting')) {
+            if (newVal && (newVal.connected === "connected" || newVal.connected === "connecting")) {
                 this.reconnect();
             }
         });
@@ -154,14 +154,14 @@ export abstract class CommPoint<
         // If unexpectedly disconnected, attempt reconnection every reconnectInterval seconds
         if (this._reconnectInterval) return;
 
-        this.replicants.status.value.connected = "connecting";
+        this.replicants.status.value.connected = "retrying";
         this.retryPeriod = this.reconnectInterval;
         this._reconnectInterval = setTimeout(() => this._reconnect(), this.retryPeriod * 1000);
     }
 
     protected async _reconnect() {
         this.log.warn(`Retrying ${this.namespace} connection`);
-        const err = await this.connect();
+        const err = await this.connect(true);
         if (err) {
             this.log.warn(`Retrying connection again in ${this.retryPeriod}s`);
             this.retryPeriod *= 2;

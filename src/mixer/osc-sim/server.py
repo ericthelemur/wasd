@@ -16,7 +16,7 @@ clients = {}
 def broadcast(address, val, skip):
     for k, v in clients.items():
         if k == skip: continue
-        if time.time() > v["expiry"]: del clients[k]
+        if time.time() > v["expiry"]: continue
         else: v["client"].send_message(address, args[0])
 
 def subscribe(client_address: tuple[str, int], address: str, *osc_args: list):

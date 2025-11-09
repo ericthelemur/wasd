@@ -8,14 +8,14 @@ import { NodeCGServer } from 'speedcontrol-util/types/nodecg/lib/nodecg-instance
 // Define typed replicant, find schema in schemas/component/name.json
 export function Replicant<T>(name: string, component: string, args: NodeCG.Replicant.OptionsNoDefault = {}) {
     const path = args["schemaPath"] ? args["schemaPath"] : buildSchemaPath(component, name);
-    if (!fs.existsSync(path)) nodecg.log.error(`Cannot find schema ${path} for replicant ${component}/${name}`);
-    return nodecg.Replicant<T>(name, { "schemaPath": path, ...args }) as unknown as NodeCG.ServerReplicantWithSchemaDefault<T>;
+    if (!fs.existsSync(path)) ncg.log.error(`Cannot find schema ${path} for replicant ${component}/${name}`);
+    return ncg.Replicant<T>(name, { "schemaPath": path, ...args }) as unknown as NodeCG.ServerReplicantWithSchemaDefault<T>;
 }
 
 export function BundleReplicant<T>(name: string, namespace: string, args: NodeCG.Replicant.OptionsNoDefault = {}) {
     const path = args["schemaPath"] ? args["schemaPath"] : buildSchemaPath(namespace, name);
-    if (!fs.existsSync(path)) nodecg.log.error(`Cannot find schema ${path} for replicant ${namespace}/${name}`);
-    return nodecg.Replicant<T>(name, namespace, { "schemaPath": path, ...args }) as unknown as NodeCG.ServerReplicantWithSchemaDefault<T>;
+    if (!fs.existsSync(path)) ncg.log.error(`Cannot find schema ${path} for replicant ${namespace}/${name}`);
+    return ncg.Replicant<T>(name, namespace, { "schemaPath": path, ...args }) as unknown as NodeCG.ServerReplicantWithSchemaDefault<T>;
 }
 
 export function addPrefix(prefix: string | undefined, name: string) {
@@ -39,15 +39,16 @@ export function sendSuccess<T>(ack: NodeCG.Acknowledgement | undefined, value: T
 
 
 // Store NodeCG Singleton
-let nodecg: NodeCG.ServerAPI<Configschema>;
+let ncg: NodeCG.ServerAPI<Configschema>;    // For server
+declare const nodecg: NodeCG.ClientAPI<Configschema>;   // For browser
 
-export function storeNodeCG(ncg: NodeCG.ServerAPI<Configschema>) {
-    nodecg = ncg;
+export function storeNodeCG(nodecgObj: NodeCG.ServerAPI<Configschema>) {
+    ncg = nodecgObj;
     speedcontrolUtil = new SpeedcontrolUtil(ncg as unknown as NodeCGServer);
 }
 
 export function getNodeCG(): NodeCG.ServerAPI<Configschema> {
-    return nodecg;
+    return ncg || nodecg;
 }
 
 
