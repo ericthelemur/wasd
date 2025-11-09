@@ -31,6 +31,7 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
     loupedeck: LoupedeckDevice | null = null;
     currentDisplay: (CellData | null)[] = [];
     currentBuffers: (Buffer<ArrayBuffer> | null)[] = [];
+    imgCache: { [url: string]: string } = {};
 
     whiteBuffer: Buffer<ArrayBuffer> | null = null;
     blackBuffer: Buffer<ArrayBuffer> | null = null;
@@ -107,8 +108,9 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         this.currentDisplay = Array(this.loupedeck.lcdKeyColumns * this.loupedeck.lcdKeyRows).fill(null);
         this.currentBuffers = Array(this.loupedeck.lcdKeyColumns * this.loupedeck.lcdKeyRows).fill(null);
         this.replicants.display.on("change", async newVal => {
+            const current = newVal.pages[newVal.current];
             for (let i = 0; i < this.currentDisplay.length; i++) {
-                const newCell = newVal[i], oldCell = this.currentDisplay[i];
+                const newCell = current[i], oldCell = this.currentDisplay[i];
                 if (!newCell && !oldCell) {  // If equal don't do anything (likely only covers null === null case)
                 } else if (!newCell || !oldCell || newCell.text != oldCell.text || newCell.colour != oldCell.colour || newCell.bg != oldCell.bg || newCell.imgType != oldCell.imgType || newCell.img != oldCell.img) {
                     this.currentBuffers[i] = null;
@@ -222,10 +224,15 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
             let imgStr = content.img;
             switch (content.imgType) {
                 case "svgURL":
-                    imgStr = await fetch(content.img).then(r => r.text()).catch(e => {
-                        this.log.error(`Error fetching SVG for LD index ${index} from URL ${content.img}`);
-                        return "";
-                    });
+                    if (this.imgCache[content.img]) {
+                        imgStr = this.imgCache[content.img];
+                    } else {
+                        imgStr = await fetch(content.img).then(r => r.text()).catch(e => {
+                            this.log.error(`Error fetching SVG for LD index ${index} from URL ${content.img}`);
+                            return "";
+                        });
+                        this.imgCache[content.img] = imgStr;
+                    }
                 case "svg": // Fall through
                     const coloured = imgStr.replace("currentColor", content.colour || "white");
                     const b64SVG = Buffer.from(coloured).toString("base64");
@@ -233,11 +240,16 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
                     break;
 
                 case "pngURL":
-                    imgStr = await fetch(content.img).then(r => r.text()).catch(e => {
-                        this.log.error(`Error fetching PNG for LD index ${index} from URL ${content.img}`);
-                        return "";
-                    });
-                    imgStr = Buffer.from(imgStr).toString("base64");
+                    if (this.imgCache[content.img]) {
+                        imgStr = this.imgCache[content.img];
+                    } else {
+                        imgStr = await fetch(content.img).then(r => r.text()).catch(e => {
+                            this.log.error(`Error fetching PNG for LD index ${index} from URL ${content.img}`);
+                            return "";
+                        });
+                        imgStr = Buffer.from(imgStr).toString("base64");
+                        this.imgCache[content.img] = imgStr;
+                    }
                 case "png":
                     img = await Canvas.loadImage(`data:image/png;base64,${imgStr}`);
                     break;
