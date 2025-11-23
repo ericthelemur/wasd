@@ -5,7 +5,14 @@
         "screen": {
             "type": "array",
             "items": {
-                "$ref": "types/cellData.json"
+                "oneOf": [
+                    {
+                        "$ref": "types/cellData.json"
+                    },
+                    {
+                        "type": "null"
+                    }
+                ]
             }
         }
     },

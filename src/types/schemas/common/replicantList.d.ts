@@ -6,5 +6,8 @@
  */
 
 export interface ReplicantList {
-	[k: string]: string;
+	[k: string]: {
+		replicant: string;
+		bundle?: string | null;
+	};
 }

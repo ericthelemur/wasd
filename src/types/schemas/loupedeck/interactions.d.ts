@@ -5,9 +5,15 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type ConnStatus = 'connected' | 'connecting' | 'disconnected' | 'error' | 'retrying';
-
-export interface Status {
-	connected: ConnStatus;
+export interface Interactions {
+	knobs: {
+		/**
+		 * @minItems 2
+		 * @maxItems 2
+		 */
+		channels: [string | null, string | null];
+		rotateScale: number;
+		[k: string]: unknown;
+	};
 	[k: string]: unknown;
 }

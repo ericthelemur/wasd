@@ -33,7 +33,11 @@ export function createMessageListeners<X extends Dict>(): ListenersT<X> {
         const prename = addPrefix(prefix, name);
         ncg.listenFor(prename, (data, ack) => {
             console.debug("Calling", prename, "with", data);
-            listener(data, ack);
+            try {
+                listener(data, ack);
+            } catch (e) {
+                console.log(`Error handling to ${name} ${e}`);
+            }
         })
     }
 
@@ -60,7 +64,11 @@ export function createMessageListenersBundle<X extends Dict>(namespace?: string,
     function listenTo<T extends keyof X & string>(name: T, listener: Listener<X[T]>) {
         ncg.listenFor(name, bundle, (data, ack) => {
             logger.info("Calling", bundle, name, "with", data);
-            listener(data, ack);
+            try {
+                listener(data, ack);
+            } catch (e) {
+                console.log(`Error handling to ${name} ${e}`);
+            }
         })
     }
 

@@ -351,4 +351,14 @@ export class X32Utility extends TypedEmitter<X32Events> {
             delete this.fadersExpected[address];
         }
     }
+
+
+    async incrementFader(addr: string, amount: number) {
+        if (!this.conn) return;
+        return await this.sendMethod({ "address": addr, args: [] })
+            .then(({ args }) => {
+                const argsCast = args as [{ type: 'f', value: number }];
+                this.conn.send({ "address": addr, args: [{ type: "f", value: argsCast[0].value + amount }] })
+            }).catch(e => this.log.error(`Error incrementing fader ${addr} by ${amount}: ${e}`));
+    }
 }

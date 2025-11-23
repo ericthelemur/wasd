@@ -104,8 +104,8 @@ listenTo("setTalkback", ({ mic, talkback, muted }) => {
 })
 
 // Mute toggle response
-const muteRegex = new RegExp(/^\/ch\/(\d+)\/mix\/on$/);
-const soloRegex = new RegExp(/^\/-stat\/solosw\/(\d+)$/);
+const muteRegex = /^\/ch\/(\d+)\/mix\/on$/;
+const soloRegex = /^\/-stat\/solosw\/(\d+)$/;
 x32.on("message", ({ address, args }) => {
     const typedArgs = args as [{ type: "i", value: number }];
     const m = muteRegex.exec(address);

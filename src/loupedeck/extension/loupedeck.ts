@@ -11,7 +11,7 @@ import {
 import { CommPoint } from '../../common/commpoint/commpoint';
 import { addExitTask } from '../../common/exit-hooks';
 import { BundleReplicant, Replicant } from '../../common/utils';
-import { CellData, Display, Login, Status } from '../../types/schemas/loupedeck';
+import { CellData, Display, Interactions, Login, Status } from '../../types/schemas/loupedeck';
 import listeners, { ListenerTypes, listenTo, sendTo } from '../messages';
 
 let titleFont: opentype.Font | null = null;
@@ -24,7 +24,8 @@ try {
 export type LoupeReplicants = {
     status: Status,
     login: Login,
-    display: Display
+    display: Display,
+    interactions: Interactions
 }
 
 export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
@@ -40,7 +41,8 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         super("loupedeck", {
             login: BundleReplicant("login", "loupedeck"),
             status: BundleReplicant("status", "loupedeck"),
-            display: BundleReplicant("display", "loupedeck")
+            display: BundleReplicant("display", "loupedeck"),
+            interactions: BundleReplicant("interactions", "loupedeck")
         }, listeners);
 
         addExitTask((err, cb) => this._disconnect(true).catch(() => { }).then(() => cb()));

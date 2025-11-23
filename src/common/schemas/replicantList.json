@@ -2,15 +2,48 @@
     "$schema": "http://json-schema.org/draft-07/schema",
     "type": "object",
     "additionalProperties": {
-        "type": "string"
+        "type": "object",
+        "properties": {
+            "replicant": {
+                "type": "string"
+            },
+            "bundle": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "replicant"
+        ]
     },
     "default": {
-        "Socials": "socials",
-        "Ticker Pools": "pools",
-        "Ticker Current": "current",
-        "WASD Config": "config",
-        "Break Text": "customBreakText",
-        "OBS Scene Data": "sceneData",
-        "Editable Replicants": "replicantList"
+        "Socials": {
+            "replicant": "socials"
+        },
+        "Ticker Pools": {
+            "replicant": "pools"
+        },
+        "Ticker Current": {
+            "replicant": "current"
+        },
+        "WASD Config": {
+            "replicant": "config"
+        },
+        "Break Text": {
+            "replicant": "customBreakText"
+        },
+        "OBS Scene Data": {
+            "replicant": "sceneData"
+        },
+        "Editable Replicants": {
+            "replicant": "replicantList"
+        },
+        "Loupedeck Display": {
+            "replicant": "display",
+            "bundle": "loupedeck"
+        }
     }
 }

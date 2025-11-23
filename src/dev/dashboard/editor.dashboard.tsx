@@ -11,15 +11,16 @@ import { useReplicant } from './useNodeCGCustom';
 
 export function EditConsole() {
     const [replicantList, ,] = useReplicant<ReplicantList>("replicantList", {});
-    const [curRep, setCurRep] = useState<string>("peopleBank");
-    const [repVal, setRepVal, repRep] = useReplicant<unknown>(curRep, undefined);
+    const [curRep, setCurRep] = useState<number>(0);
+    const [name, rep] = Object.entries(replicantList || {})[curRep] || ["None", { "replicant": "", "bundle": undefined }];
+    const [repVal, setRepVal, repRep] = useReplicant<unknown>(rep.replicant || "empty", undefined, { namespace: rep.bundle || undefined });
 
     if (!replicantList) return null;
 
     return <Container fluid="lg" className="gap-3 vstack my-3">
         <>
-            <Form.Select aria-label="Select Replicant to Edit" defaultValue={curRep} onChange={(e) => setCurRep(e.target.value)}>
-                {Object.entries(replicantList).map(([name, val]) => <option key={name} value={val}>{name}</option>)}
+            <Form.Select aria-label="Select Replicant to Edit" defaultValue={name} onChange={(e) => setCurRep(Number(e.target.value))}>
+                {Object.entries(replicantList).map(([name, val], i) => <option key={name} value={i}>{name}</option>)}
             </Form.Select>
 
             {!repRep.validate && "Replicant has no schema, be extra careful editing"}
