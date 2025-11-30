@@ -57,13 +57,13 @@ export function createMessageListeners<X extends Dict>(): ListenersT<X> {
 }
 
 
-export function createMessageListenersBundle<X extends Dict>(namespace?: string, log?: NodeCG.Logger): ListenersT<X> {
-    const logger = log || getNodeCG().log;  // If logger not provided, use generic
+export function createMessageListenersBundle<X extends Dict>(namespace?: string, noLogList: (keyof X)[] = []): ListenersT<X> {
     const bundle = namespace || "wasd";
+    const logger = new (getNodeCG().Logger)(bundle);
 
     function listenTo<T extends keyof X & string>(name: T, listener: Listener<X[T]>) {
         ncg.listenFor(name, bundle, (data, ack) => {
-            logger.info("Calling", bundle, name, "with", data);
+            if (!noLogList.includes(name)) logger.info("Calling", bundle, name, "with", data);
             try {
                 listener(data, ack);
             } catch (e) {
@@ -74,7 +74,7 @@ export function createMessageListenersBundle<X extends Dict>(namespace?: string,
 
     function sendToF<T extends keyof X & string>(name: T, data: X[T]) {
         return () => {
-            logger.info("Sending", bundle, name, "with", data);
+            if (!noLogList.includes(name)) logger.info("Sending", bundle, name, "with", data);
             return ncg.sendMessageToBundle(name, bundle, data);
         }
     }

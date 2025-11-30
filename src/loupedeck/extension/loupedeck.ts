@@ -110,7 +110,7 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         this.currentDisplay = Array(this.loupedeck.lcdKeyColumns * this.loupedeck.lcdKeyRows).fill(null);
         this.currentBuffers = Array(this.loupedeck.lcdKeyColumns * this.loupedeck.lcdKeyRows).fill(null);
         this.replicants.display.on("change", async newVal => {
-            const current = newVal.pages[newVal.current];
+            const current = newVal.pages[newVal.current].screen;
             for (let i = 0; i < this.currentDisplay.length; i++) {
                 const newCell = current[i], oldCell = this.currentDisplay[i];
                 if (!newCell && !oldCell) {  // If equal don't do anything (likely only covers null === null case)
@@ -180,7 +180,7 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
             this.loupedeck.drawKeyBuffer(key, this.whiteBuffer!, LoupedeckBufferFormat.RGB).catch(e => { });
         } else {
             if (this.currentBuffers[key]) this.loupedeck.drawKeyBuffer(key, this.currentBuffers[key], LoupedeckBufferFormat.RGB).catch(e => { });
-            else this.drawKey(key, this.replicants.display.value.pages[this.replicants.display.value.current][key]).catch(e => { });
+            else this.drawKey(key, this.replicants.display.value.pages[this.replicants.display.value.current].screen[key]).catch(e => { });
         }
     }
 

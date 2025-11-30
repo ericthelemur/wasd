@@ -26,6 +26,13 @@
         "headerColor": "#525F78"
       },
       {
+        "name": "loupedeck-control",
+        "title": "Loupedeck Control",
+        "width": 3,
+        "file": "loupedeck/dashboard/loupedeck.dashboard.html",
+        "headerColor": "#525F78"
+      },
+      {
         "name": "mixer-control",
         "title": "Mixer Control",
         "width": 3,
@@ -161,13 +168,14 @@
     ]
   },
   "scripts": {
-    "start": "cd ../.. && node -r source-map-support/register --trace-uncaught index.js",
+    "start": "cd ../.. && node --unhandled-rejections warn -r source-map-support/register index.js",
     "build": "node scripts/build.mjs",
     "watch": "npm run build -- --watch --browser",
     "clean": "npm run build -- --clean-only",
     "types": "node scripts/types.mjs",
     "nodemon": "nodemon --config scripts/nodemon.json",
-    "dev": "concurrently --kill-others \"npm run watch -- --types\" \"npm run watch -- --browser\" \"npm run nodemon\""
+    "dev": "concurrently --kill-others \"npm run watch -- --types\" \"npm run watch -- --browser\" \"npm run nodemon\"",
+    "mixer-mock": ".\\src\\mixer\\osc-sim\\.venv\\Scripts\\python .\\src\\mixer\\osc-sim\\server.py"
   },
   "dependencies": {
     "@ericthelemur/node": "^1.3.1",

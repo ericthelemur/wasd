@@ -14,6 +14,51 @@
                     }
                 ]
             }
+        },
+        "knobs": {
+            "type": "object",
+            "properties": {
+                "channels": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "rotateScale": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "channels",
+                "rotateScale"
+            ]
+        },
+        "page": {
+            "type": "object",
+            "properties": {
+                "screen": {
+                    "$ref": "#/definitions/screen"
+                },
+                "interactions": {
+                    "properties": {
+                        "knobs": {
+                            "$ref": "#/definitions/knobs"
+                        }
+                    },
+                    "required": [
+                        "knobs"
+                    ]
+                }
+            },
+            "required": [
+                "screen",
+                "interactions"
+            ]
         }
     },
     "properties": {
@@ -24,11 +69,11 @@
             "type": "object",
             "properties": {
                 "default": {
-                    "$ref": "#/definitions/screen"
+                    "$ref": "#/definitions/page"
                 }
             },
             "additionalProperties": {
-                "$ref": "#/definitions/screen"
+                "$ref": "#/definitions/page"
             },
             "required": [
                 "default"
@@ -43,23 +88,34 @@
     "default": {
         "current": "default",
         "pages": {
-            "default": [
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-            ]
+            "default": {
+                "screen": [
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "interactions": {
+                    "knobs": {
+                        "channels": [
+                            "RUN-1",
+                            "GAME-1"
+                        ],
+                        "rotateScale": 0.01
+                    }
+                }
+            }
         }
     }
 }

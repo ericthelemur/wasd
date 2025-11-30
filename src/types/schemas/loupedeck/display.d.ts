@@ -10,9 +10,17 @@ export type Screen = (CellData | null)[];
 export interface Display {
 	current: string;
 	pages: {
-		default: Screen;
-		[k: string]: Screen;
+		default: Page;
+		[k: string]: Page;
 	};
+}
+export interface Page {
+	screen: Screen;
+	interactions: {
+		knobs: Knobs;
+		[k: string]: unknown;
+	};
+	[k: string]: unknown;
 }
 export interface CellData {
 	text?: string;
@@ -20,5 +28,14 @@ export interface CellData {
 	bg?: string;
 	imgType?: 'svg' | 'png' | 'svgURL' | 'pngURL' | 'base64';
 	img?: string;
+	[k: string]: unknown;
+}
+export interface Knobs {
+	/**
+	 * @minItems 2
+	 * @maxItems 2
+	 */
+	channels: [string | null, string | null];
+	rotateScale: number;
 	[k: string]: unknown;
 }

@@ -18,6 +18,6 @@ export type ListenerTypes = {
     "setButtonColour": { button: number, colour: [number, number, number] }
 }
 
-const listeners = createMessageListenersBundle<ListenerTypes>("loupedeck");
+const listeners = createMessageListenersBundle<ListenerTypes>("loupedeck", ["setButtonColour"]);
 export default listeners;
 export const { listenTo, sendTo, sendToF } = listeners;
