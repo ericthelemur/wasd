@@ -7,6 +7,7 @@ type Dict = { [name: string]: unknown };
 
 export type Messages<C> = {
     "connect": Partial<C>,
+    "connected": undefined,
     "disconnect": undefined
     [name: string]: any
 };
@@ -84,6 +85,7 @@ export abstract class CommPoint<
             this.stopRetry();
             this.replicants.status.value.connected = "connected";
             this.log.info("Successfully connected");
+            this.listeners.sendTo("connected", undefined);
             this._setupListeners().catch((e) => this.log.error("Error creating listeners", e));
             err = null;
         }).catch((e) => {

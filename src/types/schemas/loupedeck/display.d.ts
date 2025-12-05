@@ -5,7 +5,33 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type Screen = (CellData | null)[];
+/**
+ * @minItems 15
+ * @maxItems 15
+ */
+export type Screen = [
+	CellData | null,
+	CellData | null,
+	CellData | null,
+	CellData | null,
+	CellData | null,
+	CellData | null,
+	CellData | null,
+	CellData | null,
+	CellData | null,
+	CellData | null,
+	CellData | null,
+	CellData | null,
+	CellData | null,
+	CellData | null,
+	CellData | null
+];
+export type Condition = {
+	replicant: string;
+	field: string;
+	operator: '=' | '!=' | '<' | '<=' | '>' | '>=' | 'exists' | 'not exists';
+	values: unknown[];
+}[];
 
 export interface Display {
 	current: string;
@@ -16,18 +42,56 @@ export interface Display {
 }
 export interface Page {
 	screen: Screen;
-	interactions: {
-		knobs: Knobs;
-		[k: string]: unknown;
-	};
+	knobs?: Knobs;
+	/**
+	 * @minItems 4
+	 * @maxItems 4
+	 */
+	buttons?: [null | State, null | State, null | State, null | State];
 	[k: string]: unknown;
 }
 export interface CellData {
+	replicants?: {
+		[k: string]:
+			| string
+			| {
+					replicant: string;
+					bundle: string | null;
+			  };
+	};
+	states: {
+		[k: string]: State;
+	};
+}
+export interface State {
+	graphic?: Graphic;
+	isActive?: Condition;
+	onDown?: null | NodecgMsg | NodecgReplicant;
+	onUp?: null | NodecgMsg | NodecgReplicant;
+	[k: string]: unknown;
+}
+export interface Graphic {
 	text?: string;
 	colour?: string;
 	bg?: string;
 	imgType?: 'svg' | 'png' | 'svgURL' | 'pngURL' | 'base64';
 	img?: string;
+}
+export interface NodecgMsg {
+	category: 'nodecg';
+	action: 'message';
+	message: string;
+	data?: unknown;
+	bundle?: string | null;
+	[k: string]: unknown;
+}
+export interface NodecgReplicant {
+	category: 'nodecg';
+	action: 'replicant';
+	replicant: string;
+	field: string;
+	value: unknown;
+	bundle?: string | null;
 	[k: string]: unknown;
 }
 export interface Knobs {
@@ -37,5 +101,10 @@ export interface Knobs {
 	 */
 	channels: [string | null, string | null];
 	rotateScale: number;
+	/**
+	 * @minItems 2
+	 * @maxItems 2
+	 */
+	buttons: [null | State, null | State];
 	[k: string]: unknown;
 }

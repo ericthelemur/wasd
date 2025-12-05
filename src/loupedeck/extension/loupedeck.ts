@@ -2,6 +2,7 @@ import Canvas from 'canvas';
 import clone from 'clone';
 import drawText, { DrawOptions } from 'node-canvas-text';
 import opentype from 'opentype.js';
+import { ValueOf } from 'ts-essentials';
 
 import {
     listLoupedecks, LoupedeckBufferFormat, LoupedeckControlInfo, LoupedeckControlType,
@@ -11,9 +12,13 @@ import {
 import { CommPoint } from '../../common/commpoint/commpoint';
 import { addExitTask } from '../../common/exit-hooks';
 import { BundleReplicant, Replicant } from '../../common/utils';
-import { CellData, Display, Interactions, Login, Status } from '../../types/schemas/loupedeck';
+import {
+    CellData, Condition, Display, Graphic, Login, Screen, Status
+} from '../../types/schemas/loupedeck';
 import listeners, { ListenerTypes, listenTo, sendTo } from '../messages';
+import { checkButton } from './buttonStateChecker';
 
+import type NodeCG from '@nodecg/types';
 let titleFont: opentype.Font | null = null;
 try {
     titleFont = opentype.loadSync('./bundles/wasd/src/common/fonts/Montserrat-Bold.ttf');
@@ -24,13 +29,12 @@ try {
 export type LoupeReplicants = {
     status: Status,
     login: Login,
-    display: Display,
-    interactions: Interactions
+    display: Display
 }
 
 export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
     loupedeck: LoupedeckDevice | null = null;
-    currentDisplay: (CellData | null)[] = [];
+    // currentDisplay: (CellData | null)[] = [];
     currentBuffers: (Buffer<ArrayBuffer> | null)[] = [];
     imgCache: { [url: string]: string } = {};
 
@@ -41,8 +45,7 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         super("loupedeck", {
             login: BundleReplicant("login", "loupedeck"),
             status: BundleReplicant("status", "loupedeck"),
-            display: BundleReplicant("display", "loupedeck"),
-            interactions: BundleReplicant("interactions", "loupedeck")
+            display: BundleReplicant("display", "loupedeck")
         }, listeners);
 
         addExitTask((err, cb) => this._disconnect(true).catch(() => { }).then(() => cb()));
@@ -107,20 +110,20 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         })
 
         // Draw Key Images from replicant
-        this.currentDisplay = Array(this.loupedeck.lcdKeyColumns * this.loupedeck.lcdKeyRows).fill(null);
-        this.currentBuffers = Array(this.loupedeck.lcdKeyColumns * this.loupedeck.lcdKeyRows).fill(null);
-        this.replicants.display.on("change", async newVal => {
-            const current = newVal.pages[newVal.current].screen;
-            for (let i = 0; i < this.currentDisplay.length; i++) {
-                const newCell = current[i], oldCell = this.currentDisplay[i];
-                if (!newCell && !oldCell) {  // If equal don't do anything (likely only covers null === null case)
-                } else if (!newCell || !oldCell || newCell.text != oldCell.text || newCell.colour != oldCell.colour || newCell.bg != oldCell.bg || newCell.imgType != oldCell.imgType || newCell.img != oldCell.img) {
-                    this.currentBuffers[i] = null;
-                    this.drawKey(i, newCell).catch(e => this.log.error("Error drawing key", e));;   // If difference in any field, redraw
-                }
-                this.currentDisplay[i] = clone(newCell);
-            }
-        })
+        // this.currentDisplay = Array(this.loupedeck.lcdKeyColumns * this.loupedeck.lcdKeyRows).fill(null);
+        // this.currentBuffers = Array(this.loupedeck.lcdKeyColumns * this.loupedeck.lcdKeyRows).fill(null);
+        // this.replicants.display.on("change", async newVal => {
+        //     const current = newVal.pages[newVal.current].screen;
+        //     for (let i = 0; i < this.currentDisplay.length; i++) {
+        //         const newCell = current[i], oldCell = this.currentDisplay[i];
+        //         if (!newCell && !oldCell) {  // If equal don't do anything (likely only covers null === null case)
+        //         } else if (!newCell || !oldCell || newCell.text != oldCell.text || newCell.colour != oldCell.colour || newCell.bg != oldCell.bg || newCell.imgType != oldCell.imgType || newCell.img != oldCell.img) {
+        //             this.currentBuffers[i] = null;
+        //             this.drawKey(i, newCell).catch(e => this.log.error("Error drawing key", e));;   // If difference in any field, redraw
+        //         }
+        //         this.currentDisplay[i] = clone(newCell);
+        //     }
+        // })
     }
 
     async _interactionListeners() {
@@ -176,28 +179,27 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
 
     flashOnTouch(key: number, isStart: boolean) {
         if (!this.loupedeck) return;
-        if (isStart) {
-            this.loupedeck.drawKeyBuffer(key, this.whiteBuffer!, LoupedeckBufferFormat.RGB).catch(e => { });
-        } else {
-            if (this.currentBuffers[key]) this.loupedeck.drawKeyBuffer(key, this.currentBuffers[key], LoupedeckBufferFormat.RGB).catch(e => { });
-            else this.drawKey(key, this.replicants.display.value.pages[this.replicants.display.value.current].screen[key]).catch(e => { });
+        if (isStart) {  // Start by flashing white
+            this.drawBufferTemp(key, this.whiteBuffer!);
+        } else {    // End flash by drawing back original buffer
+            this.drawBufferTemp(key, this.currentBuffers[key] || this.blackBuffer!);
         }
     }
 
 
     // Drawing Key Content
 
-    async drawKey(index: number, content: CellData | null) {
+    async drawKey(index: number, graphic: Graphic | null) {
         // Parent drawing key's content function
         if (!this.loupedeck) return;
         this.log.info("Drawing key", index);
 
-        if (!content) {     // Draw solid black if no content
+        if (!graphic) {     // Draw solid black if no content
             this.loupedeck.drawKeyBuffer(index, this.blackBuffer!, LoupedeckBufferFormat.RGB);
             return;
         };
 
-        const canvas = await this.drawContent(index, content);  // Draw content onto canvas
+        const canvas = await this.drawContent(index, graphic);  // Draw content onto canvas
         if (!canvas) return;
         await this.drawCanvas(index, canvas);   // Convert canvas to buffer and draw
     }
@@ -212,7 +214,7 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         return [canvas, ctx];
     }
 
-    async drawContent(index: number, content: CellData) {
+    async drawContent(index: number, content: Graphic) {
         // Draw key's content into canvas. content may have fields: text, colour & bg (may be any CSS colour), imgType & img
         // imgType denotes type of img data - may be png or svg, either a url (svgURL/pngURL) or the raw string/bytes (svg/png) or raw base64 resource uri)
 
@@ -318,10 +320,28 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         if (!this.loupedeck) return;
         const output = this.convertCanvasToBuffer(canvas);
         this.currentBuffers[index] = output;
+        this.drawBuffer(index, output);
+    }
 
-        // const RGBBuffer = buffer.filter((_, i) => i % 4 != rem); // Remove alpha channel (sorry! jank)
+    async drawBuffer(index: number, output: Buffer<ArrayBuffer>) {
+        // Draw buffer, record currentBuffer
+        if (!this.loupedeck) return;
+        this.currentBuffers[index] = output;
+        this.drawBufferTemp(index, output);
+    }
+
+    async drawBufferTemp(index: number, output: Buffer<ArrayBuffer>) {
+        // Draw buffer, don't record currentBuffer
+        if (!this.loupedeck) return;
         await this.loupedeck.drawKeyBuffer(index, output, LoupedeckBufferFormat.RGB)
             .catch(e => this.log.error("Error drawing Loupedeck key", e));
+    }
+
+    getCurrentPage() {
+        const disp = this.replicants.display.value;
+        let page = disp.pages[disp.current];
+        if (!page) page = disp.pages.default;
+        return page;
     }
 }
 

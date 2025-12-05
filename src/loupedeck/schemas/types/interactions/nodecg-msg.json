@@ -1,0 +1,27 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "category": {
+            "const": "nodecg"
+        },
+        "action": {
+            "const": "message"
+        },
+        "message": {
+            "type": "string"
+        },
+        "data": {},
+        "bundle": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "required": [
+        "category",
+        "action",
+        "message"
+    ]
+}

@@ -1,0 +1,32 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "category": {
+            "const": "nodecg"
+        },
+        "action": {
+            "const": "replicant"
+        },
+        "replicant": {
+            "type": "string"
+        },
+        "field": {
+            "type": "string"
+        },
+        "value": {},
+        "bundle": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "required": [
+        "category",
+        "action",
+        "replicant",
+        "field",
+        "value"
+    ]
+}

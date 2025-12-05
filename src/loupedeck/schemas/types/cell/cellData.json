@@ -1,0 +1,22 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "replicants": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "replicant-ref.json"
+            }
+        },
+        "states": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "state.json"
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "states"
+    ]
+}

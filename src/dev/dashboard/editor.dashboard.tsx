@@ -1,12 +1,13 @@
 import '../../common/uwcs-bootstrap.css';
 
-import { JsonEditor } from 'json-edit-react';
-import { useEffect, useState } from 'react';
+import { githubDarkTheme, JsonEditor } from 'json-edit-react';
+import { Suspense, useEffect, useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import { createRoot } from 'react-dom/client';
 import { ReplicantList } from 'types/schemas';
 
+import CodeEditor from './codeeditor';
 import { useReplicant } from './useNodeCGCustom';
 
 export function EditConsole() {
@@ -66,14 +67,31 @@ export function EditConsole() {
                 indent={2}
                 collapse={3}
                 restrictDrag={false}
-                theme="githubDark"
+                theme={githubDarkTheme}
                 maxWidth="100%"
+                minWidth="75%"
                 errorMessageTimeout={5000}
-                className="overflow-auto" />
+                className="overflow-auto"
+                TextEditor={
+                    (props) => (
+                        <Suspense
+                            fallback={
+                                <div className="loading" style={{ height: `${getLineHeight(repVal)}lh` }}>
+                                    Loading code editor...
+                                </div>
+                            }
+                        >
+                            <CodeEditor {...props} />
+                        </Suspense>
+                    )
+                }
+            />
             }
         </>
     </Container>
 }
+
+const getLineHeight = (data: any) => JSON.stringify(data, null, 2).split('\n').length
 
 const root = createRoot(document.getElementById('root')!);
 root.render(<EditConsole />);
