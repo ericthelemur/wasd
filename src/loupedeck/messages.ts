@@ -4,6 +4,7 @@ import { Login } from '../types/schemas/loupedeck';
 export type ListenerTypes = {
     "connect": Partial<Login>,
     "disconnect": undefined,
+    "connected": undefined,
 
     "screenDown": { key: number },
     "screenUp": { key: number },

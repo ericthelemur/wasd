@@ -66,8 +66,7 @@ export interface CellData {
 export interface State {
 	graphic?: Graphic;
 	isActive?: Condition;
-	onDown?: null | NodecgMsg | NodecgReplicant;
-	onUp?: null | NodecgMsg | NodecgReplicant;
+	interaction?: null | TapOrToggle | NodecgMsg | NodecgReplicant;
 	[k: string]: unknown;
 }
 export interface Graphic {
@@ -76,6 +75,12 @@ export interface Graphic {
 	bg?: string;
 	imgType?: 'svg' | 'png' | 'svgURL' | 'pngURL' | 'base64';
 	img?: string;
+}
+export interface TapOrToggle {
+	category: 'modifier';
+	action: 'tap-or-toggle';
+	interaction: null | TapOrToggle | NodecgMsg | NodecgReplicant;
+	[k: string]: unknown;
 }
 export interface NodecgMsg {
 	category: 'nodecg';
@@ -88,10 +93,14 @@ export interface NodecgMsg {
 export interface NodecgReplicant {
 	category: 'nodecg';
 	action: 'replicant';
-	replicant: string;
+	replicant:
+		| string
+		| {
+				replicant: string;
+				bundle: string | null;
+		  };
 	field: string;
 	value: unknown;
-	bundle?: string | null;
 	[k: string]: unknown;
 }
 export interface Knobs {

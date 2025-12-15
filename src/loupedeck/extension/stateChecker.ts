@@ -6,6 +6,7 @@ import { CellData, Condition } from '../../types/schemas/loupedeck';
 import { listenTo } from '../messages';
 import { loupedeck } from './index.extension';
 import { redrawIfNecessary } from './redraw';
+import { getReplicant, getRepValAt } from './utils';
 
 import type NodeCG from '@nodecg/types';
 const nodecg = getNodeCG();
@@ -19,18 +20,17 @@ function getOrAddRep(index: number, key: string, rep: ValueOf<NonNullable<CellDa
     const cellReps = cellReplicants[index];
     if (!(key in cellReps)) {   // Create if not existing
         loupedeck.log.info("Adding replicant for", index, "key", key, "rep", rep);
-        if (typeof rep == "object" && rep.bundle) { // If has bundle passed, create in namespace
-            cellReps[key] = nodecg.Replicant(rep.replicant, rep.bundle);
-        } else {
-            const name = typeof rep == "object" ? rep.replicant : rep;  // If not, create in this namespace
-            cellReps[key] = nodecg.Replicant(name);
-        }
+        cellReps[key] = getReplicant(rep);
         cellReps[key].on("change", () => checkButton(index));   // If adding new replicant, subscribe to changes
     }
     return cellReps[key];
 }
 
 const cellStates: (string | null)[] = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
+export function getCellState(index: number) {
+    return cellStates[index];
+}
+
 // const stateBuffers = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
 export function checkButton(index: number) {   // Check if button state has been changed by replicant update
     if (!loupedeck || !loupedeck.isConnected()) return;
@@ -110,12 +110,7 @@ function evalCondition(condition: Condition, cellRep: CellRep): boolean {
     for (let cond of condition) {
         const rep = cellRep[cond.replicant];
         if (!rep) continue;
-        let val: any = rep.value; // Start at rep root, traverse down repeatedly
-        try { // Jankily parse JSON path
-            cond.field.split(/\.|\/|\\|\[|\]/).forEach((part) => val = val[part.match(/\d+/) ? Number(part) : part]);
-        } catch {
-            val = undefined;
-        }
+        const val = getRepValAt(rep, cond.field);
 
         if (cond.operator == "exists" || cond.operator == "not exists") {
             const exists = val !== undefined && val !== null;

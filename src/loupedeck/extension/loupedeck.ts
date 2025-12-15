@@ -1,8 +1,6 @@
 import Canvas from 'canvas';
-import clone from 'clone';
 import drawText, { DrawOptions } from 'node-canvas-text';
 import opentype from 'opentype.js';
-import { ValueOf } from 'ts-essentials';
 
 import {
     listLoupedecks, LoupedeckBufferFormat, LoupedeckControlInfo, LoupedeckControlType,
@@ -11,14 +9,10 @@ import {
 
 import { CommPoint } from '../../common/commpoint/commpoint';
 import { addExitTask } from '../../common/exit-hooks';
-import { BundleReplicant, Replicant } from '../../common/utils';
-import {
-    CellData, Condition, Display, Graphic, Login, Screen, Status
-} from '../../types/schemas/loupedeck';
+import { BundleReplicant } from '../../common/utils';
+import { Display, Graphic, Login, Status } from '../../types/schemas/loupedeck';
 import listeners, { ListenerTypes, listenTo, sendTo } from '../messages';
-import { checkButton } from './buttonStateChecker';
 
-import type NodeCG from '@nodecg/types';
 let titleFont: opentype.Font | null = null;
 try {
     titleFont = opentype.loadSync('./bundles/wasd/src/common/fonts/Montserrat-Bold.ttf');

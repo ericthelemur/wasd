@@ -1,15 +1,7 @@
-import { getNodeCG } from '../../common/utils';
-import { channels } from '../../mixer/extension/mixer/replicants';
-import { getX32 } from '../../mixer/extension/mixer/utils';
-import { NodecgMsg } from '../../types/schemas/loupedeck';
 import { listenTo, sendTo } from '../messages';
+import { Action, doInteraction } from './actions';
 import { loupedeck } from './index.extension';
-
-const nodecg = getNodeCG();
-
-listenTo("connect", () => {
-
-})
+import { getCellStateData } from './utils';
 
 // Connected colour rotation
 let count = 0;
@@ -26,65 +18,29 @@ setInterval(() => {
 
 // Send knob adjustments to mixer channels
 
-listenTo("knobRotate", ({ knob, amount }) => {
-    // Sets a channel's volume with rotation
-    const disp = loupedeck.replicants.display.value;
-    const page = disp.pages[disp.current];
-    if (!page) return;
-    const knobs = page.interactions?.knobs;
-    const channelName = knobs.channels[knob];
-    if (!channelName) return;
-    let cmd = channelName;
-    if (!cmd.startsWith("/")) {     // Config value can either be name of a channel or a OSC command. If channel name, lookup here
-        const channelIndex = channels.value.mics[channelName];
-        if (!channelIndex) return;
-        cmd = `/ch/${String(channelIndex).padStart(2, "0")}/mix/fader`;
-    }
-    getX32().incrementFader(cmd, knobs.rotateScale * amount);
-});
+// listenTo("knobRotate", ({ knob, amount }) => {
+//     // Sets a channel's volume with rotation
+//     const disp = loupedeck.replicants.display.value;
+//     const page = disp.pages[disp.current];
+//     if (!page) return;
+//     const knobs = page.interactions?.knobs;
+//     const channelName = knobs.channels[knob];
+//     if (!channelName) return;
+//     let cmd = channelName;
+//     if (!cmd.startsWith("/")) {     // Config value can either be name of a channel or a OSC command. If channel name, lookup here
+//         const channelIndex = channels.value.mics[channelName];
+//         if (!channelIndex) return;
+//         cmd = `/ch/${String(channelIndex).padStart(2, "0")}/mix/fader`;
+//     }
+//     getX32().incrementFader(cmd, knobs.rotateScale * amount);
+// });
 
-type Interaction = null | NodecgMsg;
-function doInteraction(interaction?: Interaction) {
-    if (!interaction) return;
-    if (interaction.category == "nodecg") {
-        if (interaction.action == "message") {
-            if (interaction.bundle) {
-                if (interaction.data) nodecg.sendMessageToBundle(interaction.message, interaction.bundle, interaction.data);
-                else nodecg.sendMessageToBundle(interaction.message, interaction.bundle);
-            } else {
-                if (interaction.data) nodecg.sendMessage(interaction.message, interaction.data);
-                else nodecg.sendMessage(interaction.message);
-            }
-        }
-    }
+function screenAction(key: number, action: Action) {
+    const cellData = loupedeck.getCurrentPage().screen[key];
+    const cellState = getCellStateData(key);
+    if (!cellData || !cellState) return;
+    doInteraction(cellState?.interaction, action, { id: "key-" + key, cell: cellData, state: cellState });
 }
 
-// const downTimes = [-1, -1, -1, -1, -1,  -1, -1, -1, -1, -1,  -1, -1, -1, -1, -1];
-// listenTo("buttonDown", ({ button }) => {
-//     const disp = loupedeck.replicants.display.value;
-//     const page = disp.pages[disp.current];
-//     if (!page) return;
-//     const btn = page.screen[button]?.button;
-//     if (!btn) return;
-//     if (btn.btnType == "tap") {
-//         doInteraction(btn.on);
-//     } else if (btn.btnType == "toggle-or-tap") {
-//         downTimes[button] = Date.now();
-//         doInteraction(btn.on);
-//     }
-// });
-
-// listenTo("buttonUp", ({ button }) => {
-//     const disp = loupedeck.replicants.display.value;
-//     const page = disp.pages[disp.current];
-//     if (!page) return;
-//     const btn = page.screen[button]?.button;
-//     if (!btn) return;
-//     if (btn.btnType == "tap") {
-//         doInteraction(btn.off);
-//     } else if (btn.btnType == "toggle-or-tap") {
-//         if (Date.now() - downTimes[button] < 500) {
-//             doInteraction(btn.off);
-//         }
-//     }
-// });
+listenTo("screenDown", ({ key }) => screenAction(key, "down"));
+listenTo("screenUp", ({ key }) => screenAction(key, "up"));

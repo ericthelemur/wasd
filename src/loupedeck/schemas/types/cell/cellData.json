@@ -5,7 +5,7 @@
         "replicants": {
             "type": "object",
             "additionalProperties": {
-                "$ref": "replicant-ref.json"
+                "$ref": "../replicant-ref.json"
             }
         },
         "states": {

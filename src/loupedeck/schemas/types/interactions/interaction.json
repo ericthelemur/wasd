@@ -5,10 +5,13 @@
             "type": "null"
         },
         {
-            "$ref": "../interactions/nodecg-msg.json"
+            "$ref": "tap-or-toggle.json"
         },
         {
-            "$ref": "../interactions/nodecg-replicant.json"
+            "$ref": "nodecg-msg.json"
+        },
+        {
+            "$ref": "nodecg-replicant.json"
         }
     ],
     "default": null

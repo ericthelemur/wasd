@@ -9,18 +9,12 @@
             "const": "replicant"
         },
         "replicant": {
-            "type": "string"
+            "$ref": "../replicant-ref.json"
         },
         "field": {
             "type": "string"
         },
-        "value": {},
-        "bundle": {
-            "type": [
-                "string",
-                "null"
-            ]
-        }
+        "value": {}
     },
     "required": [
         "category",
