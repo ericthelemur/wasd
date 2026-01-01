@@ -2,7 +2,8 @@ import clone from 'clone';
 import { RunData } from 'speedcontrol-util/types/speedcontrol';
 import { SceneData } from 'types/schemas';
 
-import { sc, sceneData } from './replicants';
+import { sceneData } from './replicants';
+import { getSpeedControlUtil } from '../../common/utils';
 
 function checkRun(run: RunData, assigned: SceneData) {
     const runSceneName = run.customData["scene"];
@@ -13,6 +14,7 @@ function checkRun(run: RunData, assigned: SceneData) {
 
 function updateSceneRuns() {
     if (!sceneData.value) return;
+    const sc = getSpeedControlUtil();
     const assigned: SceneData = Object.fromEntries(Object.keys(sceneData.value).map(k => [k, { name: k, run: null }]));
     const currRun = sc.getCurrentRun();
     if (currRun) checkRun(currRun, assigned);
@@ -29,5 +31,6 @@ function updateSceneRuns() {
     }
 }
 
+const sc = getSpeedControlUtil();
 sc.runDataActiveRun.on("change", updateSceneRuns);
 sc.runDataArray.on("change", updateSceneRuns);

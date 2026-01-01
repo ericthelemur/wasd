@@ -1,6 +1,6 @@
 import { RunDataPlayer } from 'speedcontrol-util/types/speedcontrol';
-import { getNodeCG } from '../../common/utils';
-import { config, sc } from '../../wasd/extension/replicants';
+import { getNodeCG, getSpeedControlUtil } from '../../common/utils';
+import { config } from '../../wasd/extension/replicants';
 import { listenTo } from '../messages';
 import { people, peopleBank } from './replicants';
 import { OengusImportStatus } from 'speedcontrol-util/types/speedcontrol/schemas';
@@ -61,7 +61,7 @@ async function loadOengusPeople() {
             })
         });
 
-        sc.getRunDataArray().forEach((run) => {
+        getSpeedControlUtil().getRunDataArray().forEach((run) => {
             run.teams.forEach(team => {
                 team.players.forEach(player => {
                     const pdata = schPeople[player.name];
@@ -120,7 +120,7 @@ oengusImportStatus.on("change", (newVal, oldVal) => {
 // nodecg.listenFor("changeToNextRun", "nodecg-speedcontrol", async (data, ack) => {
 // nodecg.listenFor("changeActiveRun", "nodecg-speedcontrol", async (data, ack) => {
 
-sc.runDataActiveRun.on("change", (run) => {
+getSpeedControlUtil().runDataActiveRun.on("change", (run) => {
     let runners: RunDataPlayer[] = [];
 
     const teamKeys = Object.keys(people.value).filter(n => n.startsWith("team"));

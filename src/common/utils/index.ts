@@ -44,7 +44,6 @@ declare const nodecg: NodeCG.ClientAPI<Configschema>;   // For browser
 
 export function storeNodeCG(nodecgObj: NodeCG.ServerAPI<Configschema>) {
     ncg = nodecgObj;
-    speedcontrolUtil = new SpeedcontrolUtil(ncg as unknown as NodeCGServer);
 }
 
 export function getNodeCG(): NodeCG.ServerAPI<Configschema> {
@@ -56,11 +55,18 @@ export function getNodeCG(): NodeCG.ServerAPI<Configschema> {
 let speedcontrolUtil: SpeedcontrolUtil;
 
 export function getSpeedControlUtil(): SpeedcontrolUtil {
+    ncg.log.info("Accessed");
+    if (!speedcontrolUtil) {
+        ncg.log.info(ncg);
+        (ncg as any).extensions = (ncg as any).extension;
+        speedcontrolUtil = new SpeedcontrolUtil(ncg as unknown as NodeCGServer);
+    }
     return speedcontrolUtil;
 }
 
 export function buildSchemaPath(parent: string, schemaName: string) {
-    const p = path.resolve(process.cwd(), 'bundles', 'wasd', 'src', parent, 'schemas', `${encodeURIComponent(schemaName)}.json`);
+    // const p = path.resolve(process.cwd(), 'bundles', 'wasd', 'src', parent, 'schemas', `${encodeURIComponent(schemaName)}.json`);
+    const p = path.resolve(process.cwd(), 'src', parent, 'schemas', `${encodeURIComponent(schemaName)}.json`);
     return p;
 }
 

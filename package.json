@@ -10,6 +10,9 @@
   },
   "nodecg": {
     "compatibleRange": "^2.0.0",
+    "bundleDependencies": {
+      "nodecg-speedcontrol": "*"
+    },
     "dashboardPanels": [
       {
         "name": "countdown",
@@ -192,13 +195,14 @@
     "clone": "^2.1.2",
     "fs-extra": "11.2.0",
     "get-current-line": "^7.4.0",
-    "json-edit-react": "^1.17.1",
+    "json-edit-react": "^1.29.0",
     "json-schema-defaults": "0.4.0",
     "json-schema-to-typescript": "15.0.3",
     "loupedeck": "^7.0.0",
     "markdown-to-jsx": "^7.4.1",
     "moment": "^2.30.0",
     "node-canvas-text": "^1.0.2",
+    "nodecg": "^2.6.4",
     "obs-websocket-js": "^5.0.3",
     "opentype.js": "^1.3.4",
     "osc": "2.4.4",

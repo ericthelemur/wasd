@@ -1,3 +1,4 @@
+/*
 import path from 'path';
 import fs from 'fs';
 
@@ -58,3 +59,4 @@ router.get("/:file", (req, res, next) => {
 });
 
 nodecg.mount('/external', router);
+*/

@@ -1,0 +1,4 @@
+[submodule "bundles/nodecg-speedcontrol"]
+	path = bundles/nodecg-speedcontrol
+	url = https://github.com/speedcontrol/nodecg-speedcontrol
+	branch = build
