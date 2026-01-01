@@ -1,6 +1,7 @@
 import Canvas from 'canvas';
 import drawText, { DrawOptions } from 'node-canvas-text';
 import opentype from 'opentype.js';
+import fs from "fs";
 
 import {
     listLoupedecks, LoupedeckBufferFormat, LoupedeckControlInfo, LoupedeckControlType,
@@ -10,12 +11,12 @@ import {
 import { CommPoint } from '../../common/commpoint/commpoint';
 import { addExitTask } from '../../common/exit-hooks';
 import { BundleReplicant } from '../../common/utils';
-import { Display, Graphic, Login, Status } from '../../types/schemas/loupedeck';
+import { Display, Graphic, Images, Login, Status } from '../../types/schemas/loupedeck';
 import listeners, { ListenerTypes, listenTo, sendTo } from '../messages';
 
 let titleFont: opentype.Font | null = null;
 try {
-    titleFont = opentype.loadSync('./bundles/wasd/src/common/fonts/Montserrat-Bold.ttf');
+    titleFont = opentype.loadSync('src/common/fonts/Montserrat-Bold.ttf');
 } catch (e) {
     console.error("Error loading Montserrat font");
 }
@@ -23,7 +24,8 @@ try {
 export type LoupeReplicants = {
     status: Status,
     login: Login,
-    display: Display
+    display: Display,
+    images: Images
 }
 
 export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
@@ -39,7 +41,8 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         super("loupedeck", {
             login: BundleReplicant("login", "loupedeck"),
             status: BundleReplicant("status", "loupedeck"),
-            display: BundleReplicant("display", "loupedeck")
+            display: BundleReplicant("display", "loupedeck"),
+            images: BundleReplicant("images", "loupedeck")
         }, listeners);
 
         addExitTask((err, cb) => this._disconnect(true).catch(() => { }).then(() => cb()));
@@ -185,11 +188,10 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
 
     async drawKey(index: number, graphic: Graphic | null) {
         // Parent drawing key's content function
-        if (!this.loupedeck) return;
-        this.log.info("Drawing key", index);
+        this.log.info("Drawing key", index, graphic);
 
         if (!graphic) {     // Draw solid black if no content
-            this.loupedeck.drawKeyBuffer(index, this.blackBuffer!, LoupedeckBufferFormat.RGB);
+            this.loupedeck?.drawKeyBuffer(index, this.blackBuffer!, LoupedeckBufferFormat.RGB);
             return;
         };
 
@@ -212,8 +214,8 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         // Draw key's content into canvas. content may have fields: text, colour & bg (may be any CSS colour), imgType & img
         // imgType denotes type of img data - may be png or svg, either a url (svgURL/pngURL) or the raw string/bytes (svg/png) or raw base64 resource uri)
 
-        if (!this.loupedeck || !titleFont) return;
-        const w = this.loupedeck.lcdKeySize;
+        if (!titleFont) return;
+        const w = this.loupedeck?.lcdKeySize || 96;
         const [canvas, ctx] = this.generateCanvasColour(w, content.bg);
 
         // Load and convert SVG to coloured base64 URL
@@ -311,6 +313,10 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         // const buffer = canvas.toBuffer('image/png')
         // fs.writeFileSync(`key${index}.png`, buffer)
 
+        // Save for interface
+        this.replicants.images.value[index] = canvas.toBuffer("image/png").toString("base64");
+
+        // Send to loupedeck
         if (!this.loupedeck) return;
         const output = this.convertCanvasToBuffer(canvas);
         this.currentBuffers[index] = output;

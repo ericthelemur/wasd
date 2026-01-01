@@ -55,11 +55,10 @@ export function getNodeCG(): NodeCG.ServerAPI<Configschema> {
 let speedcontrolUtil: SpeedcontrolUtil;
 
 export function getSpeedControlUtil(): SpeedcontrolUtil {
-    ncg.log.info("Accessed");
     if (!speedcontrolUtil) {
-        ncg.log.info(ncg);
-        (ncg as any).extensions = (ncg as any).extension;
-        speedcontrolUtil = new SpeedcontrolUtil(ncg as unknown as NodeCGServer);
+        const anyNCG = (ncg as any);
+        if (!("extensions" in anyNCG)) anyNCG.extensions = anyNCG.extension;
+        speedcontrolUtil = new SpeedcontrolUtil(anyNCG as NodeCGServer);
     }
     return speedcontrolUtil;
 }
