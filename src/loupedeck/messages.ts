@@ -6,6 +6,8 @@ export type ListenerTypes = {
     "disconnect": undefined,
     "connected": undefined,
 
+    "setPage": string,
+
     "screenDown": { key: number },
     "screenUp": { key: number },
 

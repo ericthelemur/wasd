@@ -61,13 +61,13 @@ export function CreateCommPointConnect<
             e.preventDefault();
             if (status != "connected" || confirm(`Are you sure you want to disconnect from ${namespace}?`)) {
                 nodecg.log.info('Attempting to disconnect');
-                listeners.sendTo("disconnect");
+                listeners.sendTo("disconnect", undefined);
             }
         }
 
         return (
             <Form onSubmit={disconnect} className="vstack gap-3 mt-2">
-                <Button variant="outline-danger" type="submit">Disconnect</Button>
+                <Button variant="outline-danger" type="submit">{status == "connected" ? "Disconnect" : "Cancel"}</Button>
             </Form>
         )
     }
@@ -76,7 +76,7 @@ export function CreateCommPointConnect<
     function ControlForms() {
         const [status,] = useReplicant<S>("status", defaultStatus, { "namespace": namespace });
 
-        const notConnecting = !status || status.connected === "disconnected" || status.connected === "error" || status.connected === "retrying";
+        const notConnecting = !status || status.connected === "disconnected" || status.connected === "error";
         return <div className="m-3">
             <div className="mb-3">
                 Status: <Status status={status?.connected} />

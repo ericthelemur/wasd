@@ -59,6 +59,7 @@ export abstract class CommPoint<
 
     protected _connectionListeners() {
         this.replicants.status.once("change", newVal => {
+            this.replicants.status.value.connected = "disconnected";
             // If we were connected last time, try connecting again now.
             if (newVal && (newVal.connected === "connected" || newVal.connected === "connecting")) {
                 this.reconnect();
@@ -149,13 +150,13 @@ export abstract class CommPoint<
                     this.reconnect();
                 }
             }
-        }, 10 * 1000);
+        }, 5 * 1000);
     }
 
-    protected reconnect() {
+    async reconnect() {
         // If unexpectedly disconnected, attempt reconnection every reconnectInterval seconds
         if (this._reconnectInterval) return;
-
+        this._disconnect();
         this.replicants.status.value.connected = "retrying";
         this.retryPeriod = this.reconnectInterval;
         this._reconnectInterval = setTimeout(() => this._reconnect(), this.retryPeriod * 1000);

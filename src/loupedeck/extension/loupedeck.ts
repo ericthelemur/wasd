@@ -10,8 +10,8 @@ import {
 
 import { CommPoint } from '../../common/commpoint/commpoint';
 import { addExitTask } from '../../common/exit-hooks';
-import { BundleReplicant } from '../../common/utils';
-import { Display, Graphic, Images, Login, Status } from '../../types/schemas/loupedeck';
+import { BundleReplicant, sendError, sendSuccess } from '../../common/utils';
+import { CellData, Display, Graphic, Images, Login, Page, Screen, Status } from '../../types/schemas/loupedeck';
 import listeners, { ListenerTypes, listenTo, sendTo } from '../messages';
 
 let titleFont: opentype.Font | null = null;
@@ -87,8 +87,9 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
 
     override async isConnected() {
         // If cannot fetch serial number, must be disconnected
-        let connected = true;
-        await this.loupedeck?.getSerialNumber().catch(() => connected = false);
+        if (!this.loupedeck || this.replicants.status.value.connected != "connected") return false;
+        let connected = false;
+        await this.loupedeck?.getSerialNumber().then((r) => { connected = Boolean(r) }).catch(() => connected = false);
         return connected;
     }
 
@@ -101,9 +102,11 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         this.blackBuffer = this.convertCanvasToBuffer(this.generateCanvasColour(this.loupedeck.lcdKeySize, "black")[0]);
 
         // Set button colours
-        listenTo("setButtonColour", ({ button, colour }) => {
+        listenTo("setButtonColour", ({ button, colour }, ack) => {
             if (!this.loupedeck) return;
-            this.loupedeck.setButtonColor({ id: button, red: colour[0], green: colour[1], blue: colour[2] }).catch(e => this.log.error("Error setting button colour", e));
+            this.loupedeck.setButtonColor({ id: button, red: colour[0], green: colour[1], blue: colour[2] })
+                .then(r => sendSuccess(ack, null))
+                .catch(e => { this.log.error("Error setting button colour", e); sendError(ack, String(e)) });
         })
 
         // Draw Key Images from replicant
@@ -339,9 +342,38 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
 
     getCurrentPage() {
         const disp = this.replicants.display.value;
-        let page = disp.pages[disp.current];
-        if (!page) page = disp.pages.default;
-        return page;
+        this.log.info("Current", disp.current);
+        if (disp.current == "page") {
+            return this.pagesMenu();
+        } else {
+            let page = disp.pages[disp.current];
+            if (!page) page = disp.pages.default;
+            return page;
+        }
+    }
+
+    pagesMenu(): Page {
+        const disp = this.replicants.display.value;
+        const pages = Object.keys(disp.pages);
+        const cells: Screen = Array(15).fill(null) as Screen;
+        pages.forEach((p, i) => cells[i] = {
+            "states": {
+                "default": {
+                    "graphic": {
+                        "text": p
+                    },
+                    "interaction": {
+                        "category": "nodecg",
+                        "action": "message",
+                        "bundle": "loupedeck",
+                        "message": "setPage",
+                        "data": p
+                    }
+                }
+            }
+        });
+        this.log.info(cells);
+        return { screen: cells }
     }
 }
 

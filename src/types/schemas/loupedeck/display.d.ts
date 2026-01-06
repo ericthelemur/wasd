@@ -41,6 +41,7 @@ export interface Display {
 	};
 }
 export interface Page {
+	display?: string;
 	screen: Screen;
 	knobs?: Knobs;
 	/**
@@ -79,7 +80,7 @@ export interface Graphic {
 export interface TapOrToggle {
 	category: 'modifier';
 	action: 'tap-or-toggle';
-	interaction: null | TapOrToggle | NodecgMsg | NodecgReplicant;
+	interaction: null | NodecgMsg | NodecgReplicant;
 	[k: string]: unknown;
 }
 export interface NodecgMsg {

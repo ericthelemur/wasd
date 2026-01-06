@@ -22,8 +22,8 @@ export type ListenersT<X extends Dict> = {
     listenTo: <T extends keyof X & string>(name: T, listener: Listener<X[T]>, prefix?: string) => void;
     sendToF: <T extends keyof X & string>(name: T, data: X[T], prefix?: string) => (() => void | Promise<unknown>);
     sendTo: {       // Cursed type to allow omitting data value for messages that don't have args
-        <T extends NotUndefined<X>>(name: T, data?: undefined, prefix?: string): void;
-        <T extends keyof X>(name: T, data: X[T], prefix?: string): void;
+        <T extends NotUndefined<X>>(name: T, data?: undefined, prefix?: string): void | Promise<unknown>;
+        <T extends keyof X>(name: T, data: X[T], prefix?: string): void | Promise<unknown>;
     };
 }
 
