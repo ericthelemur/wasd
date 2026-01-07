@@ -1,4 +1,4 @@
-/*
+
 import path from 'path';
 import fs from 'fs';
 
@@ -8,7 +8,7 @@ const nodecg = getNodeCG();
 const router = nodecg.Router();
 
 
-router.use((nodecg.util as any).authCheckRole(["external"], "/external/test"));
+// router.use((nodecg.util as any).authCheckRole(["external"], "/external/test"));
 
 router.get('/test', (req, res) => {
     res.send('You are authorized as external!');
@@ -59,4 +59,3 @@ router.get("/:file", (req, res, next) => {
 });
 
 nodecg.mount('/external', router);
-*/

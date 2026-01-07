@@ -16,9 +16,16 @@
             "$ref": "../common/timestamp-nullable.json"
         },
         "fair_market_value": {
-            "type": [
-                "integer",
-                "null"
+            "oneOf": [
+                {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                {
+                    "$ref": "../common/amount.json"
+                }
             ]
         },
         "highlighted": {

@@ -56,7 +56,6 @@
     "amount",
     "campaign_id",
     "completed_at",
-    "donor_comment",
     "donor_name",
     "id"
   ]

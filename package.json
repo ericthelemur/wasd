@@ -171,7 +171,7 @@
     ]
   },
   "scripts": {
-    "start": "cd ../.. && node --unhandled-rejections warn -r source-map-support/register index.js",
+    "start": "npx nodecg start",
     "build": "node scripts/build.mjs",
     "watch": "npm run build -- --watch --browser",
     "clean": "npm run build -- --clean-only",
@@ -198,8 +198,10 @@
     "json-edit-react": "^1.29.0",
     "json-schema-defaults": "0.4.0",
     "json-schema-to-typescript": "15.0.3",
+    "localtunnel": "^2.0.2",
     "loupedeck": "^7.0.0",
     "markdown-to-jsx": "^7.4.1",
+    "microdiff": "^1.5.0",
     "moment": "^2.30.0",
     "node-canvas-text": "^1.0.2",
     "nodecg": "^2.6.4",
@@ -227,6 +229,7 @@
   "devDependencies": {
     "@nodecg/types": "^2.0.0",
     "@types/clone": "^2.1.4",
+    "@types/localtunnel": "^2.0.4",
     "@types/node": "^22.9.0",
     "@types/node-canvas-text": "^1.0.3",
     "@types/obs-studio": "^2.17.2",

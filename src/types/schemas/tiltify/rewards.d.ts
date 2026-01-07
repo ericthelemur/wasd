@@ -15,7 +15,7 @@ export interface Reward {
 	amount: Amount;
 	description: string;
 	ends_at: string | null;
-	fair_market_value?: number | null;
+	fair_market_value?: (number | null) | Amount;
 	highlighted: boolean;
 	id: string;
 	image: Image;
