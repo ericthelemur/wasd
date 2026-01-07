@@ -1,6 +1,7 @@
 import { NextFunction, Router } from 'express';
 import { Request, Response } from 'express-serve-static-core';
 import { createHmac } from 'node:crypto';
+import localtunnel from "localtunnel";
 
 import type TiltifyClient from "..";
 
@@ -29,6 +30,17 @@ export default class Webhook {
         app.post('/tiltify/webhook', this.validateSignature.bind(this), (req: Request, res: Response) => {
             processWebhook(req, res);
             res.sendStatus(200);
+        })
+
+        const endpoint = "wasd-nodecg";
+        localtunnel({ port: 9090, subdomain: endpoint }).then((t: { url: string; }) => {
+            console.log(`Tiltify webhook tunnel created for ${t.url}`);
+            const expected = `https://${endpoint}.loca.lt`;
+            if (t.url != expected) {
+                console.error("Webhook tunnel url is unexpected. Expected:", expected, "Actual:", t.url, ". If expected, update webhook URL on tiltify. If not, check nothing else is using the subdomain and restart");
+            }
+
+            // t.on("request", data => console.log(data));
         })
 
         this.parent._doRequest(`private/webhook_endpoints/${id}/activate`, 'POST').then(data => data && callback(data));
