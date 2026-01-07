@@ -12,6 +12,7 @@ export interface Configschema {
 	tiltify_webhook_id?: string;
 	tiltify_webhook_secret?: string;
 	tiltify_campaign_id?: string;
+	tiltify_tunnel?: string;
 	/**
 	 * Delay between dono being recieved and auto approval, only if enabled
 	 */

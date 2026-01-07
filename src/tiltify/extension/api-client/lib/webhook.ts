@@ -23,7 +23,7 @@ export default class Webhook {
      * @param {string} id the webhook id to look up
      * @param {requestCallback} callback a function to call when we're done getting data
      */
-    activate(id: string, secret: string, app: Router, processWebhook: (req: Request, res: Response) => any, callback: (data: any) => any) {
+    activate(id: string, secret: string, subdomain: string, app: Router, processWebhook: (req: Request, res: Response) => any, callback: (data: any) => any) {
         this.secret = secret;
 
         // Open endpoint
@@ -32,18 +32,22 @@ export default class Webhook {
             res.sendStatus(200);
         })
 
-        const endpoint = "wasd-nodecg";
-        localtunnel({ port: 9090, subdomain: endpoint }).then((t: { url: string; }) => {
-            console.log(`Tiltify webhook tunnel created for ${t.url}`);
-            const expected = `https://${endpoint}.loca.lt`;
+        if (subdomain) this.createTunnel(subdomain);
+
+        this.parent._doRequest(`private/webhook_endpoints/${id}/activate`, 'POST').then(data => data && callback(data));
+    }
+
+    createTunnel(subdomain: string) {
+        localtunnel({ port: 9090, subdomain }).then(t => {
+            console.log(`Tiltify webhook tunnel created for ${t.url}/tiltify/webhook`);
+            const expected = `https://${subdomain}.loca.lt`;
             if (t.url != expected) {
                 console.error("Webhook tunnel url is unexpected. Expected:", expected, "Actual:", t.url, ". If expected, update webhook URL on tiltify. If not, check nothing else is using the subdomain and restart");
             }
 
-            // t.on("request", data => console.log(data));
-        })
-
-        this.parent._doRequest(`private/webhook_endpoints/${id}/activate`, 'POST').then(data => data && callback(data));
+            t.on("request", data => console.log(data));
+            t.on("close", () => this.createTunnel(subdomain));
+        }).catch((e) => console.error("Failed to create tunnel", e));
     }
 
     /**

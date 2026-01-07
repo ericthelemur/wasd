@@ -8,7 +8,7 @@ import NodeCG from '@nodecg/types';
 import clone from 'clone';
 
 import { getNodeCG } from '../../common/utils';
-import { WEBHOOK_MODE } from './index.extension';
+import { WEBHOOK_MODE, log } from './index.extension';
 import * as rep from './utils/replicants';
 import TiltifyClient from "./api-client";
 
@@ -17,7 +17,7 @@ import TiltifyClient from "./api-client";
 const nodecg = getNodeCG();
 export const tiltifyEmitter = new EventEmitter();
 
-var client = new TiltifyClient(nodecg.bundleConfig.tiltify_client_id, nodecg.bundleConfig.tiltify_client_secret);
+const client = new TiltifyClient(nodecg.bundleConfig.tiltify_client_id, nodecg.bundleConfig.tiltify_client_secret, log.info, log.error);
 
 function pushUniqueDonation(donation: Donation) {
     const found = rep.donations.value.find(d => d.id === donation.id);
@@ -51,13 +51,13 @@ type AskFunction<T> = (id: string, callback: (data: T) => any) => any;
 function askTiltifyFor<T extends any[]>(func: AskFunction<T>, rep: NodeCG.ServerReplicantWithSchemaDefault<T>) {
     return () => func(nodecg.bundleConfig.tiltify_campaign_id!, (result: T) => {     // Check different and assign
         if (rep.value?.length != result.length) {
-            nodecg.log.info("Setting", rep.name, "length", result.length, "old", rep.value?.length);
+            log.info("Setting", rep.name, "length", result.length, "old", rep.value?.length);
             rep.value = result;
         } else {
             // if (rep.value?.length != result.length || JSON.stringify(rep.value) !== JSON.stringify(result)) {
             const different = diff(rep.value, result);
             if (different.length > 0) {
-                nodecg.log.info("Setting", rep.name, "length", result.length, "different", different);
+                log.info("Setting", rep.name, "length", result.length, "different", different);
                 rep.value = result;
             }
         }
@@ -88,12 +88,22 @@ function askTiltify() {
     askTiltifyForDonors();
 }
 
+
+function setupWebhook() {
+    const app: Router = nodecg.Router();
+    const c = nodecg.bundleConfig;
+    client.Webhook.activate(c.tiltify_webhook_id!, c.tiltify_webhook_secret || "", c.tiltify_tunnel || "", app, processWebhook, (d) => log.info('Webhooks staged!', d));
+    nodecg.mount(app);
+    const events = { "event_types": ["public:direct:fact_updated", "public:direct:donation_updated"] }
+    client.Webhook.subscribe(c.tiltify_webhook_id!, c.tiltify_campaign_id!, events, (d) => log.info('Webhooks activated!', d));
+}
+
 function processWebhook(req: Request, res: Response) {
     // if (req.body.data.campaign_id !== nodecg.bundleConfig.tiltify_campaign_id) return;
 
     const eventType = req.body?.meta.event_type;
     if (eventType === "public:direct:donation_updated") {
-        nodecg.log.info("Dono recieved", req.body.data);
+        log.info("Dono recieved", req.body.data);
         pushUniqueDonation(req.body.data);
     } else if (eventType === "public:direct:fact_updated") {
         updateTotal(req.body.data);
@@ -101,13 +111,7 @@ function processWebhook(req: Request, res: Response) {
 }
 
 client.initialize().then(() => {
-    if (WEBHOOK_MODE) {
-        const app: Router = nodecg.Router();
-        client.Webhook.activate(nodecg.bundleConfig.tiltify_webhook_id!, nodecg.bundleConfig.tiltify_webhook_secret!, app, processWebhook, (d) => nodecg.log.info('Webhooks staged!', d));
-        nodecg.mount(app);
-        const events = { "event_types": ["public:direct:fact_updated", "public:direct:donation_updated"] }
-        client.Webhook.subscribe(nodecg.bundleConfig.tiltify_webhook_id!, nodecg.bundleConfig.tiltify_campaign_id!, events, (d) => nodecg.log.info('Webhooks activated!', d));
-    }
+    if (WEBHOOK_MODE) setupWebhook();
 
     askTiltifyForTotal();
     askTiltifyForDonations();

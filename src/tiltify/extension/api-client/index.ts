@@ -15,6 +15,9 @@ export default class TiltifyClient {
     apiKey: string | undefined;
     refreshToken: string = "";
 
+    info: (...args: any[]) => void;
+    error: (...args: any[]) => void;
+
     apiUrl = "https://v5api.tiltify.com/api";
     oauthUrl = "https://v5api.tiltify.com/oauth/token";
 
@@ -27,9 +30,11 @@ export default class TiltifyClient {
      * @param {string} clientSecret The Client Secret that you got from Tiltify.
      * @constructor
      */
-    constructor(clientID: string | undefined, clientSecret: string | undefined) {
-        this.#clientID = clientID
-        this.#clientSecret = clientSecret
+    constructor(clientID: string | undefined, clientSecret: string | undefined, info: (...args: any[]) => void = console.log, error: (...args: any[]) => void = console.error) {
+        this.#clientID = clientID;
+        this.#clientSecret = clientSecret;
+        this.info = info;
+        this.error = error;
         this.Campaigns = new Campaign(this);
         // this.TeamCampaigns = new TeamCampaign(this);
         // this.Causes = new Cause(this);
@@ -44,7 +49,7 @@ export default class TiltifyClient {
      */
     async initialize() {
         await this.generateKey().catch(e => {
-            console.error("Error authenticating with Tiltify");
+            this.error("Error authenticating with Tiltify");
         })
     }
 
@@ -69,7 +74,7 @@ export default class TiltifyClient {
      * @param {int} attempt Attempt counter, for spacing out retries
      */
     async generateKey(attempt = 1) {
-        console.log("Gen Key", Boolean(this.refreshToken), new Date());
+        this.info("Gen Key", Boolean(this.refreshToken), new Date());
         const tail = this.refreshToken ? `grant_type=refresh_token&refresh_token=${this.refreshToken}` : "grant_type=client_credentials&scope=public webhooks:write";
         const url = `${this.oauthUrl}?client_id=${this.#clientID}&client_secret=${this.#clientSecret}&${tail}`;
         const options = { url, method: 'POST' };
@@ -100,7 +105,7 @@ export default class TiltifyClient {
 
     private async _processRequest<T>(path: string | URL, method: string = 'GET', payload?: Object) {
         if (!this.apiKey) {
-            console.error('tiltify-api-client ERROR Client has not been initalized or apiKey is missing');
+            this.error('Client has not been initalized or apiKey is missing');
             return null;
         }
 
@@ -169,13 +174,13 @@ export default class TiltifyClient {
     }
 
     errorParse(e: Error | AxiosError, msg?: string) {
-        if (msg) console.error(msg);
+        if (msg) this.error(msg);
 
-        if (e === undefined) console.error(e);
-        else if ("response" in e) console.error(e.response?.status, e.response?.statusText);
-        else if (e.cause) console.error(e.cause);
-        else if (e.message) console.error(e.message);
-        else console.error(e);
+        if (e === undefined) this.error(e);
+        else if ("response" in e) this.error(e.response?.status, e.response?.statusText);
+        else if (e.cause) this.error(e.cause);
+        else if (e.message) this.error(e.message);
+        else this.error(e);
         // console.debug(e);
     }
 }
