@@ -6,10 +6,9 @@ import { DonoProp } from '../utils';
 import * as icons from './icons';
 import { NodeCGAPIClient } from '@nodecg/types/client/api/api.client';
 import { DonoSettings, Donation } from 'types/schemas';
+import { sendTo } from '../../../../tiltify/messages';
 
-declare var nodecg: NodeCGAPIClient;
-
-function changeModStatus(dono: Donation, to: ModStatus, property = "modstatus") {
+function changeModStatus(dono: Donation, to: ModStatus | boolean, property: "modstatus" | "read" = "modstatus") {
     return () => {
         console.log(`Attempting to set ${property} to ${to} for ${dono.id}`);
         dono.timeToApprove = 8.64e15;
@@ -18,8 +17,7 @@ function changeModStatus(dono: Donation, to: ModStatus, property = "modstatus") 
             var confirmUncensor = confirm(`Are you sure you want to ${to !== CENSORED ? "un" : ""}censor this donation?` + `\nName: ${dono.donor_name}\nMessage: ${dono.donor_comment}`);
             if (confirmUncensor != true) return;
         }
-        console.log("set-donation-" + property, [{ id: dono.id }, to]);
-        nodecg.sendMessage("set-donation-" + property, [dono, to]);
+        sendTo(`set-donation-${property}`, [dono, to]);
     }
 }
 
@@ -29,7 +27,7 @@ interface ModButtonProps {
     false: icons.ModAction;
     small: boolean;
     primaryTrue: boolean;
-    property: string;
+    property: "modStatus" | "read";
     extraClasses: string[];
 }
 
@@ -38,7 +36,7 @@ export function ModButton(props: ModButtonProps) {
     const action = toggle ? props.true : props.false;
 
     return <Button variant={toggle && props.primaryTrue ? "primary" : "outline-primary"}
-        onClick={changeModStatus(props.dono, action.value, props.property.toLowerCase())}
+        onClick={changeModStatus(props.dono, action.value, props.property.toLowerCase() as Lowercase<typeof props.property>)}
         className={props.extraClasses.join(" ")}
     >
         {action.iconAction}{props.small ? "" : " " + action.action}

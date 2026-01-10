@@ -8,11 +8,13 @@ import { toast, ToastContainer } from 'react-toastify';
 import { NodeCGAPIClient } from '@nodecg/types/client/api/api.client';
 
 import { Notification } from './notification';
+import { listenTo, sendTo } from '../../../tiltify/messages';
+import { Donation } from 'types/schemas/tiltify';
 
 declare var nodecg: NodeCGAPIClient;
 
-nodecg.listenFor("show-dono", (dono) => {
-    toast(<Notification dono={dono} />, {
+listenTo("show-dono", (dono) => {
+    toast(<Notification dono={dono as Donation} />, {
         toastId: dono.id,
         position: "bottom-left",
         autoClose: 10000,
@@ -23,10 +25,9 @@ nodecg.listenFor("show-dono", (dono) => {
         progress: undefined,
         theme: "light",
     })
-    nodecg.sendMessage("set-donation-shown", [dono, true]);
+    sendTo("set-donation-shown", [dono, true]);
 })
-
-nodecg.listenFor("revoke-dono", (dono) => {
+listenTo("revoke-dono", (dono) => {
     toast.dismiss(dono.id);
 })
 

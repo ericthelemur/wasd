@@ -5,7 +5,9 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface Configschema {
-	barURL?: string;
+export interface WebhookLogin {
+	webhookID?: string;
+	webhookSecret?: string;
+	targetSubdomain?: null | string;
 	[k: string]: unknown;
 }

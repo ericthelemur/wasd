@@ -8,6 +8,8 @@ export * from './donations';
 // @ts-ignore
 export * from './donors';
 // @ts-ignore
+export * from './login';
+// @ts-ignore
 export * from './milestones';
 // @ts-ignore
 export * from './polls';
@@ -16,6 +18,12 @@ export * from './rewards';
 // @ts-ignore
 export * from './schedule';
 // @ts-ignore
+export * from './status';
+// @ts-ignore
 export * from './targets';
 // @ts-ignore
 export * from './total';
+// @ts-ignore
+export * from './webhookLogin';
+// @ts-ignore
+export * from './webhookStatus';

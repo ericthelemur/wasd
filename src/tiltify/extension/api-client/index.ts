@@ -9,11 +9,11 @@ import Webhook from "./lib/webhook";
 type TiltifyResponse<T> = { data: T, metadata: { after: string } };
 
 export default class TiltifyClient {
-    #clientID: string | undefined;
-    #clientSecret: string | undefined;
-    keyTimeout: NodeJS.Timeout | undefined;
-    apiKey: string | undefined;
-    refreshToken: string = "";
+    clientID?: string;
+    clientSecret?: string;
+    keyTimeout?: NodeJS.Timeout;
+    apiKey?: string;
+    refreshToken?: string;
 
     info: (...args: any[]) => void;
     error: (...args: any[]) => void;
@@ -31,8 +31,8 @@ export default class TiltifyClient {
      * @constructor
      */
     constructor(clientID: string | undefined, clientSecret: string | undefined, info: (...args: any[]) => void = console.log, error: (...args: any[]) => void = console.error) {
-        this.#clientID = clientID;
-        this.#clientSecret = clientSecret;
+        this.clientID = clientID;
+        this.clientSecret = clientSecret;
         this.info = info;
         this.error = error;
         this.Campaigns = new Campaign(this);
@@ -63,11 +63,11 @@ export default class TiltifyClient {
         clearTimeout(this.keyTimeout);
     }
 
-    scheduleRetry(attempt: number = 0) {
-        // Schedule renew job to try again, recursively call this function
-        clearTimeout(this.keyTimeout);
-        this.keyTimeout = setTimeout(() => this.generateKey(attempt + 1).catch(() => { }), 5000 * attempt);
-    }
+    // scheduleRetry(attempt: number = 0) {
+    //     // Schedule renew job to try again, recursively call this function
+    //     clearTimeout(this.keyTimeout);
+    //     this.keyTimeout = setTimeout(() => this.generateKey(attempt + 1).catch(() => { }), 5000 * attempt);
+    // }
 
     /**
      * Generate an access token to call the api, recursively calls itself when regenerating keys
@@ -76,10 +76,10 @@ export default class TiltifyClient {
     async generateKey(attempt = 1) {
         this.info("Gen Key", Boolean(this.refreshToken), new Date());
         const tail = this.refreshToken ? `grant_type=refresh_token&refresh_token=${this.refreshToken}` : "grant_type=client_credentials&scope=public webhooks:write";
-        const url = `${this.oauthUrl}?client_id=${this.#clientID}&client_secret=${this.#clientSecret}&${tail}`;
+        const url = `${this.oauthUrl}?client_id=${this.clientID}&client_secret=${this.clientSecret}&${tail}`;
         const options = { url, method: 'POST' };
         try {
-            const payload = await axios(options).catch(e => { this.scheduleRetry(); throw e })
+            const payload = await axios(options).catch(e => { /*this.scheduleRetry();*/ throw e })
             if (payload.status === 200 && payload.data && payload.data.expires_in) {
                 this.apiKey = payload.data.access_token;
                 this.refreshToken = payload.data.refresh_token;
@@ -90,9 +90,9 @@ export default class TiltifyClient {
 
                 return this.apiKey;
             } else {
-                console.warn("Tiltify authentication failed, retrying");
+                console.warn("Tiltify authentication failed");
                 this.apiKey = undefined;
-                this.scheduleRetry(attempt);
+                // this.scheduleRetry(attempt);
             }
         } catch (error) {
             return Promise.reject(error)
@@ -124,7 +124,7 @@ export default class TiltifyClient {
         if (payload) options.data = JSON.stringify(payload);
 
         return await axios<TiltifyResponse<T>>(options).catch((e) => {
-            this.errorParse(e, `tiltify-api-client ERROR Error sending request to ${String(url)}:`)
+            this.errorParse(e, `Error sending request to ${String(url)}:`)
         });
     }
 

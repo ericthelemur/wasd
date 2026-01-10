@@ -5,31 +5,6 @@
         "barURL": {
             "type": "string",
             "default": "/bundles/wasd/graphics/bar/bar.graphic.html"
-        },
-        "tiltify_client_id": {
-            "type": "string",
-            "default": ""
-        },
-        "tiltify_client_secret": {
-            "type": "string",
-            "default": ""
-        },
-        "tiltify_webhook_id": {
-            "type": "string",
-            "default": ""
-        },
-        "tiltify_webhook_secret": {
-            "type": "string",
-            "default": ""
-        },
-        "tiltify_campaign_id": {
-            "type": "string",
-            "default": ""
-        },
-        "autoApproveTimeSec": {
-            "description": "Delay between dono being recieved and auto approval, only if enabled",
-            "type": "number",
-            "default": 15
         }
     }
 }

@@ -124,7 +124,6 @@ export function findMilestones(ms: Milestone[] | undefined, total: Amount, n: nu
 }
 
 function MilestoneCards({ milestones, total, n }: { milestones: Milestone[], total: Total, n?: number }) {
-    const n2 = n ?? 3;
     const [showAll, setShowAll] = useState(false);
     const showOption = milestones.length >= 3;
     const mi = findMilestones(milestones, total, n);
@@ -194,11 +193,11 @@ export function PollCard({ poll }: { poll: Poll }) {
 }
 
 export function Incentives() {
-    const [rewards, _] = useReplicant<Rewards>("rewards", []);
-    const [targets, _2] = useReplicant<Targets>("targets", []);
-    const [polls, _3] = useReplicant<Polls>("polls", []);
-    const [milestones, _4] = useReplicant<Milestones>("milestones", []);
-    const [total, _5] = useReplicant<Total>("total", { "currency": "GBP", "value": 0 });
+    const [rewards,] = useReplicant<Rewards>("rewards", [], { namespace: "tiltify" });
+    const [targets,] = useReplicant<Targets>("targets", [], { namespace: "tiltify" });
+    const [polls,] = useReplicant<Polls>("polls", [], { namespace: "tiltify" });
+    const [milestones,] = useReplicant<Milestones>("milestones", [], { namespace: "tiltify" });
+    const [total,] = useReplicant<Total>("total", { "currency": "GBP", "value": 0 }, { namespace: "tiltify" });
 
     return (
         <>

@@ -5,7 +5,9 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface Configschema {
-	barURL?: string;
+export interface Login {
+	clientID?: string;
+	clientSecret?: string;
+	campaignID?: string;
 	[k: string]: unknown;
 }

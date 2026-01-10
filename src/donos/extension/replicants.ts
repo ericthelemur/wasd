@@ -1,4 +1,4 @@
 import { DonoSettings } from 'types/schemas';
-import { Replicant } from '../../common/utils';
+import { BundleReplicant } from '../../common/utils';
 
-export const donoSettings = Replicant<DonoSettings>("donoSettings", "donos");
+export const donoSettings = BundleReplicant<DonoSettings>("donoSettings", "donos");

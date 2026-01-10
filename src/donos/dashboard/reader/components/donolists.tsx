@@ -55,7 +55,7 @@ export function SortedDonations({ donos, sortSettings, setSortSettings, hideButt
 
 
 export function LiveDonations(props: DonoListProps) {
-	const [d, setDonos] = useReplicant<Donations>("donations", []);
+	const [d,] = useReplicant<Donations>("donations", [], { namespace: "tiltify" });
 	const donos = d === undefined ? [] : d;
 	return <>
 		<p>
@@ -68,7 +68,7 @@ export function LiveDonations(props: DonoListProps) {
 }
 
 export function AllDonations(props: DonoListProps) {
-	const [d, setDonos] = useReplicant<Alldonations>("alldonations", []);
+	const [d,] = useReplicant<Alldonations>("alldonations", [], { namespace: "tiltify" });
 	const donos = d === undefined ? [] : d;
 	return <>
 		<p>
@@ -104,9 +104,9 @@ function groupBy<T>(arr: T[], fn: (item: T) => any) {
 }
 
 export function DonorsComp(props: DonoListProps) {
-	const [d,] = useReplicant<Alldonations>("alldonations", []);
+	const [d,] = useReplicant<Alldonations>("alldonations", [], { namespace: "tiltify" });
 	const donos = d === undefined ? [] : d;
-	const [dr,] = useReplicant<Donors>("donors", []);
+	const [dr,] = useReplicant<Donors>("donors", [], { namespace: "tiltify" });
 	const donors = dr === undefined ? {} : Object.fromEntries(dr.map(d => [d.name, d]));
 
 	// Construct donor summary
@@ -163,7 +163,7 @@ function DonorComp(props: DonorProps) {
 
 
 export function DonorsSimpleComp(props: DonoListProps) {
-	const [dr,] = useReplicant<Donors>("donors", []);
+	const [dr,] = useReplicant<Donors>("donors", [], { namespace: "tiltify" });
 	if (!dr) return null;
 
 	// [...dr].sort((a, b) => {

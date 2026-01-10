@@ -5,7 +5,9 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface Configschema {
-	barURL?: string;
+export type ConnStatus = 'connected' | 'connecting' | 'disconnected' | 'error' | 'retrying';
+
+export interface Status {
+	connected: ConnStatus;
 	[k: string]: unknown;
 }

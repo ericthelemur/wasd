@@ -1,9 +1,9 @@
 import NodeCG from '@nodecg/types';
 
 import { ListenersT } from '../messages';
-import { getNodeCG } from '../utils';
+import { BundleReplicant, getNodeCG } from '../utils';
 
-type Dict = { [name: string]: unknown };
+type PartialNull<T> = { [P in keyof T]: T[P] | null };
 
 export type Messages<C> = {
     "connect": Partial<C>,
@@ -38,13 +38,25 @@ export abstract class CommPoint<
     protected retryPeriod: number = -1;
     protected _reconnectInterval: NodeJS.Timeout | undefined = undefined;
 
-
-    constructor(namespace: string, replicants: Replicants<R>, listeners: ListenersT<M>) {
+    /**
+     * Contruct a comm point. Intended to be used in super calls only
+     * @param namespace Namespace name for replicants. Usually the name of the folder
+     * @param replicants List of all replicants. Values may be null, these will be created with BundleReplicant
+     * @param listeners Listeners for the comm point. Created with createMessageListenersBundle
+     */
+    constructor(namespace: string, replicants: PartialNull<Replicants<R>>, listeners: ListenersT<M>) {
         this.nodecg = getNodeCG();
         this.log = new this.nodecg.Logger(namespace);
 
         this.namespace = namespace;
-        this.replicants = replicants;
+
+        for (const key in replicants) {
+            if (replicants[key] === null) {
+                replicants[key] = BundleReplicant(key, this.namespace);
+            }
+        }
+        this.replicants = replicants as Replicants<R>;
+
         this.listeners = listeners;
 
         this.log.debug(`${namespace} comm point constructed`);
@@ -140,12 +152,15 @@ export abstract class CommPoint<
         })
     }
 
+    private statusAtPreviousCheck: ConnStatus = "connected";
     protected _checkConnectionPoll() {
         // Poll for disconnected system regularly
         setInterval(async () => {
-            if (this.replicants.status.value.connected == "connected") {
+            if (this.statusAtPreviousCheck == "connected") {
+                this.statusAtPreviousCheck = this.replicants.status.value.connected;
                 const connected = await this.isConnected();
                 if (!connected) {
+                    this.statusAtPreviousCheck = "disconnected";
                     await this._disconnect();
                     this.reconnect();
                 }

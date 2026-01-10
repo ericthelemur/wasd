@@ -8,6 +8,10 @@ export type ListenerTypes = {
     "disconnect": undefined,
     "connected": undefined,
 
+    "new-donation": Donation,
+    "show-dono": Donation | { id: string },
+    "revoke-dono": Donation | { id: string },
+
     "clear-donations": undefined,
     "approve-all-donations": ModStatus,
     "set-donation-read": [Donation | { id: string }, boolean],
@@ -18,3 +22,12 @@ export type ListenerTypes = {
 const listeners = createMessageListenersBundle<ListenerTypes>("tiltify");
 export default listeners;
 export const { listenTo, sendTo, sendToF } = listeners;
+
+
+export type WebhookListenerTypes = {
+    "connect": Partial<Login>,
+    "disconnect": undefined,
+    "connected": undefined
+}
+
+export const webhookListeners = createMessageListenersBundle<WebhookListenerTypes>("tiltify-webhook");

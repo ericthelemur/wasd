@@ -23,31 +23,10 @@ export default class Webhook {
      * @param {string} id the webhook id to look up
      * @param {requestCallback} callback a function to call when we're done getting data
      */
-    activate(id: string, secret: string, subdomain: string, app: Router, processWebhook: (req: Request, res: Response) => any, callback: (data: any) => any) {
+    activate(id: string, secret: string, callback: (data: any) => any) {
         this.secret = secret;
 
-        // Open endpoint
-        app.post('/tiltify/webhook', this.validateSignature.bind(this), (req: Request, res: Response) => {
-            processWebhook(req, res);
-            res.sendStatus(200);
-        })
-
-        if (subdomain) this.createTunnel(subdomain);
-
         this.parent._doRequest(`private/webhook_endpoints/${id}/activate`, 'POST').then(data => data && callback(data));
-    }
-
-    createTunnel(subdomain: string) {
-        localtunnel({ port: 9090, subdomain }).then(t => {
-            console.log(`Tiltify webhook tunnel created for ${t.url}/tiltify/webhook`);
-            const expected = `https://${subdomain}.loca.lt`;
-            if (t.url != expected) {
-                console.error("Webhook tunnel url is unexpected. Expected:", expected, "Actual:", t.url, ". If expected, update webhook URL on tiltify. If not, check nothing else is using the subdomain and restart");
-            }
-
-            t.on("request", data => console.log(data));
-            t.on("close", () => this.createTunnel(subdomain));
-        }).catch((e) => console.error("Failed to create tunnel", e));
     }
 
     /**
@@ -59,6 +38,16 @@ export default class Webhook {
      */
     subscribe(webhookID: string, eventID: string, payload: Object, callback: (data: any) => any) {
         this.parent._doRequest(`private/webhook_endpoints/${webhookID}/webhook_subscriptions/${eventID}`, 'PUT', payload).then(data => data && callback(data));
+    }
+
+    /**
+     * deletes a webhook subscription
+     * @param {string} webhookID id of the webhook
+     * @param {string} eventID id of the event (campaign, team campaign, fundraising event) to track
+     * @param {requestCallback} callback a function to call when we're done getting data
+     */
+    delete(webhookID: string, eventID: string, callback: (data: any) => any) {
+        this.parent._doRequest(`private/webhook_endpoints/${webhookID}/webhook_subscriptions/${eventID}`, 'DELETE').then(data => data && callback(data));
     }
 
     /**

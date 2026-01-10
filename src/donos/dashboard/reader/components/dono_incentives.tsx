@@ -4,7 +4,7 @@ import { useReplicant } from 'use-nodecg';
 import { truncate } from '../utils/index';
 
 function Reward({ id }: { id: string }) {
-    const [rewards, _] = useReplicant<Rewards>("rewards", []);
+    const [rewards, _] = useReplicant<Rewards>("rewards", [], { namespace: "tiltify" });
     if (rewards === undefined) return null;
     const reward = rewards.find(r => r.id === id);
     if (reward === undefined) return null;
@@ -18,7 +18,7 @@ function Reward({ id }: { id: string }) {
 
 
 function Target({ id }: { id: string }) {
-    const [targets, _] = useReplicant<Targets>("targets", []);
+    const [targets, _] = useReplicant<Targets>("targets", [], { namespace: "tiltify" });
     if (targets === undefined) return null;
     const target = targets.find(r => r.id === id);
     if (target === undefined) return null;
@@ -33,7 +33,7 @@ function Target({ id }: { id: string }) {
 
 function Poll({ id, option_id }: { id: string, option_id: string }) {
     console.log("args", id, option_id);
-    const [polls, _] = useReplicant<Polls>("polls", []);
+    const [polls, _] = useReplicant<Polls>("polls", [], { namespace: "tiltify" });
     if (polls === undefined) return null;
 
     const poll = polls.find(r => r.id === id);
