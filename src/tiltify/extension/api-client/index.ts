@@ -77,12 +77,15 @@ export default class TiltifyClient {
         this.info("Gen Key", Boolean(this.refreshToken), new Date());
         const tail = this.refreshToken ? `grant_type=refresh_token&refresh_token=${this.refreshToken}` : "grant_type=client_credentials&scope=public webhooks:write";
         const url = `${this.oauthUrl}?client_id=${this.clientID}&client_secret=${this.clientSecret}&${tail}`;
-        const options = { url, method: 'POST' };
         try {
-            const payload = await axios(options).catch(e => { /*this.scheduleRetry();*/ throw e })
+            this.info(url);
+            const payload = await axios({ url, method: 'POST' }).catch(e => { /*this.scheduleRetry();*/ throw e })
+            this.info(payload.status);
+            this.info(payload.data);
             if (payload.status === 200 && payload.data && payload.data.expires_in) {
                 this.apiKey = payload.data.access_token;
                 this.refreshToken = payload.data.refresh_token;
+                this.info("Set key", this.apiKey);
 
                 // Schedule renew job
                 clearTimeout(this.keyTimeout);
@@ -91,6 +94,7 @@ export default class TiltifyClient {
                 return this.apiKey;
             } else {
                 console.warn("Tiltify authentication failed");
+                clearTimeout(this.keyTimeout);
                 this.apiKey = undefined;
                 // this.scheduleRetry(attempt);
             }

@@ -17,8 +17,8 @@ const replicants = {
     login: null as null | Login,
 
     donations: null as null | Donations,
-    allDonations: null as null | Alldonations,
-    campaignTotal: null as null | Total,
+    alldonations: null as null | Alldonations,
+    total: null as null | Total,
     polls: null as null | Polls,
     schedule: null as null | Schedule,
     targets: null as null | Targets,
@@ -29,7 +29,7 @@ const replicants = {
 
     // donations: Donations,
     // allDonations: Alldonations,
-    // campaignTotal: Total,
+    // total: Total,
     // polls: Polls,
     // schedule: Schedule,
     // targets: Targets,
@@ -64,8 +64,9 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
         this.client.clientID = login.clientID;
         this.client.clientSecret = login.clientSecret;
         this.client.apiKey = undefined;
-        this.client.initialize();
-        if (!this.client.apiKey) throw new Error("Tiltify authentication failed");
+        const key = await this.client.generateKey();
+        this.log.info(key, this.client.apiKey);
+        if (!key) throw new Error("Tiltify authentication failed");
     }
 
     pushUniqueDonation(donation: Donation) {
@@ -85,13 +86,18 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
     updateTotal(campaign: Campaign) {
         if (campaign.id != this.replicants.login.value.campaignID) return;
         const newTotal = campaign.amount_raised;
-        const oldTotal = this.replicants.campaignTotal.value;
+        const oldTotal = this.replicants.total.value;
+        this.log.info(campaign);
         // Check if increased
         if (campaign.id != this.replicants.login.value.campaignID ||    // If changed campaign, update
             Number(oldTotal.value) < Number(newTotal.value) ||      // If increased value, update
             Number(newTotal.value) < 0.5 * Number(oldTotal.value) ||  // If decrease to < half, probably reset, so update
             oldTotal.currency != newTotal.currency) {               // If different currency, update
-            this.replicants.campaignTotal.value = clone(newTotal);
+            this.replicants.total.value = clone(newTotal);
+        }
+
+        if (this.replicants.status.value.campaignName != campaign.name) {
+            this.replicants.status.value.campaignName = campaign.name;
         }
     }
 
@@ -110,26 +116,44 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
         }
     }
 
-    askTiltifyFor<T extends any[]>(campaignID: string, func: (id: string, callback: (data: T) => any) => any, rep: NodeCG.ServerReplicantWithSchemaDefault<T>) {
-        return () => func(campaignID, newVal => this._updateReplicantIfDifferent(newVal, rep));
+    askTiltifyFor<T extends any[]>(func: (id: string, callback: (data: T) => any) => any, rep: NodeCG.ServerReplicantWithSchemaDefault<T>) {
+        return () => {
+            const campaignID = this.getCampaignID();
+            if (!campaignID) return;
+            func(campaignID, newVal => this._updateReplicantIfDifferent(newVal, rep))
+        };
+    }
+
+    getCampaignID() {
+        return this.replicants.login.value.campaignID;
     }
 
     async _setupListeners() {
-        const campaignID = this.replicants.login.value.campaignID;
+        this.createActionListeners();
+
         const Campaigns = this.client?.Campaigns;
-        if (!campaignID || !Campaigns || !this.client?.apiKey) return;
 
-        const askTiltifyForDonations = () => Campaigns.getRecentDonations(campaignID, (donos) => donos.forEach(d => this.pushUniqueDonation(d)));
-        const askTiltifyForTotal = () => this.client?.Campaigns.get(campaignID, c => {
-            // Mark as retrying if failed poll
-            if (!c) this.reconnect();
+        const askTiltifyForDonations = () => {
+            const campaignID = this.getCampaignID();
+            if (!campaignID) return;
+            Campaigns.getRecentDonations(campaignID, (donos) => donos.forEach(d => this.pushUniqueDonation(d)))
+        };
+        const askTiltifyForTotal = () => {
+            const campaignID = this.getCampaignID();
+            if (!campaignID) return;
+            Campaigns.get(campaignID, c => {
+                if (!c) this.reconnect();  // Mark as retrying if failed poll
 
-            this.updateTotal(c);
-            // TODO check for auth fails???
-        });
+                this.updateTotal(c);
+                // TODO check for auth fails???
+            })
+        };
 
+        askTiltifyForDonations();
+        askTiltifyForTotal();
         this.donoPoll = setInterval(async () => {
-            if (this.webhook && await this.webhook.isConnected()) return;
+            if (await this.isConnected() && this.webhook && await this.webhook.isConnected()) return;
+            this.log.info("Polling Campaign");
             askTiltifyForDonations();
             askTiltifyForTotal();
         }, 5 * 1000);
@@ -137,21 +161,34 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
 
         // Poll campaign config fairly frequently - this mostly doesn't change
         const askTiltifyForBasic = [
-            this.askTiltifyFor(campaignID, (id, cb) => Campaigns.getPolls(id, cb), this.replicants.polls),
-            this.askTiltifyFor(campaignID, (id, cb) => Campaigns.getSchedule(id, cb), this.replicants.schedule),
-            this.askTiltifyFor(campaignID, (id, cb) => Campaigns.getTargets(id, cb), this.replicants.targets),
-            this.askTiltifyFor(campaignID, (id, cb) => Campaigns.getRewards(id, cb), this.replicants.rewards),
-            this.askTiltifyFor(campaignID, (id, cb) => Campaigns.getMilestones(id, cb), this.replicants.milestones),
-            this.askTiltifyFor(campaignID, (id, cb) => Campaigns.getDonors(id, cb), this.replicants.donors)
+            this.askTiltifyFor((id, cb) => Campaigns.getPolls(id, cb), this.replicants.polls),
+            this.askTiltifyFor((id, cb) => Campaigns.getSchedule(id, cb), this.replicants.schedule),
+            this.askTiltifyFor((id, cb) => Campaigns.getTargets(id, cb), this.replicants.targets),
+            this.askTiltifyFor((id, cb) => Campaigns.getRewards(id, cb), this.replicants.rewards),
+            this.askTiltifyFor((id, cb) => Campaigns.getMilestones(id, cb), this.replicants.milestones),
+            this.askTiltifyFor((id, cb) => Campaigns.getDonors(id, cb), this.replicants.donors)
         ];
-        this.basicsPoll = setInterval(() => askTiltifyForBasic.forEach(f => f()), 30 * 1000);
+        askTiltifyForBasic.forEach(f => f());
+        this.basicsPoll = setInterval(() => {
+            const campaignID = this.getCampaignID();
+            if (!campaignID) return;
+            askTiltifyForBasic.forEach(f => f())
+        }, 30 * 1000);
 
         // Poll full list of donos occasionally
-        const askTiltifyForAllDonations = this.askTiltifyFor(campaignID, (id, cb) => Campaigns.getDonations(id, (donos) => {
+        const askTiltifyForAllDonations = this.askTiltifyFor((id, cb) => Campaigns.getDonations(id, (donos) => {
+            this.log.info("All Results", donos?.length);
             cb(donos);  // Standard updating of all donations list
             donos.forEach(d => this.pushUniqueDonation(d));  // Check none are missed in the main dono list
-        }), this.replicants.allDonations);
-        this.allDonoPoll = setInterval(() => askTiltifyForAllDonations(), 2 * 60 * 1000);
+        }), this.replicants.alldonations);
+
+        askTiltifyForAllDonations();
+        this.allDonoPoll = setInterval(() => {
+            const campaignID = this.getCampaignID();
+            this.log.info("All poll", campaignID);
+            if (!campaignID) return;
+            askTiltifyForAllDonations();
+        }, 2 * 60 * 1000);
 
     }
 
@@ -212,9 +249,11 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
         clearInterval(this.allDonoPoll);
         this.allDonoPoll = undefined;
 
-        this.client.apiKey = undefined;
-        this.client.clientID = undefined;
-        this.client.clientSecret = undefined;
+        if (this.client) {
+            this.client.apiKey = undefined;
+            this.client.clientID = undefined;
+            this.client.clientSecret = undefined;
+        }
     }
 
     async isConnected() {

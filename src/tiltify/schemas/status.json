@@ -17,6 +17,9 @@
     "properties": {
         "connected": {
             "$ref": "#/definitions/connStatus"
+        },
+        "campaignName": {
+            "type": "string"
         }
     },
     "required": [

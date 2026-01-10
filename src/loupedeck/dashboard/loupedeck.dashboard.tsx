@@ -9,9 +9,8 @@ import { Display, Images } from 'types/schemas/loupedeck';
 import { useState } from 'react';
 import Blank from "./blank.png";
 
-const root = createRoot(document.getElementById('root')!);
 
-const ControlForm = CreateCommPointConnect("loupedeck", <></>, () => ({}), { connected: "disconnected" }, listeners);
+const ControlForm = CreateCommPointConnect("loupedeck", listeners, {}, {}, { connected: "disconnected" });
 
 const gridWidth = 5;
 const gridHeight = 3;
@@ -36,6 +35,7 @@ function LoupedeckButton(props: { index: number, image: string | null }) {
     />
 }
 
+const root = createRoot(document.getElementById('root')!);
 root.render(<>
     <ControlForm />
     <LoupedeckPanel />

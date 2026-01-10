@@ -104,61 +104,61 @@ function groupBy<T>(arr: T[], fn: (item: T) => any) {
 }
 
 export function DonorsComp(props: DonoListProps) {
-	const [d,] = useReplicant<Alldonations>("alldonations", [], { namespace: "tiltify" });
-	const donos = d === undefined ? [] : d;
+	// const [d,] = useReplicant<Alldonations>("alldonations", [], { namespace: "tiltify" });
+	// const donos = d === undefined ? [] : d;
 	const [dr,] = useReplicant<Donors>("donors", [], { namespace: "tiltify" });
 	const donors = dr === undefined ? {} : Object.fromEntries(dr.map(d => [d.name, d]));
 
 	// Construct donor summary
-	const donors_donos = Object.entries(groupBy(donos, (d: Basedono) => d.donor_name))
-	const details = donors_donos.map<DonorProps>(([n, ds]) => {
-		return {
-			name: n,
-			donations: ds,
-			donor: donors[n],
-			total: ds.reduce<number>((t, d) => t += Number(d.amount.value) || 0, 0),
-			latest: ds.reduce<string>((t, d) => d.completed_at > t ? d.completed_at : t, ""),
-			oldest: ds.reduce<string>((t, d) => d.completed_at < t ? d.completed_at : t, ""),
-			...props
-		}
-	});
-	details.sort((a, b) => {
-		const va = props.sortSettings.sort === "money" ? a.total : b.latest;
-		const vb = props.sortSettings.sort === "money" ? b.total : a.latest;
-		var result = (va < vb) ? -1 : (va > vb) ? 1 : 0;
-		return result * (props.sortSettings.dir === "asc" ? 1 : -1);
-	})
+	// const donors_donos = Object.entries(groupBy(donos, (d: Basedono) => d.donor_name))
+	// const details = donors_donos.map<DonorProps>(([n, ds]) => {
+	// 	return {
+	// 		name: n,
+	// 		donations: ds,
+	// 		donor: donors[n],
+	// 		total: ds.reduce<number>((t, d) => t += Number(d.amount.value) || 0, 0),
+	// 		latest: ds.reduce<string>((t, d) => d.completed_at > t ? d.completed_at : t, ""),
+	// 		oldest: ds.reduce<string>((t, d) => d.completed_at < t ? d.completed_at : t, ""),
+	// 		...props
+	// 	}
+	// });
+	// details.sort((a, b) => {
+	// 	const va = props.sortSettings.sort === "money" ? a.total : b.latest;
+	// 	const vb = props.sortSettings.sort === "money" ? b.total : a.latest;
+	// 	var result = (va < vb) ? -1 : (va > vb) ? 1 : 0;
+	// 	return result * (props.sortSettings.dir === "asc" ? 1 : -1);
+	// })
 
 	return <>
 		<DonorsSimpleComp {...props} />
-		Note: Donation names are input freely by the donator, the same name does not necessarily mean the same person, and different names are not necessarily different people.
-		<div className="donations gap-3 d-block">{details.map(DonorComp)}</div>
+		{/* Note: Donation names are input freely by the donator, the same name does not necessarily mean the same person, and different names are not necessarily different people.
+		<div className="donations gap-3 d-block">{details.map(DonorComp)}</div> */}
 	</>;
 }
 
 
-function DonorComp(props: DonorProps) {
-	// Details of donor and drop down list of donations
-	const { donor, donations, total, name } = props;
+// function DonorComp(props: DonorProps) {
+// 	// Details of donor and drop down list of donations
+// 	const { donor, donations, total, name } = props;
 
-	const dispCurr = donations[0]?.amount.currency || "GDP";
-	return (
-		<details key={name} className="card m-2 card-body">
-			<summary className="h5 card-title">
-				<h2 className="h5 card-title d-inline">
-					<span className="name">{name}</span>{" "}
-					<span className="donated">donated</span>{" "}
-					<span className="amount">{formatAmount({ currency: dispCurr, value: total })}</span>{" "}
-					<span className="donated">(in {donations.length} dono{donations.length == 1 ? "" : "s"})</span>
+// 	const dispCurr = donations[0]?.amount.currency || "GDP";
+// 	return (
+// 		<details key={name} className="card m-2 card-body">
+// 			<summary className="h5 card-title">
+// 				<h2 className="h5 card-title d-inline">
+// 					<span className="name">{name}</span>{" "}
+// 					<span className="donated">donated</span>{" "}
+// 					<span className="amount">{formatAmount({ currency: dispCurr, value: total })}</span>{" "}
+// 					<span className="donated">(in {donations.length} dono{donations.length == 1 ? "" : "s"})</span>
 
-				</h2>
-			</summary>
-			<div className="mt-2 mb-1">
-				<SortedDonations donos={donations} {...props} />
-			</div>
-		</details>
-	)
-}
+// 				</h2>
+// 			</summary>
+// 			<div className="mt-2 mb-1">
+// 				<SortedDonations donos={donations} {...props} />
+// 			</div>
+// 		</details>
+// 	)
+// }
 
 
 
@@ -173,17 +173,17 @@ export function DonorsSimpleComp(props: DonoListProps) {
 	// 	return result * (props.sortSettings.dir === "asc" ? 1 : -1);
 	// })
 
-	return <details className="card m-2 card-body">
+	/*return <details className="card m-2 card-body">
 		<summary className="h5 card-title">
 			<h2 className="h5 card-title d-inline">
 				Tiltify Leaderboard (Top 20)
 			</h2>
 		</summary>
-		This goes by Tiltify accounts, so are more accurate, but I cannot reconstruct exact donos from these accounts FOR SOME REASON
-		<div className="mt-2 mb-1">
-			<div className="donations gap-3 d-block">{dr.slice(0, 20).map((d, i) => <DonorSimpleComp key={d.id} donor={d} index={i} />)}</div>
-		</div>
-	</details>
+		This goes by Tiltify accounts, so are more accurate, but I cannot reconstruct exact donos from these accounts FOR SOME REASON*/
+	return <div className="mt-2 mb-1">
+		<div className="donations gap-3 d-block">{dr.slice(0, 20).map((d, i) => <DonorSimpleComp key={d.id} donor={d} index={i} />)}</div>
+	</div>
+	/*</details>*/
 }
 
 

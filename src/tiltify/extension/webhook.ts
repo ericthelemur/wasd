@@ -1,7 +1,7 @@
 import { WebhookStatus, WebhookLogin } from "../../types/schemas/tiltify";
 import { CommPoint } from "../../common/commpoint/commpoint";
 import { webhookListeners, WebhookListenerTypes } from "../messages";
-import { BundleReplicant } from "common/utils";
+import { BundleReplicant } from "../../common/utils";
 import Webhook from "./api-client/lib/webhook";
 import TiltifyClient from "./api-client";
 import { NextFunction, Router, Request, Response } from "express";
@@ -22,7 +22,7 @@ export class WebhookCommPoint extends CommPoint<WebhookListenerTypes, WebhookRep
     connectedCampaign: string | null = null;
 
     constructor(tiltify: Tiltify, client: TiltifyClient) {
-        super("tiltify-webhook", { status: null, login: null }, webhookListeners);
+        super("tiltify-webhook", { status: BundleReplicant("webhookstatus", "tiltify"), login: BundleReplicant("webhooklogin", "tiltify") }, webhookListeners);
 
         this.tiltify = tiltify;
         tiltify.webhook = this;

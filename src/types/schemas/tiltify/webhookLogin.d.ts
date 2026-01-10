@@ -9,5 +9,4 @@ export interface WebhookLogin {
 	webhookID?: string;
 	webhookSecret?: string;
 	targetSubdomain?: null | string;
-	[k: string]: unknown;
 }

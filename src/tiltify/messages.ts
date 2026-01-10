@@ -1,6 +1,5 @@
-import { Donation } from '../types/schemas';
+import { Donation, Login } from '../types/schemas/tiltify';
 import { createMessageListenersBundle } from '../common/messages';
-import { Login } from '../types/schemas/loupedeck';
 import { ModStatus } from './extension/utils/mod';
 
 export type ListenerTypes = {

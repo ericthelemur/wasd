@@ -9,5 +9,4 @@ export interface Login {
 	clientID?: string;
 	clientSecret?: string;
 	campaignID?: string;
-	[k: string]: unknown;
 }

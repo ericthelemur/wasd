@@ -12,6 +12,7 @@
             "type": "string"
         }
     },
+    "additionalProperties": false,
     "default": {
         "clientID": "",
         "clientSecret": "",

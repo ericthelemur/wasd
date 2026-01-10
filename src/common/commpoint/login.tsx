@@ -1,6 +1,6 @@
 import '../../common/uwcs-bootstrap.css';
 
-import { FormEvent } from 'react';
+import { FormEvent, useRef } from 'react';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -11,48 +11,56 @@ import NodeCG from '@nodecg/types';
 import { ListenersT } from '../../common/messages';
 import { Configschema } from '../../types/schemas';
 import { ConnStatus, Messages, ReplicantTypes } from './commpoint';
+import { FloatingLabel } from 'react-bootstrap';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;
+
+export function Status({ status }: { status?: ConnStatus }) {
+    switch (status) {
+        case "connected": return <Badge bg="success">Connected</Badge>
+        case "connecting": return <Badge bg="info">Connecting</Badge>
+        case "retrying": return <Badge bg="info">Retrying</Badge>
+        case "disconnected": return <Badge bg="danger">Disconnected</Badge>
+        case "error": return <Badge bg="danger">Error</Badge>
+    }
+    return null;
+}
 
 export function CreateCommPointConnect<
     M extends Messages<L>,
     R extends ReplicantTypes<S, L>,
     S extends { connected: ConnStatus; } = R["status"],
     L = R["login"]
->(
-    namespace: string,
-    paramElements: React.ReactNode | null,
-    getParams: () => M["connect"],
-    defaultStatus: S,
-    listeners: ListenersT<M>) {
-
-    function Status({ status }: { status?: ConnStatus }) {
-        switch (status) {
-            case "connected": return <Badge bg="success">Connected</Badge>
-            case "connecting": return <Badge bg="info">Connecting</Badge>
-            case "retrying": return <Badge bg="info">Retrying</Badge>
-            case "disconnected": return <Badge bg="danger">Disconnected</Badge>
-            case "error": return <Badge bg="danger">Error</Badge>
-        }
-        return null;
-    }
+>(namespace: string, listeners: ListenersT<M>, fields: { [key in keyof L]: string }, defaultLogin: L, defaultStatus: S, ExtraStatus?: (props: { status: S }) => React.JSX.Element) {
 
     function ConnectForm() {
-        // const [login,] = useReplicant<L>("login", defaultValue, { namespace: namespace });
+        const [login,] = useReplicant<L>("login", defaultLogin, { namespace: namespace });
+        console.log(login);
+        const refs = useRef<{ [key: string]: HTMLInputElement }>({});
 
         function connect(e: FormEvent) {
             e.preventDefault();
-            const params = getParams();
-            nodecg.log.info('Attempting to connect to', namespace, "with", JSON.stringify(params));
-            listeners.sendTo("connect", params);
+
+            let login: { [key: string]: string } = {};
+            for (let key of Object.keys(fields)) {
+                login[key] = String(refs.current[key].value);
+            }
+            listeners.sendTo("connect", login as L);
         }
 
-        return (
-            <Form onSubmit={connect} className="vstack gap-3">
-                {paramElements}
-                <Button type="submit">Connect</Button>
-            </Form>
-        )
+        return <Form onSubmit={connect} className="vstack gap-3">
+            {Object.keys(fields).map((key) => {
+                const field = key as keyof L & string;
+                return <FormInput key={field} field={field} label={fields[field]} defaultValue={login ? String(login[field] || "") : ""} refs={refs} />;
+            })}
+            <Button type="submit">Connect</Button>
+        </Form>
+    }
+
+    function FormInput(props: { field: string, label: string, defaultValue: string, refs: React.MutableRefObject<{ [key: string]: HTMLInputElement }> }) {
+        return <FloatingLabel className="flex-grow-1" controlId={props.field} label={props.label}>
+            <Form.Control ref={e => props.refs.current[props.field] = e!} defaultValue={props.defaultValue} />
+        </FloatingLabel>
     }
 
 
@@ -80,6 +88,7 @@ export function CreateCommPointConnect<
         return <div className="m-3">
             <div className="mb-3">
                 Status: <Status status={status?.connected} />
+                {status && ExtraStatus && <ExtraStatus status={status} />}
             </div>
             {notConnecting ? <ConnectForm /> : <DisconnectForm status={status.connected} />}
         </div>
@@ -87,4 +96,3 @@ export function CreateCommPointConnect<
 
     return ControlForms;
 }
-

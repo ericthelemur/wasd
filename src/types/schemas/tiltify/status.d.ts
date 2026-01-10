@@ -9,5 +9,6 @@ export type ConnStatus = 'connected' | 'connecting' | 'disconnected' | 'error' |
 
 export interface Status {
 	connected: ConnStatus;
+	campaignName?: string;
 	[k: string]: unknown;
 }
