@@ -1,7 +1,7 @@
 import { WebhookStatus, WebhookLogin } from "../../types/schemas/tiltify";
 import { CommPoint } from "../../common/commpoint/commpoint";
 import { webhookListeners, WebhookListenerTypes } from "../messages";
-import { BundleReplicant } from "../../common/utils";
+import { buildSchemaPath, BundleReplicant } from "../../common/utils";
 import Webhook from "./api-client/lib/webhook";
 import TiltifyClient from "./api-client";
 import { NextFunction, Router, Request, Response } from "express";
@@ -18,11 +18,14 @@ export class WebhookCommPoint extends CommPoint<WebhookListenerTypes, WebhookRep
     tunnel?: localtunnel.Tunnel;
 
     tiltify?: Tiltify;
-    connectedID: string | null = null;
-    connectedCampaign: string | null = null;
+
+    connectionPoll?: NodeJS.Timeout;
 
     constructor(tiltify: Tiltify, client: TiltifyClient) {
-        super("tiltify-webhook", { status: BundleReplicant("webhookstatus", "tiltify"), login: BundleReplicant("webhooklogin", "tiltify") }, webhookListeners);
+        super("tiltify-webhook", {
+            status: BundleReplicant("status", "tiltify-webhook", { schemaPath: buildSchemaPath("tiltify", "webhookStatus") }),
+            login: BundleReplicant("login", "tiltify-webhook", { schemaPath: buildSchemaPath("tiltify", "webhookLogin") }),
+        }, webhookListeners);
 
         this.tiltify = tiltify;
         tiltify.webhook = this;
@@ -52,17 +55,27 @@ export class WebhookCommPoint extends CommPoint<WebhookListenerTypes, WebhookRep
 
     override async _connect() {
         const login = this.replicants.login.value;
-        if (!login.webhookID || !login.webhookSecret || !this.connectedCampaign) this.log.error("Webhook ID or Secret is empty. Please define them to connect to the webhook");
-        else {
-            // Activate then subscribe to webhook
-            this.client.Webhook.activate(login.webhookID, login.webhookSecret, d => this.log.info("Webhook created", d));
-            const events = { "event_types": ["public:direct:fact_updated", "public:direct:donation_updated"] };
-            this.client.Webhook.subscribe(login.webhookID, this.connectedCampaign /* TEMPORARY */, events, d => this.log.info('Subscribed to webhook', d));
+        if (!login.webhookID || !login.webhookSecret) throw new Error("Webhook ID or Secret is empty");
+        if (!(await this.tiltify?.isConnected())) throw new Error("Connect Tiltify before connecting the webhook");
+        const campaignID = this.tiltify?.replicants.login.value.campaignID;
+        if (!campaignID) throw new Error("No Campaign ID Assigned");
 
-            this.connectedID = login.webhookID;
-            this.connectedCampaign = this.connectedCampaign;
-            if (login.targetSubdomain) this.createTunnel(login.targetSubdomain);
-        }
+        this.replicants.status.value.url = null;
+
+        // Save secret to authenticate incoming messages
+        this.client.Webhook.secret = login.webhookSecret;
+
+        // Activate webhook
+        const activateData = await this.client._doRequest(`private/webhook_endpoints/${login.webhookID}/activate`, 'POST');
+        if (!activateData) throw new Error("Activating Webhook Failed");
+
+        // Subscribe to campaign updates (for total) and new donations
+        const events = { "event_types": ["public:direct:fact_updated", "public:direct:donation_updated"] };
+        const subscribeData = this.client._doRequest(`private/webhook_endpoints/${login.webhookID}/webhook_subscriptions/${campaignID}`, 'PUT', events);
+        if (!subscribeData) throw new Error("Subscribing to Webhook Failed");
+
+        // If tunneling, create tunnel
+        if (login.targetSubdomain) this.createTunnel(login.targetSubdomain);
     }
 
     /**
@@ -73,6 +86,7 @@ export class WebhookCommPoint extends CommPoint<WebhookListenerTypes, WebhookRep
     createTunnel(subdomain: string) {
         this.log.info("Creating Webhook Tunnel with Localtunnel...");
         localtunnel({ port: 9090, subdomain }).then(t => {
+            this.tunnel = t;
             this.log.info(`Tiltify webhook tunnel created for ${t.url}/tiltify/webhook`);
             const expected = `https://${subdomain}.loca.lt`;
             if (t.url != expected) {    // Check webhook url matches expectation
@@ -80,27 +94,30 @@ export class WebhookCommPoint extends CommPoint<WebhookListenerTypes, WebhookRep
             }
             this.replicants.status.value.url = t.url;
 
-            t.on("request", data => console.log("Webhook message", data));
-            t.on("close", () => this.reconnect());
+            t.on("request", data => this.log.info("Webhook message", data));
+            t.on("close", () => { this.log.warn("Tunnel closed"); this.reconnect() });
 
         }).catch((e) => console.error("Failed to create tunnel", e));
     }
 
     override async _setupListeners() {
         // Poll test endpoint
-        setInterval(async () => {
+        this.connectionPoll = setInterval(async () => {
             const status = this.replicants.status.value;
-            if (!status.url || !this.isConnected()) return;
-            await fetch(new URL("tiltify/test", status.url), { method: "POST" }).then(r => {
-                if (!r.ok) {
+            if (!status.url || !await this.isConnected()) return;
+            this.log.info("Polling");
+            await fetch(new URL("tiltify/test", status.url), { method: "POST" }).then(async r => {
+                if (!r.ok && await this.isConnected()) {
                     this.log.error("Tunnel failed poll, reconnecting...");
-                    this.reconnect()
+                    this.reconnect();
                 };
-            }).catch(e => {
-                this.log.error("Tunnel failed poll, reconnecting...");
-                this.reconnect()
+            }).catch(async e => {
+                if (await this.isConnected()) {
+                    this.log.error("Tunnel failed poll, reconnecting...", e);
+                    this.reconnect();
+                }
             });
-        }, 5 * 1000);
+        }, 10 * 1000);
     }
 
     override async isConnected() {
@@ -108,18 +125,24 @@ export class WebhookCommPoint extends CommPoint<WebhookListenerTypes, WebhookRep
     }
 
     override async _disconnect() {
+        clearInterval(this.connectionPoll);
+        this.connectionPoll = undefined;
+
         if (this.tunnel) {  // Try to close tunnel if exists
-            this.log.error("Closing Tunnel");
+            this.log.warn("Closing Tunnel");
             try {
                 this.tunnel.close();
+                this.tunnel = undefined;
             } catch (e) {
                 this.log.error("Error closing tunnel", e);
             }
         }
 
         // Try to delete registration if exists
-        if (this.connectedID && this.connectedCampaign) {
-            this.client.Webhook.delete(this.connectedID, this.connectedCampaign, d => this.log.error("Disconnected from webhook", d));
+        const webhookID = this.replicants.login.value.webhookID;
+        const campaignID = this.tiltify?.replicants.login.value.campaignID;
+        if (webhookID && campaignID && await this.isConnected()) {
+            this.client.Webhook.delete(webhookID, campaignID, d => this.log.error("Disconnected from webhook", d));
         }
     }
 }

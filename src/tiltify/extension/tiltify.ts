@@ -1,6 +1,6 @@
 import { WebhookStatus, WebhookLogin, Status, Login, Donations, Alldonations, Schedule, Targets, Milestones, Total, Polls, Rewards, Donors, Donation, Campaign } from "../../types/schemas/tiltify";
 import { CommPoint } from "../../common/commpoint/commpoint";
-import listeners, { ListenerTypes } from "../messages";
+import listeners, { ListenerTypes, webhookListeners } from "../messages";
 import { BundleReplicant, sendError, sendSuccess } from "../../common/utils";
 import Webhook from "./api-client/lib/webhook";
 import TiltifyClient from "./api-client";
@@ -75,6 +75,7 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
         const found = donos.value.find(d => d.id === donation.id);
         if (found) return;
 
+        this.log.debug("New donation added", donation);
         // If not, add to list and broadcast message
         donation.read = false;
         donation.shown = false;
@@ -84,19 +85,20 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
     }
 
     updateTotal(campaign: Campaign) {
-        if (campaign.id != this.replicants.login.value.campaignID) return;
+        // if (campaign.id != this.replicants.login.value.campaignID) return;
         const newTotal = campaign.amount_raised;
         const oldTotal = this.replicants.total.value;
-        this.log.info(campaign);
         // Check if increased
         if (campaign.id != this.replicants.login.value.campaignID ||    // If changed campaign, update
             Number(oldTotal.value) < Number(newTotal.value) ||      // If increased value, update
             Number(newTotal.value) < 0.5 * Number(oldTotal.value) ||  // If decrease to < half, probably reset, so update
             oldTotal.currency != newTotal.currency) {               // If different currency, update
+            this.log.debug("Updating total to", newTotal.value);
             this.replicants.total.value = clone(newTotal);
         }
 
         if (this.replicants.status.value.campaignName != campaign.name) {
+            this.log.info("Updating campaign name to", campaign.name);
             this.replicants.status.value.campaignName = campaign.name;
         }
     }
@@ -141,9 +143,10 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
         const askTiltifyForTotal = () => {
             const campaignID = this.getCampaignID();
             if (!campaignID) return;
-            Campaigns.get(campaignID, c => {
-                if (!c) this.reconnect();  // Mark as retrying if failed poll
+            Campaigns.get(campaignID, async c => {
+                if (!c && await this.isConnected()) this.reconnect();  // Mark as retrying if failed poll
 
+                this.log.debug("Polled campaign, result:", c);
                 this.updateTotal(c);
                 // TODO check for auth fails???
             })
@@ -153,7 +156,6 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
         askTiltifyForTotal();
         this.donoPoll = setInterval(async () => {
             if (await this.isConnected() && this.webhook && await this.webhook.isConnected()) return;
-            this.log.info("Polling Campaign");
             askTiltifyForDonations();
             askTiltifyForTotal();
         }, 5 * 1000);
@@ -177,7 +179,7 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
 
         // Poll full list of donos occasionally
         const askTiltifyForAllDonations = this.askTiltifyFor((id, cb) => Campaigns.getDonations(id, (donos) => {
-            this.log.info("All Results", donos?.length);
+            this.log.debug("Polled donations, count", donos.length);
             cb(donos);  // Standard updating of all donations list
             donos.forEach(d => this.pushUniqueDonation(d));  // Check none are missed in the main dono list
         }), this.replicants.alldonations);
@@ -185,7 +187,6 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
         askTiltifyForAllDonations();
         this.allDonoPoll = setInterval(() => {
             const campaignID = this.getCampaignID();
-            this.log.info("All poll", campaignID);
             if (!campaignID) return;
             askTiltifyForAllDonations();
         }, 2 * 60 * 1000);
@@ -240,6 +241,7 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
 
 
     async _disconnect() {
+        // Stop Polls
         clearInterval(this.donoPoll);
         this.donoPoll = undefined;
 
@@ -249,11 +251,15 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
         clearInterval(this.allDonoPoll);
         this.allDonoPoll = undefined;
 
+        // Reset Auth
         if (this.client) {
             this.client.apiKey = undefined;
             this.client.clientID = undefined;
             this.client.clientSecret = undefined;
         }
+
+        // Disconnect webhook (if connected)
+        webhookListeners.sendTo("disconnect");
     }
 
     async isConnected() {

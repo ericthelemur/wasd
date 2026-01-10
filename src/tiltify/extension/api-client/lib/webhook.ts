@@ -25,7 +25,6 @@ export default class Webhook {
      */
     activate(id: string, secret: string, callback: (data: any) => any) {
         this.secret = secret;
-
         this.parent._doRequest(`private/webhook_endpoints/${id}/activate`, 'POST').then(data => data && callback(data));
     }
 

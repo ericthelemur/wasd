@@ -1,4 +1,4 @@
-import { Donation, Login } from '../types/schemas/tiltify';
+import { Donation, Login, WebhookLogin } from '../types/schemas/tiltify';
 import { createMessageListenersBundle } from '../common/messages';
 import { ModStatus } from './extension/utils/mod';
 
@@ -24,7 +24,7 @@ export const { listenTo, sendTo, sendToF } = listeners;
 
 
 export type WebhookListenerTypes = {
-    "connect": Partial<Login>,
+    "connect": Partial<WebhookLogin>,
     "disconnect": undefined,
     "connected": undefined
 }

@@ -38,6 +38,8 @@ export abstract class CommPoint<
     protected retryPeriod: number = -1;
     protected _reconnectInterval: NodeJS.Timeout | undefined = undefined;
 
+    protected ignoreCloseEvents: boolean = false;
+
     /**
      * Contruct a comm point. Intended to be used in super calls only
      * @param namespace Namespace name for replicants. Usually the name of the folder
@@ -71,9 +73,10 @@ export abstract class CommPoint<
 
     protected _connectionListeners() {
         this.replicants.status.once("change", newVal => {
+            this.log.warn("Startup Check", newVal.connected);
             // this.replicants.status.value.connected = "disconnected";
             // If we were connected last time, try connecting again now.
-            if (newVal && (newVal.connected === "connected" || newVal.connected === "connecting")) {
+            if (newVal && newVal.connected == "connected") {
                 this.reconnect(true);
             }
         });
@@ -94,6 +97,8 @@ export abstract class CommPoint<
 
     async connect(isRetry: boolean = false) {
         let err: string | null = null;
+        if (this.ignoreCloseEvents && isRetry) return "Disconnecting in progress...";
+        this.ignoreCloseEvents = false;
         await this._connect().then(() => {
             this.stopRetry();
             this.replicants.status.value.connected = "connected";
@@ -112,6 +117,7 @@ export abstract class CommPoint<
     }
 
     async disconnect() {
+        this.ignoreCloseEvents = true;
         this.stopRetry();
 
         let err: string | null = null;
@@ -152,7 +158,7 @@ export abstract class CommPoint<
         })
     }
 
-    private statusAtPreviousCheck: ConnStatus = "connected";
+    private statusAtPreviousCheck: ConnStatus = "disconnected";
     protected _checkConnectionPoll() {
         // Poll for disconnected system regularly
         setInterval(async () => {
@@ -171,6 +177,8 @@ export abstract class CommPoint<
     async reconnect(noDisconnect = false) {
         // If unexpectedly disconnected, attempt reconnection every reconnectInterval seconds
         if (this._reconnectInterval) return;
+        if (this.ignoreCloseEvents) return;
+
         if (noDisconnect) this._disconnect();
         this.replicants.status.value.connected = "retrying";
         this.retryPeriod = this.reconnectInterval;

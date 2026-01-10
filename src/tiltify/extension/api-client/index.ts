@@ -74,18 +74,17 @@ export default class TiltifyClient {
      * @param {int} attempt Attempt counter, for spacing out retries
      */
     async generateKey(attempt = 1) {
-        this.info("Gen Key", Boolean(this.refreshToken), new Date());
+        this.info("Refreshing Tiltify Key");
         const tail = this.refreshToken ? `grant_type=refresh_token&refresh_token=${this.refreshToken}` : "grant_type=client_credentials&scope=public webhooks:write";
         const url = `${this.oauthUrl}?client_id=${this.clientID}&client_secret=${this.clientSecret}&${tail}`;
         try {
-            this.info(url);
+            // this.info(url);
             const payload = await axios({ url, method: 'POST' }).catch(e => { /*this.scheduleRetry();*/ throw e })
-            this.info(payload.status);
-            this.info(payload.data);
+            // this.info("Status", payload.status);
+            // this.info(payload.data);
             if (payload.status === 200 && payload.data && payload.data.expires_in) {
                 this.apiKey = payload.data.access_token;
                 this.refreshToken = payload.data.refresh_token;
-                this.info("Set key", this.apiKey);
 
                 // Schedule renew job
                 clearTimeout(this.keyTimeout);
@@ -107,7 +106,7 @@ export default class TiltifyClient {
         return new URL("./" + path, this.apiUrl + (this.apiUrl.endsWith("/") ? "" : "/"));
     }
 
-    private async _processRequest<T>(path: string | URL, method: string = 'GET', payload?: Object) {
+    async _processRequest<T>(path: string | URL, method: string = 'GET', payload?: Object) {
         if (!this.apiKey) {
             this.error('Client has not been initalized or apiKey is missing');
             return null;
