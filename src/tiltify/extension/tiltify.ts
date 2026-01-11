@@ -55,7 +55,7 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
     constructor() {
         super("tiltify", replicantNamesOnly, listeners);
 
-        this.client = new TiltifyClient(undefined, undefined, this.log.info, this.log.error);
+        this.client = new TiltifyClient(undefined, undefined, (...args) => this.log.info(...args), (...args) => this.log.error(...args));
     }
 
     async _connect() {

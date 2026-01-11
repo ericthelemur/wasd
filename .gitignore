@@ -8,3 +8,6 @@ bower_components
 /extension
 *.log
 .venv
+
+/cfg
+/db

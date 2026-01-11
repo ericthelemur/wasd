@@ -90,7 +90,7 @@ export class WebhookCommPoint extends CommPoint<WebhookListenerTypes, WebhookRep
             this.log.info(`Tiltify webhook tunnel created for ${t.url}/tiltify/webhook`);
             const expected = `https://${subdomain}.loca.lt`;
             if (t.url != expected) {    // Check webhook url matches expectation
-                this.log.error("Webhook tunnel url is unexpected. Expected:", expected, "Actual:", t.url, ". If expected, update webhook URL on tiltify. If not, check nothing else is using the subdomain and restart");
+                this.log.error("Webhook tunnel url is unexpected. Expected:", expected, "Actual:", t.url, ". If expected, update webhook URL on tiltify. If not, check nothing else is using the subdomain and restart. If happens repeatedly, use Cloudflare Tunnel instead");
             }
             this.replicants.status.value.url = t.url;
 
@@ -105,8 +105,7 @@ export class WebhookCommPoint extends CommPoint<WebhookListenerTypes, WebhookRep
         this.connectionPoll = setInterval(async () => {
             const status = this.replicants.status.value;
             if (!status.url || !await this.isConnected()) return;
-            this.log.info("Polling");
-            await fetch(new URL("tiltify/test", status.url), { method: "POST" }).then(async r => {
+            await fetch(new URL("tiltify/test", status.url), { method: "POST", signal: AbortSignal.timeout(5 * 1000) }).then(async r => {
                 if (!r.ok && await this.isConnected()) {
                     this.log.error("Tunnel failed poll, reconnecting...");
                     this.reconnect();
@@ -142,7 +141,7 @@ export class WebhookCommPoint extends CommPoint<WebhookListenerTypes, WebhookRep
         const webhookID = this.replicants.login.value.webhookID;
         const campaignID = this.tiltify?.replicants.login.value.campaignID;
         if (webhookID && campaignID && await this.isConnected()) {
-            this.client.Webhook.delete(webhookID, campaignID, d => this.log.error("Disconnected from webhook", d));
+            this.client.Webhook.delete(webhookID, campaignID, d => this.log.info("Disconnected from webhook", d));
         }
     }
 }

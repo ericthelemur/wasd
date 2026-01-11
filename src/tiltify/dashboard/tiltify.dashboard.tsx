@@ -19,10 +19,10 @@ const ControlForm = CreateCommPointConnect("tiltify", listeners, {
 
 const WebhookControlForm = CreateCommPointConnect("tiltify-webhook", webhookListeners, {
     webhookID: "Webhook ID",
-    webhookSecret: "Webhook Secret",
+    webhookSecret: "Webhook Signing ID",
     targetSubdomain: "Requested Subdomain"
 } as const, {}, { connected: "disconnected", url: null }, ({ status }: { status: WebhookReplicants["status"] }) => <>
-    {status.connected == "connected" && <div>URL: {status.url}</div>}
+    {status.connected == "connected" && <div>URL: {status.url || "Not Automatically Tunnelled"}</div>}
 </>);
 
 root.render(<>

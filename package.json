@@ -79,6 +79,13 @@
         "headerColor": "#525F78"
       },
       {
+        "name": "tiltify-control",
+        "title": "Tiltify Control",
+        "width": 3,
+        "file": "tiltify/dashboard/tiltify.dashboard.html",
+        "headerColor": "#525F78"
+      },
+      {
         "name": "scheduleadjuster",
         "title": "Schedule Adjuster",
         "width": 2,
@@ -221,7 +228,6 @@
     "react-toastify": "^11.0.3",
     "react-transition-group": "^4.4.5",
     "speedcontrol-util": "^0.6.1",
-    "tiltify-api-client": "^2.2.1",
     "tiny-typed-emitter": "2.1.0",
     "ts-node": "^10.9.1",
     "use-nodecg": "github:ericthelemur/use-nodecg"
