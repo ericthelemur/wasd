@@ -12,6 +12,11 @@ if __name__ == "__main__":
     reply = next(client.get_messages(2))
     print(str(reply))
     time.sleep(1)
+
+    client.send_message("/status", [])
+    reply = next(client.get_messages(2))
+    print(str(reply))
+    time.sleep(1)
     
     client.send_message("/info", [])
     reply = next(client.get_messages(2))

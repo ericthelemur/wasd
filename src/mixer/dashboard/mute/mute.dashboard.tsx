@@ -6,21 +6,11 @@ import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { createRoot } from 'react-dom/client';
-import { Channels, Muted, TechMuted, XrStatus } from 'types/schemas';
+import { Channels, Muted, TechMuted, Status } from 'types/schemas/mixer';
 import { useReplicant } from 'use-nodecg';
 
 import { sendTo, sendToF } from '../../messages';
-
-export function Status() {
-	const [status,] = useReplicant<XrStatus>("xrStatus", { "connection": "disconnected" });
-	switch (status?.connection) {
-		case "connected": return <Badge bg="success">Connected</Badge>
-		case "connecting": return <Badge bg="info">Connecting</Badge>
-		case "disconnected": return <Badge bg="danger">Disconnected</Badge>
-		case "error": return <Badge bg="danger">Error</Badge>
-	}
-	return null;
-}
+import { CommPointStatus } from '../../../common/commpoint/login';
 
 function fetchFromParams() {
 	const url = new URL(window.location.href);
@@ -38,7 +28,7 @@ function copyToParams(mic: string | null) {
 }
 
 function MicChoice({ setMic }: { setMic: (m: string) => void }) {
-	const [channels,] = useReplicant<Channels>("channels", { dcas: {}, mics: {}, tech: -1, scenes: {}, mutegroups: {} });
+	const [channels,] = useReplicant<Channels>("channels", { dcas: {}, mics: {}, tech: -1, scenes: {}, mutegroups: {} }, { namespace: "mixer" });
 
 	if (!channels || !channels.mics) return <>No active mics</>;
 	return <div className="gap-2 mb-2 d-flex flex-wrap">
@@ -55,7 +45,7 @@ function MuteIndicator({ micMuted, talkback }: { micMuted: boolean | undefined, 
 }
 
 function MuteControl({ mic }: { mic: string }) {
-	const [muted,] = useReplicant<Muted>("muted", {});
+	const [muted,] = useReplicant<Muted>("muted", {}, { namespace: "mixer" });
 	const [temp, setTemp] = useState(false);
 	const [wasMuted, setWasMuted] = useState<boolean | undefined>(undefined);
 	const [debounce, setDebounce] = useState<NodeJS.Timeout | undefined>(undefined);
@@ -99,8 +89,8 @@ function MuteControl({ mic }: { mic: string }) {
 }
 
 function TechMute() {
-	const [channels,] = useReplicant<Channels>("channels", { dcas: {}, mics: {}, tech: -1, scenes: {}, mutegroups: {} });
-	const [techMuted,] = useReplicant<TechMuted>("techMuted", {});
+	const [channels,] = useReplicant<Channels>("channels", { dcas: {}, mics: {}, tech: -1, scenes: {}, mutegroups: {} }, { namespace: "mixer" });
+	const [techMuted,] = useReplicant<TechMuted>("techMuted", {}, { namespace: "mixer" });
 
 	if (techMuted === undefined) return <></>;
 	function talkToggle(m: string) {
@@ -129,7 +119,7 @@ function TechMute() {
 
 
 function MutePanel() {
-	const [status,] = useReplicant<XrStatus>("xrStatus", { "connection": "disconnected" });
+	const [status,] = useReplicant<Status>("status", { "connection": "disconnected" }, { namespace: "mixer" });
 
 	const [mic, setMic] = useState(fetchFromParams());
 	useEffect(() => {
@@ -137,7 +127,7 @@ function MutePanel() {
 		document.title = mic ? `${mic} | MUTE` : "MUTE";
 	}, [mic]);
 
-	if (!status || status.connection === "disconnected" || status.connection === "connecting") return null;
+	if (!status || status.connection != "connected") return null;
 
 	if (mic) {
 		return <>
@@ -153,7 +143,7 @@ function MutePanel() {
 
 export function MuteControlPanel() {
 	return <div className="m-3">
-		<Status />
+		<CommPointStatus bundle="mixer" />
 		<MutePanel />
 	</div>
 }

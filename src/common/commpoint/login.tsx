@@ -15,7 +15,8 @@ import { FloatingLabel } from 'react-bootstrap';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;
 
-export function Status({ status }: { status?: ConnStatus }) {
+export function CommPointStatus({ status, bundle }: { status?: ConnStatus, bundle?: string }) {
+    if (bundle) return <CommPointStatusFromBundle bundle={bundle} />
     switch (status) {
         case "connected": return <Badge bg="success">Connected</Badge>
         case "connecting": return <Badge bg="info">Connecting</Badge>
@@ -24,6 +25,12 @@ export function Status({ status }: { status?: ConnStatus }) {
         case "error": return <Badge bg="danger">Error</Badge>
     }
     return null;
+}
+
+function CommPointStatusFromBundle({ bundle }: { bundle: string }) {
+    const [status,] = useReplicant<{ connection?: ConnStatus }>("status", { "connection": "disconnected" }, { namespace: bundle });
+
+    return <CommPointStatus status={status?.connection} />
 }
 
 export function CreateCommPointConnect<
@@ -87,7 +94,7 @@ export function CreateCommPointConnect<
         const notConnecting = !status || status.connected === "disconnected" || status.connected === "error";
         return <div className="m-3">
             <div className="mb-3">
-                Status: <Status status={status?.connected} />
+                Status: <CommPointStatus status={status?.connected} />
                 {status && ExtraStatus && <ExtraStatus status={status} />}
             </div>
             {notConnecting ? <ConnectForm /> : <DisconnectForm status={status.connected} />}

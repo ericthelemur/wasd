@@ -11,37 +11,18 @@ import Form from 'react-bootstrap/Form';
 import Stack from 'react-bootstrap/Stack';
 import { createRoot } from 'react-dom/client';
 import { Configschema } from 'types/schemas';
-import { Login, XrStatus } from 'types/schemas/mixer';
+import { Login, Status } from 'types/schemas/mixer';
 import { useReplicant } from 'use-nodecg';
 
 import NodeCG from '@nodecg/types';
 
 import { sendTo } from '../../messages';
+import { CommPointStatus } from '../../../common/commpoint/login';
 
 declare const nodecg: NodeCG.ClientAPI<Configschema>;
 
-export function Status() {
-	const [status,] = useReplicant<XrStatus>("xrStatus", { "connection": "disconnected" });
-	switch (status?.connection) {
-		case "connected": return <Badge bg="success">Connected</Badge>
-		case "connecting": return <Badge bg="info">Connecting</Badge>
-		case "disconnected": return <Badge bg="danger">Disconnected</Badge>
-		case "error": return <Badge bg="danger">Error</Badge>
-	}
-	return null;
-}
-
-export function MixerStatuses() {
-	return <div className="mt-3">
-		<Stack direction="horizontal" gap={1}>
-			Status:
-			<Status />
-		</Stack>
-	</div>
-}
-
 function ConnectForm() {
-	const [login,] = useReplicant<Login>("login", { "enabled": false, "ip": "", "port": 10024 });
+	const [login,] = useReplicant<Login>("login", { "enabled": false, "ip": "", "port": 10024 }, { namespace: "mixer" });
 	const urlElem = useRef<HTMLInputElement>(null);
 	const portElem = useRef<HTMLInputElement>(null);
 
@@ -71,13 +52,13 @@ function ConnectForm() {
 
 
 function DisconnectForm({ status }: { status: string }) {
-	const [login, setLogin] = useReplicant<Login>("login", { "enabled": false, "ip": "", "xr18": true, "suppress": false });
+	const [login, setLogin] = useReplicant<Login>("login", { "enabled": false, "ip": "", "xr18": true, "suppress": false }, { namespace: "mixer" });
 
 	function disconnect(e: FormEvent) {
 		e.preventDefault();
 		if (status != "connected" || confirm("Are you sure you want to disconnect from Mixer?")) {
 			nodecg.log.info('Attempting to disconnect');
-			(sendTo("disconnect", {}) as unknown as Promise<void>
+			(sendTo("disconnect") as unknown as Promise<void>
 			).then(() => nodecg.log.info('successfully disconnected from xr18'))
 				.catch((err: any) => nodecg.log.error('failed to disconnect to xr18:', err));
 		}
@@ -97,10 +78,8 @@ function DisconnectForm({ status }: { status: string }) {
 
 
 function ControlForms() {
-	const [status,] = useReplicant<XrStatus>("xrStatus", { "connection": "disconnected" });
-	console.log("HERE2", status);
+	const [status,] = useReplicant<Status>("status", { "connection": "disconnected" }, { namespace: "mixer" });
 	if (status) {
-		console.log("HERE");
 		if (status.connection === "disconnected" || status.connection === "error") {
 			return <ConnectForm />
 		} else {
@@ -115,7 +94,7 @@ function ControlForms() {
 export function MsgControlPanel() {
 	return <div className="m-3">
 		<ControlForms />
-		<MixerStatuses />
+		<CommPointStatus bundle="mixer" />
 	</div>
 }
 

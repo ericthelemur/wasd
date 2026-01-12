@@ -7,23 +7,27 @@
 // https://github.com/GamesDoneQuick/agdq19-layouts/blob/master/src/types/osc.d.ts
 
 declare module 'osc' {
-import { EventEmitter } from 'events';
+    import { EventEmitter } from 'events';
 
-        export const defaults: {
+    export const defaults: {
         metadata: boolean;
         unpackSingleArgs: boolean;
     };
+    export type I = { type: "i", value: number };
+    export type F = { type: "f", value: number };
+    export type S = { type: "s", value: string };
+    export type B = { type: "b", value: Uint8Array };
+
     export type Argument = number | string | Uint8Array;
-    export type MetaArgument =
-        { type: 'i' | 'f', value: number }
-        | { type: 's', value: string }
-        | { type: 'b', value: Uint8Array };
+    export type MetaArgument = I | F | S | B;
 
     export abstract class SLIPPort { }
 
-    export interface OscMessage {
+    type Arguments = (Argument | Array<Argument> | MetaArgument | Array<MetaArgument>)[];
+
+    export interface OscMessage<Args extends Arguments = Arguments> {
         address: string;
-        args: Argument | Array<Argument> | MetaArgument | Array<MetaArgument>;
+        args: Args;
     }
 
     export interface OscBundle { }

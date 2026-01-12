@@ -56,7 +56,6 @@ export function createMessageListeners<X extends Dict>(): ListenersT<X> {
     return { listenTo, sendTo, sendToF }
 }
 
-
 export function createMessageListenersBundle<X extends Dict>(namespace?: string, noLogList: (keyof X)[] = []): ListenersT<X> {
     const bundle = namespace || "wasd";
     const logger = new (getNodeCG().Logger)(bundle);
@@ -84,6 +83,17 @@ export function createMessageListenersBundle<X extends Dict>(namespace?: string,
     }
 
     return { listenTo, sendTo, sendToF }
+}
+
+// Separate function as only used occasionally
+export function createUnlistener<X extends Dict>(namespace?: string) {
+    const bundle = namespace || "wasd";
+    const logger = new (getNodeCG().Logger)(bundle);
+    function unlistenTo<T extends keyof X & string>(name: T, listener: Listener<X[T]>) {
+        logger.debug("Removing listener from", name, "for", listener);
+        ncg.unlisten(name, listener);
+    }
+    return unlistenTo;
 }
 
 

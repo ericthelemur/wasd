@@ -6,6 +6,6 @@ export * from './login';
 // @ts-ignore
 export * from './muted';
 // @ts-ignore
-export * from './techMuted';
+export * from './status';
 // @ts-ignore
-export * from './xrStatus';
+export * from './techMuted';

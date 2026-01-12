@@ -1,8 +1,8 @@
+/*
 import { Channels, Login, Muted, TechMuted } from 'types/schemas';
 
-import { getNodeCG, Replicant, storeNodeCG } from '../../../common/utils';
+import { getNodeCG, Replicant, sendSuccess, storeNodeCG } from '../../../common/utils';
 import { listenTo } from '../../messages';
-import { channels, login, muted, techMuted } from './replicants';
 import { getX32 } from './utils';
 
 const x32 = getX32();
@@ -10,20 +10,18 @@ const x32 = getX32();
 var mutesMap: { [address: string]: string } = {}
 
 function genReverseMap(chls?: Channels) {
-    const v = chls ?? channels.value;
+    const v = chls ?? x32.replicants.channels.value;
     mutesMap = v ? Object.fromEntries(Object.entries(v.mics).map(([k, v]) => [v, k])) : {};
 }
-channels.on("change", genReverseMap);
+x32.replicants.channels.on("change", genReverseMap);
 genReverseMap();
 
-
 const nodecg = getNodeCG();
-// Update DCAs with OBS scene
-// nodecg.listenFor("transitioning", "nodecg-obs-control", (data: { transitionName: string; fromScene?: string; toScene?: string; }) => {
 
-function setDCAs(toScene?: string) {
-    if (!x32.connected()) return;
+async function setDCAs(toScene?: string) {
+    if (!(await x32.isConnected())) return;
     if (!toScene) return;
+    const channels = x32.replicants.channels;
     const newActiveDCAs = channels.value.scenes[toScene];
     nodecg.log.info("Settings DCAs to", newActiveDCAs);
     if (!newActiveDCAs) return;
@@ -36,61 +34,65 @@ function setDCAs(toScene?: string) {
         if (enabledDCA && name == "MUSIC" && toScene != "BREAK") {  // Mix music lower on non-break
             vol = (channels.value as any)["music-vol"] || 0.5;      // Pull override volume from unofficial channels.music-vol
         }
-        x32.fade(address, null, vol, enabledDCA ? 1000 : 500);
+        x32.fade(address, null, vol, enabledDCA ? 1000 : 500);  // Fade for 1s or 0.5s
     }
 
-    setTimeout(() => {
+    setTimeout(() => {  // Set configured mute groups after 0.5s (cannot fade these)
         for (const [name, number] of Object.entries(channels.value.mutegroups)) {
             const enabledDCA = newActiveDCAs.includes(name);
             const address = `/config/mute/${number}`;
-            x32.sendMethod({ address: address, args: [{ type: 'i', value: enabledDCA ? 0 : 1 }] });
+            x32.sendToMixer({ address: address, args: [{ type: 'i', value: enabledDCA ? 0 : 1 }] });
         }
     }, 500);
 }
 
-nodecg.listenFor("transitioning", (data: { transitionName: string; fromScene?: string; toScene?: string; }) => {
-    if (!x32.connected() || login.value.suppress) return;
+// Listen to OBS bundle's scene transition. Update DCAs with the scene
+nodecg.listenFor("transitioning", "obs", async (data: { transitionName: string; fromScene?: string; toScene?: string; }) => {
+    if (!(await x32.isConnected())) return;
     if (!data.toScene) return;
     setDCAs(data.toScene);
 });
 
 
-nodecg.listenFor("setDCAs", (data: { toScene?: string; }) => {
-    if (!x32.connected() || login.value.suppress) return;
+nodecg.listenFor("setDCAs", async (data: { toScene?: string; }) => {
+    if (!(await x32.isConnected())) return;
     if (!data.toScene) return;
     setDCAs(data.toScene);
 });
 
 // Mute initialization
-x32.on("ready", () => {
-    Object.entries(channels.value.mics).forEach(([k, ch]) => {
+listenTo("connected", () => {
+    Object.entries(x32.replicants.channels.value.mics).forEach(([k, ch]) => {
         const adStr = String(ch).padStart(2, "0");
-        // Poll muted for each on startup
-        x32.sendMethod({ address: `/ch/${adStr}/mix/on`, args: [] }).then((r) => {
+        // Poll for muted & solo for each
+        x32.sendToMixer({ address: `/ch/${adStr}/mix/on`, args: [] }).then((r) => {
             const args = r.args as [{ type: "i", value: number }];
-            muted.value[k].muted = !Boolean(args[0].value);
+            x32.replicants.muted.value[k].muted = !Boolean(args[0].value);
         });
 
-        x32.sendMethod({ address: `/-stat/solosw/${adStr}`, args: [] }).then((r) => {
+        x32.sendToMixer({ address: `/-stat/solosw/${adStr}`, args: [] }).then((r) => {
             const args = r.args as [{ type: "i", value: number }];
-            muted.value[k].soloed = Boolean(args[0].value);
+            x32.replicants.muted.value[k].soloed = Boolean(args[0].value);
         });
     })
 })
 
 // Mute toggle send
-listenTo("setMute", ({ mic, muted }) => {
-    if (!x32.connected()) return;
+listenTo("setMute", async ({ mic, muted }, ack) => {
+    if (!(await x32.isConnected())) return;
+    const channels = x32.replicants.channels;
     if (!channels.value || !channels.value.mics) return;
     const chIndex = channels.value.mics[mic];
     const chStr = String(chIndex).padStart(2, "0");
     const address = `/ch/${chStr}/mix/on`;
-    return x32.sendMethod({ address: address, args: [{ type: 'i', value: Number(!muted) }] });
+    const response = await x32.sendToMixer<[{ type: 'f', value: number }]>({ address: address, args: [{ type: 'i', value: Number(!muted) }] });
+    sendSuccess(ack, response.args[0].value != 0);
 })
 
 // Mute toggle send
-listenTo("setTalkback", ({ mic, talkback, muted }) => {
-    if (!x32.connected()) return;
+listenTo("setTalkback", async ({ mic, talkback, muted }) => {
+    if (!(await x32.isConnected())) return;
+    const channels = x32.replicants.channels;
     if (!channels.value || !channels.value.mics) return;
     const chIndex = channels.value.mics[mic];
     const chStr = String(chIndex).padStart(2, "0");
@@ -98,15 +100,17 @@ listenTo("setTalkback", ({ mic, talkback, muted }) => {
     const address = `/-stat/solosw/${chStr}`;
     const muteAddress = `/ch/${chStr}/mix/on`;
     return Promise.all([
-        x32.sendMethod({ address: address, args: [{ type: 'i', value: Number(talkback) }] }),
-        x32.sendMethod({ address: muteAddress, args: [{ type: 'i', value: Number(muted === undefined ? !talkback : !muted) }] })
+        x32.sendToMixer({ address: address, args: [{ type: 'i', value: Number(talkback) }] }),
+        x32.sendToMixer({ address: muteAddress, args: [{ type: 'i', value: Number(muted === undefined ? !talkback : !muted) }] })
     ])
 })
 
 // Mute toggle response
+// If message is a mute or toggle, update muted replicant
 const muteRegex = /^\/ch\/(\d+)\/mix\/on$/;
 const soloRegex = /^\/-stat\/solosw\/(\d+)$/;
-x32.on("message", ({ address, args }) => {
+listenTo("message", ({ address, args }) => {
+    const muted = x32.replicants.muted;
     const typedArgs = args as [{ type: "i", value: number }];
     const m = muteRegex.exec(address);
     if (m) { // Is mute toggle
@@ -122,7 +126,8 @@ x32.on("message", ({ address, args }) => {
 
 
 // Tech toggle initialization
-x32.on("ready", () => {
+listenTo("connected", () => {
+    const channels = x32.replicants.channels;
     console.log("Loading tech toggles", channels.value.buses);
     if (!channels.value.buses) return;
     const techCh = String(channels.value.tech).padStart(2, "0");
@@ -130,13 +135,14 @@ x32.on("ready", () => {
         // Poll fader for each on startup
         const busStr = String(b).padStart(2, "0");
         const address = b === 0 ? `/ch/${techCh}/mix/fader` : `/ch/${techCh}/mix/${busStr}/level`
-        x32.sendMethod({ address, args: [] });
+        x32.sendToMixer({ address, args: [] });
     })
 })
 
 // Tech toggle send
-listenTo("setTechMuted", ({ bus, muted }) => {
-    if (!x32.connected()) return;
+listenTo("setTechMuted", async ({ bus, muted }) => {
+    if (!(await x32.isConnected())) return;
+    const channels = x32.replicants.channels;
     if (!channels.value || !channels.value.buses) return;
     nodecg.log.info(muted ? "Muting" : "Unmuting", "tech for", bus);
     const busIndex = channels.value.buses[bus];
@@ -150,13 +156,15 @@ listenTo("setTechMuted", ({ bus, muted }) => {
     if (busIndex === 0) address = `/ch/${techCh}/mix/fader`;
     else address = `/ch/${techCh}/mix/${busStr}/level`;
     nodecg.log.info("Tech", address);
-    return x32.sendMethod({ address, args: [{ type: 'f', value: muted ? 0 : 0.75 }] })
+    return await x32.sendToMixer({ address, args: [{ type: 'f', value: muted ? 0 : 0.75 }] })
 })
 
 // Tech toggle response
-x32.on("message", ({ address, args }) => {
+// If message is about tech channel volume, record in techMuted
+listenTo("message", ({ address, args }) => {
+    const channels = x32.replicants.channels;
     const techStr = `/ch/${String(channels.value.tech).padStart(2, "0")}/mix/`;
-    if (address.startsWith(techStr)) {
+    if (address.startsWith(techStr)) {  // If tech channel
         const suffix = address.slice(techStr.length);
         var channelNo: number | null = null;
         if (suffix === "fader") channelNo = 0;
@@ -168,8 +176,9 @@ x32.on("message", ({ address, args }) => {
             const channel = Object.entries(channels.value.buses).find(([b, n]) => n === channelNo);
             if (channel) {
                 const typedArgs = args as [{ type: "f", value: number },];
-                techMuted.value[channel[0]] = !Boolean(typedArgs[0].value);
+                x32.replicants.techMuted.value[channel[0]] = !Boolean(typedArgs[0].value);
             }
         }
     }
 });
+*/

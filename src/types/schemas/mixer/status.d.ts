@@ -7,7 +7,7 @@
 
 export type ConnStatus = 'connected' | 'connecting' | 'disconnected' | 'error';
 
-export interface XrStatus {
+export interface Status {
 	connection: ConnStatus;
 	[k: string]: unknown;
 }

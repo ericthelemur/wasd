@@ -1,111 +1,87 @@
-// Modified from https://github.com/esamarathon/esa-layouts-shared/blob/master/extension/x32/src/index.ts
-// MIT License from ESA
+import osc, { OscMessage, I, F, S, B, Arguments } from 'osc';
+import { AllNulls, getNodeCG, NoNulls, sendSuccess } from '../../../common/utils';
+import listeners, { listenTo, sendTo, unlistenTo } from '../../messages';
+import { CommPoint } from '../../../common/commpoint/commpoint';
+import { Status, Login, TechMuted, Channels, Muted } from 'types/schemas/mixer';
+import { ListenerTypes } from '../../messages';
 
-import osc, { OscMessage } from 'osc';
-import { TypedEmitter } from 'tiny-typed-emitter';
 
-import NodeCG from '@nodecg/types';
+const replicants = {
+    status: null as null | Status,
+    login: null as null | Login,
 
-import { getNodeCG } from '../../../common/utils';
-import { listenTo } from '../../messages';
-import { login, status } from './replicants';
-
-interface X32Events {
-    'ready': () => void;
-    'message': (msg: OscMessage) => void;
+    muted: null as null | Muted,
+    techMuted: null as null | TechMuted,
+    channels: null as null | Channels
 }
 
-export class X32Utility extends TypedEmitter<X32Events> {
+export type Replicants = NoNulls<typeof replicants>;
+const replicantNamesOnly = replicants as AllNulls<typeof replicants>;
+
+export class X32Utility extends CommPoint<ListenerTypes, Replicants> {
     private conn!: osc.UDPPort;
-    private nodecg: NodeCG.ServerAPI;
-    private log: NodeCG.Logger;
 
-    private _ignoreConnectionClosedEvents = false;
-    private _reconnectInterval: NodeJS.Timeout | undefined = undefined;
-    private connectionTimeout: NodeJS.Timeout | undefined = undefined;
-    private renewInterval: NodeJS.Timeout | undefined = undefined;
-
-    faders: { [k: string]: number } = {};
-    fadersExpected: {
-        [k: string]: {
-            value: number, increase: boolean, seenOnce: boolean
-        }
-    } = {};
-    private fadersInterval: { [k: string]: NodeJS.Timeout } = {};
-
-    private pendingReplies: { [address: string]: OscMessage } = {};
+    // Refreshes fader subscription every 8 seconds
+    private resubscribeInterval?: NodeJS.Timeout;
+    // Marks if recieved message in last subscription period
+    private hasRecievedMessage = true;
+    // Records in progress fades (only kept to halt overlapping fades)
+    private faderIntervals: { [k: string]: NodeJS.Timeout } = {};
 
     constructor() {
-        super();
-        this.nodecg = getNodeCG();
-        this.log = new this.nodecg.Logger("XR18");
-
-        if (login.value.enabled) {
-            status.once('change', newVal => {
-                // If we were connected last time, try connecting again now.
-                if (newVal && (newVal.connection === 'connected' || newVal.connection === 'connecting')) {
-                    this.log.info("NodeCG was previously connected to XR18, reconnect");
-                    status.value.connection = 'connecting';
-                    setTimeout(() => this.connect(), 10);
-                }
-            });
-
-            listenTo("connect", (li, ack) => {
-                login.value = { ...login.value, ...li };
-                this.connect();
-                if (ack && !ack.handled) ack();
-            });
-
-            listenTo("disconnect", (li, ack) => {
-                this._ignoreConnectionClosedEvents = true;
-                clearTimeout(this.connectionTimeout);
-                clearInterval(this._reconnectInterval);
-                clearInterval(this.renewInterval);
-                this.log.info("Disconnecting");
-                try {
-                    if (!this.conn) status.value.connection = "disconnected";
-                    else this.conn.close();
-                } catch (e) { this.log.error(e) }
-                if (ack && !ack.handled) ack();
-                this.log.info("Disconnected");
-            });
-
-            listenTo("DEBUG:callOSC", (msg, ack) => {
-                this.pendingReplies[msg.address] = msg;
-                this.conn.send(msg);
-
-                const process = (m: OscMessage) => {
-                    if (m.address === msg.address) {
-                        this.log.info("Responding to DEBUG:callOSC of", m.address);
-                        this.removeListener("message", process);
-                        if (ack && !ack.handled) ack(null, m);
-                    }
-                };
-                this.addListener("message", process);
-                return process;
-            });
-        } else {
-            status.value.connection = "disconnected";
-        }
+        super("mixer", replicantNamesOnly, listeners);
     }
 
-    connect() {
-        this.log.info('Setting up connection');
-        status.value.connection = "connecting";
-
+    async _connect() {
+        const login = this.replicants.login;
         this.conn = new osc.UDPPort({
-            // localAddress: '0.0.0.0',
-            // localPort: 55667,
             remoteAddress: login.value.ip,
             remotePort: login.value.port || 10024,
             metadata: true,
         });
 
-        const origSend = this.conn.send.bind(this.conn);
+        // Log sending traffic (wrap base send function with log)
+        const baseSend = this.conn.send.bind(this.conn);
         this.conn.send = (msg, address, port) => {
-            this.log.info(`Sending ${JSON.stringify(msg)}`);
-            origSend(msg, address, port);
+            this.log.info(`Sending to mixer ${JSON.stringify(msg)}`);
+            baseSend(msg, address, port);
         }
+
+        this.conn.on("message", this.checkResponsePromises.bind(this));
+
+        this.conn.open();
+
+        // Ensure response before marking as connected (UDP just assumes connected)
+        await this.sendToMixer({ address: '/status', args: [] });
+    }
+
+    async _setupListeners() {
+        // For mixer debugging, remove sometime lol
+        listenTo("DEBUG:callOSC", (msg, ack) => {
+            this.conn.send(msg);
+
+            this.sendToMixer(msg).then(m => {
+                this.log.info("Responding to DEBUG:callOSC of", m.address);
+                sendSuccess(ack, m.args);
+            }).catch(e => this.log.error("Error responding to DEBUG:callOSC of", msg.address, ": ", e));
+        });
+
+        this.conn.on('message', (message) => {
+            this.log.info("Recieved from mixer", message);
+            this.hasRecievedMessage = true;     // Mark as recieved a (/any) message
+            sendTo("message", message);
+
+            // try {
+            //     if (message.address.endsWith('/fader') || message.address.endsWith('/level')) {
+            //         // Record fader
+            //         const args = (message.args as { type: 'f', value: number }[])[0];
+            //         this.faders[message.address] = args.value;
+            //     }
+            // } catch (err) {
+            //     this.log.warn('Error parsing message');
+            //     this.log.debug('Error parsing message:', err);
+            // }
+        });
 
         this.conn.on('error', (err) => {
             if (!err.message.startsWith("A malformed type tag string was found while reading the arguments of an OSC message.")) {
@@ -115,116 +91,75 @@ export class X32Utility extends TypedEmitter<X32Events> {
             }
         });
 
-        const startTimeout = (t?: number) => {
-            try {
-                clearTimeout(this.connectionTimeout);
-                this.conn.send({ address: '/xremote', args: [] });
-                this.conn.send({ address: '/status', args: [] });
-                this.connectionTimeout = setTimeout(() => {
-                    if (status.value.connection === "connected" || status.value.connection == "connecting") {
-                        this.log.info("Connection timed out");
-                        try {
-                            this.conn.close();
-                        } catch (e) { this.log.error(e) }
-                    }
-                }, t ?? 5000);
-            } catch (e) {
-                this.log.error(e);
-            }
-        }
-
-        this.conn.on('message', this.processMessage.bind(this));
-
-        this.conn.on('ready', () => {
-            this.log.info('Connection ready');
-
-            // Subscribe/renew to updates (must be done every <10 seconds).
-            if (this.conn) startTimeout(8000);
-            this.renewInterval = setInterval(() => {
-                if (this.conn) startTimeout();
-            }, 8 * 1000);
-        });
-
-        this.conn.on('close', () => {
-            this.log.info('Connection closed');
-            status.value.connection = "disconnected";
-            clearInterval(this.renewInterval);
-            this._reconnect();
-        });
-
-        this.conn.open();
+        this.resubscribeInterval = setInterval(async () => {
+            if (await this.isConnected()) this.resubscribeToUpdates();
+        }, 8 * 1000);
     }
 
-    private _reconnect() {
-        if (this._reconnectInterval || status.value.connection === "connected") return;
-
-        if (this._ignoreConnectionClosedEvents) {
-            clearInterval(this._reconnectInterval);
-            status.value.connection = "disconnected";
-            return;
-        }
-
-        this.log.warn('Connection closed, will attempt to reconnect every 10 seconds.');
-        this._reconnectInterval = setInterval(() => this.connect(), 10000);
-    }
-
-    connected() {
-        return login.value.enabled && status.value.connection === "connected" && this.conn;
-    }
-
-
-    processMessage(message: osc.OscMessage) {
-        if (!message.address.endsWith("/status")) this.log.info("Message recieved", message);
-
-        this.emit("message", message);
-
+    async resubscribeToUpdates() {
+        // hasRecievedMessage is set true when any message is recieved
+        // If not set since last poll, must be something wrong
         try {
-            // Clear countdown to disconnect
-            clearTimeout(this.connectionTimeout);
-            if (message.address.endsWith("/status")) {
-                // Only transfer to connected on a response to initial status ping
-                if (status.value.connection === "connecting") {
-                    status.value.connection = "connected";
-
-                    this._ignoreConnectionClosedEvents = false;
-                    clearInterval(this._reconnectInterval!);
-                    this._reconnectInterval = undefined;
-                    this.emit('ready');
-                }
+            if (!this.hasRecievedMessage && await this.isConnected()) {
+                this.log.error("Connection has timed out, no messages recieved");
+                this.reconnect();
             }
-
-            if (message.address.endsWith('/fader') || message.address.endsWith('/level')) {
-                // Record fader
-                const args = (message.args as { type: 'f', value: number }[])[0];
-                this.faders[message.address] = args.value;
-
-                // Smooth faders
-                if (this.fadersExpected[message.address]) {
-                    this.fadeCheck(message.address, args.value);
-                }
-            }
-        } catch (err) {
-            this.log.warn('Error parsing message');
-            this.log.debug('Error parsing message:', err);
+            this.hasRecievedMessage = false;
+            this.conn.send({ address: '/xremote', args: [] });
+            this.conn.send({ address: '/status', args: [] });
+        } catch (e) {
+            this.log.error(e);
         }
     }
 
 
-    sendMethod(msg: OscMessage) {
-        this.pendingReplies[msg.address] = msg;
+    async _disconnect() {
+        clearInterval(this.resubscribeInterval);
+        try {
+            this.conn.close();
+        } catch (e) { this.log.error(e) }
+    }
+
+    async isConnected() {
+        return this.replicants.login.value.enabled && this.replicants.status.value.connection === "connected" && Boolean(this.conn);
+    }
+
+    // Keep dict of list of promises for pending replies
+    responsePromises: { [address: string]: ((response: OscMessage) => any)[] } = {};
+    sendToMixer<T extends Arguments, R extends OscMessage<T> = OscMessage<T>>(msg: OscMessage, timeout = 8000) {
+        let process: ((m: OscMessage) => any) | null = null;
+        let timeoutTimeout: NodeJS.Timeout;
+
+        // Promise that handles relaying the response to the message
+        const requestPromise = new Promise<R>((resolve, reject) => {
+            process = resolve as (m: OscMessage) => any; // Cast into a more generic type
+            // Add to promise list
+            if (!this.responsePromises[msg.address]) this.responsePromises[msg.address] = [process];
+            else this.responsePromises[msg.address].push(process);
+        });
+
+        // Send message to mixer now we are listening
         this.conn.send(msg);
 
-        return new Promise<OscMessage>((resolve, reject) => {
-            const process = (m: OscMessage) => {
-                if (m.address === msg.address) {
-                    this.removeListener("message", process);
-                    delete this.pendingReplies[msg.address];
-                    resolve(m);
-                }
-            };
-
-            this.addListener("message", process);
+        // Race response against timeout
+        return Promise.race([requestPromise, new Promise<R>((resolve, reject) => {
+            timeoutTimeout = setTimeout(() => reject(`Response to ${msg.address} timed out`), timeout);
+        })]).finally(() => {  // After either finishes, unlisten and remove promise
+            clearTimeout(timeoutTimeout);
+            if (this.responsePromises[msg.address]) {   // Make sure promise is removed from list
+                const index = this.responsePromises[msg.address].indexOf(process!);
+                if (index > -1) this.responsePromises[msg.address].splice(index, 1);
+            }
         })
+    }
+
+    private checkResponsePromises(msg: OscMessage) {
+        const promises = this.responsePromises[msg.address];
+        this.log.info(msg.address, promises);
+        if (!promises) return;
+        this.responsePromises[msg.address] = [];  // Clear list immediately
+
+        promises.forEach(r => r(msg));
     }
 
     /**
@@ -233,16 +168,24 @@ export class X32Utility extends TypedEmitter<X32Events> {
      * @param startValue Value to set (0.0 - 1.0).
      */
     setFader(name: string, value: number): void {
-        if (!this.connected()) {
-            throw new Error('No connection available');
-        }
+        if (!this.isConnected()) return this.log.error("Fader not set as no connection");
 
+        // Subscribe to specific fader (unecessary probably)
         this.log.debug(`Attempting to set fader on ${name} to ${value}`);
         this.conn.send({
             address: '/subscribe',
             args: [{ type: 's', value: name }, { type: 'i', value: 0 }],
         });
+        // Send set command
         this.conn.send({ address: name, args: [{ type: 'f', value }] });
+    }
+
+    async incrementFader(addr: string, amount: number) {
+        if (!this.conn) return;
+        return await this.sendToMixer<[F]>({ "address": addr, args: [] })
+            .then(({ args }) => {
+                this.conn.send({ "address": addr, "args": [{ type: "f", value: args[0].value + amount }] })
+            }).catch(e => this.log.error(`Error incrementing fader ${addr} by ${amount}: ${e}`));
     }
 
     /**
@@ -252,40 +195,27 @@ export class X32Utility extends TypedEmitter<X32Events> {
      * @param endValue Value to end at (0.0 - 1.0).
      * @param length Milliseconds to spend doing fade.
      */
-    fade(name: string, startValue: number | null, endValue: number, length: number): void {
-        if (!this.connected()) {
-            throw new Error('No connection available');
+    async fade(name: string, startValue: number | null, endValue: number, length: number) {
+        if (!await this.isConnected()) return this.log.error("Fader not set as no connection");
+
+        // Stop any pre-existing fade on the same fader
+        if (this.faderIntervals[name]) {
+            clearInterval(this.faderIntervals[name]);
+            delete this.faderIntervals[name];
         }
 
-        if (!startValue) {
-            startValue = this.faders[name];
-        }
+        this.log.debug(`Attempting to fade ${name} (${startValue} => ${endValue}) for ${length}ms`);
 
-        // Will stop doing a fade if we receive another one while the old one is running, for safety.
-        if (this.fadersExpected[name]) {
-            clearInterval(this.fadersInterval[name]);
-            delete this.fadersExpected[name];
-        }
-
-        this.log.debug(`Attempting to fade ${name} `
-            + `(${startValue} => ${endValue}) for ${length}ms`);
-
+        // If provided start value, run fade immediately
         if (startValue) this.runFade(name, startValue, endValue, length);
-        else {
+        else {      // Otherwise fetch current value to start on
             this.log.info(`No start value for ${name}, looking up fader`);
-            const msg = { address: name, args: [] };
-            this.pendingReplies[name] = msg;
-            this.conn.send(msg);
+            startValue = await this.sendToMixer<[F]>({ address: name, args: [] })
+                .then(r => r.args[0].value)
+                .catch(() => { this.log.error("Timeout fetching start value"); return endValue });
 
-            const process = (m: OscMessage) => {
-                if (m.address === msg.address) {
-                    this.removeListener("message", process);
-                    startValue = (m.args as { type: 'f', value: number }[])[0].value;
-                    this.log.info(`Looked up value ${startValue} for ${name}, starting fade`);
-                    this.runFade(name, startValue, endValue, length);
-                }
-            };
-            this.addListener("message", process);
+            this.log.info(`Looked up value ${startValue} for ${name}, starting fade`);
+            this.runFade(name, startValue, endValue, length);
         }
     }
 
@@ -299,66 +229,36 @@ export class X32Utility extends TypedEmitter<X32Events> {
             this.log.info("Start and end values are too close together, no fade!");
             return;
         }
+        const increase = startValue < endValue;     // Whether increasing or decreasing the fader
+        const stepCount = 10 * length / 1000;     // 10 steps per sec (length in ms)
+        this.conn.send({ address: '/subscribe', args: [{ type: 's', value: name }, { type: 'i', value: 0 }] });
+
+        // If increasing and over end, if decreasing and under end
+        const pastEnd = (val: number) => (increase && val >= endValue) || (!increase && val <= endValue);
+        const finishFading = () => {    // Function to trigger at end
+            clearInterval(this.faderIntervals[name]);
+            delete this.faderIntervals[name];
+            this.conn.send({ address: name, args: [{ type: 'f', value: endValue }] });
+        }
+
         let currentValue = startValue;
-        const increase = startValue < endValue;
-        const stepCount = length / 100;     // 10 steps per sec
-        this.fadersExpected[name] = { value: endValue, increase, seenOnce: false };
-        this.conn.send({
-            address: '/subscribe',
-            args: [{ type: 's', value: name }, { type: 'i', value: 0 }],
-        });
-
         let stepIndex = 0;
-        this.fadersInterval[name] = setInterval(() => {
+        let seenOnce = false;
+        this.faderIntervals[name] = setInterval(async () => {
             stepIndex++;
-            if (stepIndex >= stepCount || (increase && currentValue >= endValue) || (!increase && currentValue <= endValue)) {
+            if (stepIndex >= stepCount || pastEnd(currentValue)) {   // Check if done expected step count or has moved past end on schedule
                 // if ((increase && currentValue >= endValue - 0.05) || (!increase && currentValue <= endValue + 0.05)) {
-                clearInterval(this.fadersInterval[name]);
-                delete this.fadersExpected[name];
-
-                this.conn.send({ address: name, args: [{ type: 'f', value: endValue }] });
-            } else {
+                finishFading();
+            } else {    // Otherwise, take another step
                 currentValue = this.lerp(startValue, endValue, stepIndex / stepCount);
+                const response = await this.sendToMixer<[F]>({ address: name, args: [{ type: 'f', value: currentValue }] });
 
-                if (this.conn) {
-                    this.conn.send({ address: name, args: [{ type: 'f', value: currentValue }] });
+                if (seenOnce && pastEnd(response.args[0].value)) {// If past end value, stop incrementing and set to ending value exactly
+                    finishFading();
+                } else {    // Make sure there is at least one value recorded before end
+                    seenOnce = true;
                 }
             }
         }, 100);
-    }
-
-    fadeCheck(address: string, value: number) {
-        // Check if fading has finished
-        const exp = this.fadersExpected[address];
-
-        // Sometimes we receive a delayed message, so we wait until
-        // we've at least seen 1 value in the correct range.
-        if ((exp.increase && exp.value > value)
-            || (!exp.increase && exp.value < value)) {
-            exp.seenOnce = true;
-        }
-        if (exp.seenOnce && ((exp.increase && exp.value <= value)
-            || (!exp.increase && exp.value >= value))) {
-            // if (exp.seenOnce && ((exp.increase && exp.value <= value - 0.05)
-            //     || (!exp.increase && exp.value >= value + 0.05))) {
-            if (this.conn) {
-                this.conn.send({
-                    address: address,
-                    args: [{ type: 'f', value: exp.value }],
-                });
-            }
-            clearInterval(this.fadersInterval[address]);
-            delete this.fadersExpected[address];
-        }
-    }
-
-
-    async incrementFader(addr: string, amount: number) {
-        if (!this.conn) return;
-        return await this.sendMethod({ "address": addr, args: [] })
-            .then(({ args }) => {
-                const argsCast = args as [{ type: 'f', value: number }];
-                this.conn.send({ "address": addr, args: [{ type: "f", value: argsCast[0].value + amount }] })
-            }).catch(e => this.log.error(`Error incrementing fader ${addr} by ${amount}: ${e}`));
     }
 }

@@ -1,13 +1,14 @@
-import { createMessageListeners } from '../common/messages';
+import { Login } from 'types/schemas/mixer';
+import { createMessageListeners, createMessageListenersBundle, createUnlistener } from '../common/messages';
 import { OscMessage } from 'osc';
 
-type ListenerTypes = {
-    connect: {
-        ip: string;
-        localPort?: number;
-    },
-    disconnect: {},
+export type ListenerTypes = {
+    connect: Partial<Login>,
+    disconnect: undefined,
+    connected: undefined,
     "DEBUG:callOSC": OscMessage,
+
+    "message": OscMessage,
 
     "setMute": {
         mic: string;
@@ -26,4 +27,7 @@ type ListenerTypes = {
     }
 }
 
-export const { sendTo, sendToF, listenTo } = createMessageListeners<ListenerTypes>();
+export const listeners = createMessageListenersBundle<ListenerTypes>("mixer", ["message"]);
+export default listeners;
+export const { sendTo, sendToF, listenTo } = listeners;
+export const unlistenTo = createUnlistener<{ message: OscMessage }>("mixer");
