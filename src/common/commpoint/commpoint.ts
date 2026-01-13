@@ -1,7 +1,7 @@
 import NodeCG from '@nodecg/types';
 
 import { ListenersT } from '../messages';
-import { BundleReplicant, getNodeCG } from '../utils';
+import { BundleReplicant, getNodeCG, sendError, sendSuccess } from '../utils';
 
 type PartialNull<T> = { [P in keyof T]: T[P] | null };
 
@@ -46,57 +46,52 @@ export abstract class CommPoint<
      * @param replicants List of all replicants. Values may be null, these will be created with BundleReplicant
      * @param listeners Listeners for the comm point. Created with createMessageListenersBundle
      */
-    constructor(namespace: string, replicants: PartialNull<Replicants<R>>, listeners: ListenersT<M>) {
+    constructor(namespace: string, replicants: PartialNull<Replicants<R>>, listeners: ListenersT<M>, checkConnection = false) {
         this.nodecg = getNodeCG();
         this.log = new this.nodecg.Logger(namespace);
-
         this.namespace = namespace;
 
+        // Build any non-created replicants with default method
         for (const key in replicants) {
             if (replicants[key] === null) {
                 replicants[key] = BundleReplicant(key, this.namespace);
             }
         }
         this.replicants = replicants as Replicants<R>;
-
         this.listeners = listeners;
 
         this.log.debug(`${namespace} comm point constructed`);
 
-        this._connectionListeners();
+        // Attach basic listeners
+        this._connectionListeners(checkConnection);
     }
 
+    // Abstract methods each sub-class needs to implement
     abstract _connect(): Promise<void>;
     abstract _setupListeners(): Promise<void>;
     abstract _disconnect(): Promise<void>;
     abstract isConnected(): Promise<boolean>;
 
-    protected _connectionListeners() {
+    protected _connectionListeners(checkConnection: boolean = false) {
         this.replicants.status.once("change", newVal => {
             this.log.warn("Startup Check", newVal.connected);
             // this.replicants.status.value.connected = "disconnected";
             // If we were connected last time, try connecting again now.
-            if (newVal && newVal.connected == "connected") {
+            if (newVal && ["connected", "connecting", "retrying"].includes(newVal.connected)) {
                 this.reconnect(true);
+            } else {
+                setTimeout(() => this.replicants.status.value.connected = "disconnected");
             }
         });
 
         this.listeners.listenTo("connect", (p, a) => this._connectHandler(p, a));
         this.listeners.listenTo("disconnect", (p, a) => this._disconnectHandler(p, a));
-        this._checkConnectionPoll();
+        if (checkConnection) this._checkConnectionPoll();   // Poll to check is connected periodicly - implemented in most subclasses anyway
     }
-
-    protected stopRetry() {
-        this.retryPeriod = 0;
-        if (this._reconnectInterval) {
-            clearInterval(this._reconnectInterval);
-            this._reconnectInterval = undefined;
-        }
-    }
-
 
     async connect(isRetry: boolean = false) {
         let err: string | null = null;
+        if (await this.isConnected()) return "Currently connected. Disconnect before connecting again";
         if (this.ignoreCloseEvents && isRetry) return "Disconnecting in progress...";
         this.ignoreCloseEvents = false;
         await this._connect().then(() => {
@@ -135,64 +130,81 @@ export abstract class CommPoint<
 
 
     protected async _connectHandler(params: M["connect"], ack: NodeCG.Acknowledgement | undefined) {
-        // Handle instruction to connect
+        // Handle nodecg message that instructs to connect
 
         this.stopRetry();
 
         this.log.info("Starting connection...");
         this.replicants.status.value.connected = "connecting";
 
-        this.replicants.login.value = { ...this.replicants.login.value, ...params };
+        try {
+            this.replicants.login.value = { ...this.replicants.login.value, ...params };
+        } catch (e) {
+            this.log.error("Error setting login replicant", e);
+            sendError(ack, String(e));
+            return;
+        }
 
-        await this.connect().then((err) => {
-            if (ack && !ack.handled) ack(err);
-        })
+        await this.connect().then((err) => sendError(ack, String(err)));
+        sendSuccess(ack, "Connected");
     }
 
     protected async _disconnectHandler(params: M["disconnect"], ack: NodeCG.Acknowledgement | undefined) {
         // Handle instruction to disconnect
 
         this.log.info("Starting disconnect...");
-        await this.disconnect().then(err => {
-            if (ack && !ack.handled) ack(err);
-        })
+        await this.disconnect().then(err => sendError(ack, String(err)));
     }
 
     private statusAtPreviousCheck: ConnStatus = "disconnected";
     protected _checkConnectionPoll() {
         // Poll for disconnected system regularly
+        // Can get cyclic & silly if using status.connected in isConnected()
         setInterval(async () => {
             if (this.statusAtPreviousCheck == "connected") {
                 this.statusAtPreviousCheck = this.replicants.status.value.connected;
                 const connected = await this.isConnected();
                 if (!connected) {
                     this.statusAtPreviousCheck = "disconnected";
-                    await this._disconnect();
                     this.reconnect();
                 }
             }
         }, 5 * 1000);
     }
 
-    async reconnect(noDisconnect = false) {
-        // If unexpectedly disconnected, attempt reconnection every reconnectInterval seconds
-        if (this._reconnectInterval) return;
-        if (this.ignoreCloseEvents) return;
+    async reconnect(skipDisconnect = false) { // By default disconnect, pass true to skip disconnecting
+        // If unexpectedly disconnected, trigger reconnect process
+        if (this._reconnectInterval) return;    // Skip if otherwise reconnecting
+        if (this.ignoreCloseEvents) return;     // Skip if ignoring close (if the sub-class has an on close => retry listener)
 
-        if (noDisconnect) this._disconnect();
+        if (!skipDisconnect) {
+            this.ignoreCloseEvents = true;
+            await this._disconnect();   // Run disconnect cleanup (if not startup)
+        }
         this.replicants.status.value.connected = "retrying";
-        this.retryPeriod = this.reconnectInterval;
+        this.retryPeriod = this.reconnectInterval;  // Reset retry period (doubles each attempt)
         this._reconnectInterval = setTimeout(() => this._reconnect(), this.retryPeriod * 1000);
     }
 
     protected async _reconnect() {
+        // Run every reconnect attempt, runs sub-classes' connect(true)
         if (await this.isConnected()) return;
         this.log.warn(`Retrying ${this.namespace} connection`);
         const err = await this.connect(true);
         if (err) {
             this.log.warn(`Retrying connection again in ${this.retryPeriod}s`);
-            this.retryPeriod *= 2;
+            this.retryPeriod *= 2;      // Exponential back-off for retries - doesn't spam every 10s forever
             this._reconnectInterval = setTimeout(() => this._reconnect(), this.retryPeriod * 1000);
         }
     }
+
+    protected stopRetry() {
+        // Cancel retrying
+        this.retryPeriod = 0;
+        if (this._reconnectInterval) {
+            clearInterval(this._reconnectInterval);
+            this._reconnectInterval = undefined;
+        }
+    }
+
 }

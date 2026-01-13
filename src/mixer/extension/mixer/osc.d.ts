@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-classes-per-file */
 
-// Sources:
+// Modified from:
 // https://github.com/colinbdclark/osc.js/pull/105
 // https://github.com/GamesDoneQuick/agdq19-layouts/blob/master/src/types/osc.d.ts
 

@@ -1,10 +1,8 @@
-import osc, { OscMessage, I, F, S, B, Arguments } from 'osc';
-import { AllNulls, getNodeCG, NoNulls, sendSuccess } from '../../../common/utils';
-import listeners, { listenTo, sendTo, unlistenTo } from '../../messages';
+import osc, { Arguments, F, OscMessage } from 'osc';
+import { Channels, Login, Muted, Status, TechMuted } from 'types/schemas/mixer';
 import { CommPoint } from '../../../common/commpoint/commpoint';
-import { Status, Login, TechMuted, Channels, Muted } from 'types/schemas/mixer';
-import { ListenerTypes } from '../../messages';
-
+import { AllNulls, NoNulls, sendSuccess } from '../../../common/utils';
+import listeners, { ListenerTypes, listenTo, sendTo } from '../../messages';
 
 const replicants = {
     status: null as null | Status,
@@ -18,7 +16,7 @@ const replicants = {
 export type Replicants = NoNulls<typeof replicants>;
 const replicantNamesOnly = replicants as AllNulls<typeof replicants>;
 
-export class X32Utility extends CommPoint<ListenerTypes, Replicants> {
+export class MixerCommPoint extends CommPoint<ListenerTypes, Replicants> {
     private conn!: osc.UDPPort;
 
     // Refreshes fader subscription every 8 seconds
@@ -38,7 +36,9 @@ export class X32Utility extends CommPoint<ListenerTypes, Replicants> {
             remoteAddress: login.value.ip,
             remotePort: login.value.port || 10024,
             metadata: true,
+            localPort: 0    // Should open a random open port
         });
+        this.conn.open();
 
         // Log sending traffic (wrap base send function with log)
         const baseSend = this.conn.send.bind(this.conn);
@@ -47,9 +47,8 @@ export class X32Utility extends CommPoint<ListenerTypes, Replicants> {
             baseSend(msg, address, port);
         }
 
+        // Register listener
         this.conn.on("message", this.checkResponsePromises.bind(this));
-
-        this.conn.open();
 
         // Ensure response before marking as connected (UDP just assumes connected)
         await this.sendToMixer({ address: '/status', args: [] });
@@ -57,7 +56,8 @@ export class X32Utility extends CommPoint<ListenerTypes, Replicants> {
 
     async _setupListeners() {
         // For mixer debugging, remove sometime lol
-        listenTo("DEBUG:callOSC", (msg, ack) => {
+        listenTo("DEBUG:callOSC", async (msg, ack) => {
+            if (!(await this.isConnected())) return;
             this.conn.send(msg);
 
             this.sendToMixer(msg).then(m => {
@@ -87,7 +87,7 @@ export class X32Utility extends CommPoint<ListenerTypes, Replicants> {
             if (!err.message.startsWith("A malformed type tag string was found while reading the arguments of an OSC message.")) {
                 this.log.warn('Error on connection', err);
                 this.log.debug('Error on connection:', err);
-                // status.value.connection = "error";
+                // status.value.connected = "error";
             }
         });
 
@@ -115,13 +115,15 @@ export class X32Utility extends CommPoint<ListenerTypes, Replicants> {
 
     async _disconnect() {
         clearInterval(this.resubscribeInterval);
+        if (!this.conn) return;
         try {
             this.conn.close();
+            (this.conn as any) = undefined;
         } catch (e) { this.log.error(e) }
     }
 
     async isConnected() {
-        return this.replicants.login.value.enabled && this.replicants.status.value.connection === "connected" && Boolean(this.conn);
+        return this.replicants.status.value.connected === "connected" && Boolean(this.conn);
     }
 
     // Keep dict of list of promises for pending replies
@@ -154,8 +156,9 @@ export class X32Utility extends CommPoint<ListenerTypes, Replicants> {
     }
 
     private checkResponsePromises(msg: OscMessage) {
+        this.log.info("Recieved message from mixer", JSON.stringify(msg));
+
         const promises = this.responsePromises[msg.address];
-        this.log.info(msg.address, promises);
         if (!promises) return;
         this.responsePromises[msg.address] = [];  // Clear list immediately
 

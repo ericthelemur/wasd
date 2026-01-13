@@ -1,16 +1,13 @@
-import { WebhookStatus, WebhookLogin, Status, Login, Donations, Alldonations, Schedule, Targets, Milestones, Total, Polls, Rewards, Donors, Donation, Campaign } from "../../types/schemas/tiltify";
-import { CommPoint } from "../../common/commpoint/commpoint";
-import listeners, { ListenerTypes, webhookListeners } from "../messages";
-import { BundleReplicant, sendError, sendSuccess } from "../../common/utils";
-import Webhook from "./api-client/lib/webhook";
-import TiltifyClient from "./api-client";
-import { NextFunction, Router, Request, Response } from "express";
-import localtunnel from "localtunnel";
+import NodeCG from "@nodecg/types";
 import clone from "clone";
 import diff from "microdiff";
-import NodeCG from "@nodecg/types";
-import { WebhookCommPoint } from "./webhook";
+import { CommPoint } from "../../common/commpoint/commpoint";
+import { AllNulls, NoNulls, sendError, sendSuccess } from "../../common/utils";
+import { Alldonations, Campaign, Donation, Donations, Donors, Login, Milestones, Polls, Rewards, Schedule, Status, Targets, Total } from "../../types/schemas/tiltify";
+import listeners, { ListenerTypes, webhookListeners } from "../messages";
+import TiltifyClient from "./api-client";
 import { APPROVED, UNDECIDED } from "./utils/mod";
+import { WebhookCommPoint } from "./webhook";
 
 const replicants = {
     status: null as null | Status,
@@ -38,11 +35,8 @@ const replicants = {
     // donors: Donors
 }
 
-export type NoNulls<T> = { [P in keyof T]: NonNullable<T[P]>; };
-export type AllNulls<T> = { [P in keyof T]: null; };
 export type Replicants = NoNulls<typeof replicants>;
 const replicantNamesOnly = replicants as AllNulls<typeof replicants>;
-
 
 export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
     client: TiltifyClient;
@@ -65,7 +59,6 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
         this.client.clientSecret = login.clientSecret;
         this.client.apiKey = undefined;
         const key = await this.client.generateKey();
-        this.log.info(key, this.client.apiKey);
         if (!key) throw new Error("Tiltify authentication failed");
     }
 

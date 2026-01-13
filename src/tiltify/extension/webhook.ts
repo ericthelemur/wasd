@@ -1,11 +1,10 @@
-import { WebhookStatus, WebhookLogin } from "../../types/schemas/tiltify";
-import { CommPoint } from "../../common/commpoint/commpoint";
-import { webhookListeners, WebhookListenerTypes } from "../messages";
-import { buildSchemaPath, BundleReplicant } from "../../common/utils";
-import Webhook from "./api-client/lib/webhook";
-import TiltifyClient from "./api-client";
-import { NextFunction, Router, Request, Response } from "express";
+import { Request, Response, Router } from "express";
 import localtunnel from "localtunnel";
+import { CommPoint } from "../../common/commpoint/commpoint";
+import { buildSchemaPath, BundleReplicant } from "../../common/utils";
+import { WebhookLogin, WebhookStatus } from "../../types/schemas/tiltify";
+import { webhookListeners, WebhookListenerTypes } from "../messages";
+import TiltifyClient from "./api-client";
 import { Tiltify } from "./tiltify";
 
 export type WebhookReplicants = {
@@ -84,7 +83,7 @@ export class WebhookCommPoint extends CommPoint<WebhookListenerTypes, WebhookRep
      * @param subdomain Target subdomain to assign. If it is currently in use elsewhere, localtunnel will assign random one
      */
     createTunnel(subdomain: string) {
-        this.log.info("Creating Webhook Tunnel with Localtunnel...");
+        this.log.info("Creating webhook tunnel with localtunnel...");
         localtunnel({ port: 9090, subdomain }).then(t => {
             this.tunnel = t;
             this.log.info(`Tiltify webhook tunnel created for ${t.url}/tiltify/webhook`);
@@ -94,14 +93,17 @@ export class WebhookCommPoint extends CommPoint<WebhookListenerTypes, WebhookRep
             }
             this.replicants.status.value.url = t.url;
 
-            t.on("request", data => this.log.info("Webhook message", data));
-            t.on("close", () => { this.log.warn("Tunnel closed"); this.reconnect() });
+            t.on("request", data => data.path != "/tiltify/test" && this.log.info("Webhook message", data));
+            t.on("close", () => { this.log.warn("Tunnel closed"); setTimeout(() => this.createTunnel(subdomain), 1000) });
 
-        }).catch((e) => console.error("Failed to create tunnel", e));
+        }).catch((e) => this.log.error("Failed to create tunnel", e));
     }
 
     override async _setupListeners() {
         // Poll test endpoint
+        const login = this.replicants.login.value;
+        if (!login.targetSubdomain) return;
+
         this.connectionPoll = setInterval(async () => {
             const status = this.replicants.status.value;
             if (!status.url || !await this.isConnected()) return;

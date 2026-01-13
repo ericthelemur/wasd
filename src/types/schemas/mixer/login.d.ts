@@ -6,9 +6,8 @@
  */
 
 export interface Login {
-	enabled: boolean;
 	ip: string;
-	port?: number;
+	port: number;
 	suppress?: boolean;
 	[k: string]: unknown;
 }

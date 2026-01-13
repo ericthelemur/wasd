@@ -7,21 +7,22 @@
                 "connected",
                 "connecting",
                 "disconnected",
-                "error"
+                "error",
+                "retrying"
             ],
             "default": "disconnected"
         }
     },
     "type": "object",
     "properties": {
-        "connection": {
+        "connected": {
             "$ref": "#/definitions/connStatus"
         }
     },
     "required": [
-        "connection"
+        "connected"
     ],
     "default": {
-        "connection": "disconnected"
+        "connected": "disconnected"
     }
 }
