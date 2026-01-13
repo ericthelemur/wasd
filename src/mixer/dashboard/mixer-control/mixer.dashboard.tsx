@@ -1,102 +1,37 @@
 import '../../../common/uwcs-bootstrap.css';
 import './mixer.scss';
 
-import { FormEvent, useRef } from 'react';
-import { ExclamationTriangleFill, InfoCircleFill, RecordFill, Wifi } from 'react-bootstrap-icons';
+import { ExclamationTriangleFill, InfoCircleFill } from 'react-bootstrap-icons';
 import Alert from 'react-bootstrap/Alert';
-import Badge from 'react-bootstrap/Badge';
-import Button from 'react-bootstrap/Button';
-import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
-import Stack from 'react-bootstrap/Stack';
 import { createRoot } from 'react-dom/client';
-import { Configschema } from 'types/schemas';
 import { Login, Status } from 'types/schemas/mixer';
 import { useReplicant } from 'use-nodecg';
 
-import NodeCG from '@nodecg/types';
 
-import { sendTo } from '../../messages';
-import { CommPointStatus } from '../../../common/commpoint/login';
+import { CreateCommPointConnect } from '../../../common/commpoint/login';
+import type { Replicants } from "../../extension/mixer/mixer";
+import listeners, { ListenerTypes } from '../../messages';
 
-declare const nodecg: NodeCG.ClientAPI<Configschema>;
+function SurpressSwitch({ status }: { status: Status }) {
+	const [login, setLogin] = useReplicant<Login>("login", { "ip": "", "port": 10024 }, { namespace: "mixer" });
 
-function ConnectForm() {
-	const [login,] = useReplicant<Login>("login", { "enabled": false, "ip": "", "port": 10024 }, { namespace: "mixer" });
-	const urlElem = useRef<HTMLInputElement>(null);
-	const portElem = useRef<HTMLInputElement>(null);
-
-	function connect(e: FormEvent) {
-		e.preventDefault();
-		nodecg.log.info('Attempting to connect', urlElem.current?.value/*, portElem.current?.value*/);
-		(sendTo("connect", {
-			ip: urlElem.current!.value,
-			localPort: portElem.current!.valueAsNumber || undefined
-		}) as unknown as Promise<void>
-		).then(() => nodecg.log.info('successfully connected to xr18'))
-			.catch((err: any) => nodecg.log.error('failed to connect to xr18:', err));
-	}
-
-	return (
-		<Form onSubmit={connect} className="vstack gap-3">
-			<FloatingLabel className="flex-grow-1" controlId="url" label="Mixer IP">
-				<Form.Control ref={urlElem} placeholder="192.168.1.99" defaultValue={login?.ip} />
-			</FloatingLabel>
-			<FloatingLabel controlId="port" label="port">
-				<Form.Control ref={portElem} type="number" inputMode="numeric" placeholder="10024" defaultValue={login?.port ?? 10024} />
-			</FloatingLabel>
-			<Button type="submit">Connect</Button>
-		</Form>
-	)
+	return <>{(status.connected == "connected" && login) && <div className={login.suppress ? "text-danger mt-2" : "mt-2"}>
+		{login?.suppress ? <ExclamationTriangleFill /> : <InfoCircleFill />}
+		{" "}<Form.Check type="switch" className="d-inline-block ms-3" checked={login.suppress} label="Suppress DCA updates"
+			onChange={(e) => {
+				if (!e.target.checked || confirm("Surpress automatic DCA updates?")) {
+					setLogin({ ...login, suppress: e.target.checked })
+				}
+			}} />
+	</div>}
+	</>
 }
 
-
-function DisconnectForm({ status }: { status: string }) {
-	const [login, setLogin] = useReplicant<Login>("login", { "enabled": false, "ip": "", "xr18": true, "suppress": false }, { namespace: "mixer" });
-
-	function disconnect(e: FormEvent) {
-		e.preventDefault();
-		if (status != "connected" || confirm("Are you sure you want to disconnect from Mixer?")) {
-			nodecg.log.info('Attempting to disconnect');
-			(sendTo("disconnect") as unknown as Promise<void>
-			).then(() => nodecg.log.info('successfully disconnected from xr18'))
-				.catch((err: any) => nodecg.log.error('failed to disconnect to xr18:', err));
-		}
-	}
-
-	return (
-		<Form onSubmit={disconnect} className="vstack gap-3 mt-2">
-			{login && <Alert variant={login?.suppress ? "danger" : "info"}>
-				{login?.suppress ? <ExclamationTriangleFill /> : <InfoCircleFill />}{" "}
-				<Form.Check type="switch" className="d-inline-block ms-3" disabled={login === undefined} defaultChecked={login.suppress}
-					label="Suppress DCA updates" onChange={(e) => { console.log(e); setLogin({ ...login, suppress: e.target.checked }) }} />
-			</Alert>}
-			<Button variant="outline-danger" type="submit">{status == "connected" ? "Disconnect" : "Cancel"}</Button>
-		</Form>
-	)
-}
-
-
-function ControlForms() {
-	const [status,] = useReplicant<Status>("status", { "connection": "disconnected" }, { namespace: "mixer" });
-	if (status) {
-		if (status.connection === "disconnected" || status.connection === "error") {
-			return <ConnectForm />
-		} else {
-			return <>
-				<DisconnectForm status={status.connection} />
-			</>
-		}
-	}
-	return null;
-}
-
-export function MsgControlPanel() {
-	return <div className="m-3">
-		<ControlForms />
-		<CommPointStatus bundle="mixer" />
-	</div>
-}
+const ControlForm = CreateCommPointConnect<ListenerTypes, Replicants>("mixer", listeners, {
+	ip: "Mixer IP",
+	port: "Mixer Port",
+} as const, { ip: "", port: 0 }, { connected: "disconnected" }, SurpressSwitch, l => l.port = Number(l.port));
 
 const root = createRoot(document.getElementById('root')!);
-root.render(<MsgControlPanel />);
+root.render(<ControlForm />);

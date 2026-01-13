@@ -62,7 +62,7 @@ export function createMessageListenersBundle<X extends Dict>(namespace?: string,
 
     function listenTo<T extends keyof X & string>(name: T, listener: Listener<X[T]>) {
         ncg.listenFor(name, bundle, (data, ack) => {
-            if (!noLogList.includes(name)) logger.info("Calling", bundle, name, "with", data);
+            if (!noLogList.includes(name)) logger.info("Calling", bundle, name, data == undefined ? "" : "with", data == undefined ? "" : data);
             try {
                 listener(data, ack);
             } catch (e) {
@@ -73,7 +73,7 @@ export function createMessageListenersBundle<X extends Dict>(namespace?: string,
 
     function sendToF<T extends keyof X & string>(name: T, data: X[T]) {
         return () => {
-            if (!noLogList.includes(name)) logger.info("Sending", bundle, name, "with", data);
+            if (!noLogList.includes(name)) logger.info("Sending", bundle, name, data == undefined ? "" : "with", data == undefined ? "" : data);
             return ncg.sendMessageToBundle(name, bundle, data);
         }
     }

@@ -11,6 +11,9 @@ import * as icons from './components/icons';
 import { Incentives } from './components/incentives';
 import { Settings, SettingsBasics, SortSettings, TabSetting } from './components/settings';
 import { Search } from 'react-bootstrap-icons';
+import { useReplicant } from 'use-nodecg';
+import { Total } from 'types/schemas/tiltify';
+import { formatAmount } from './utils';
 
 export const defaultSettings: SortSettings = { list: "live", sort: "time", dir: "dsc", show: ["unread", "approved", "undecided"], term: "" };
 
@@ -33,6 +36,10 @@ function copyToParams(settings: SortSettings) {
 	history.replaceState(null, "", url.href);
 }
 
+function TotalComp() {
+	const [total,] = useReplicant<Total>("total", { currency: "GBP", value: 0 }, { namespace: "tiltify" });
+	return <b>Total: {formatAmount(total)}</b>;
+}
 
 export function Reader() {
 	const [sortSettings, setSortSettings] = useState(fetchFromParams());
@@ -51,7 +58,7 @@ export function Reader() {
 	return (
 		<Container fluid="xxl">
 			<Settings settings={sortSettings} setSettings={setSortSettings} />
-			<h1 className="mt-3">Tiltify Donation Reader</h1>
+			<h1 className="mt-3">Tiltify Donation Reader <TotalComp /></h1>
 			<div className="d-flex flex-align-column align-items-end gap-3 mb-3 flex-wrap">
 				<SettingsBasics settings={sortSettings} setSettings={setSortSettings} />
 				<div><Search className='h2 me-2 mb-0' />

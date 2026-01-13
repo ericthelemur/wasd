@@ -38,7 +38,7 @@ export function CreateCommPointConnect<
     R extends ReplicantTypes<S, L>,
     S extends { connected: ConnStatus; } = R["status"],
     L = R["login"]
->(namespace: string, listeners: ListenersT<M>, fields: { [key in keyof L]: string }, defaultLogin: L, defaultStatus: S, ExtraStatus?: (props: { status: S }) => React.JSX.Element) {
+>(namespace: string, listeners: ListenersT<M>, fields: { [key in keyof Partial<L>]: string }, defaultLogin: L, defaultStatus: S, ExtraStatus?: (props: { status: S }) => React.JSX.Element, transformLogin?: (login: Partial<L>) => void) {
 
     function ConnectForm() {
         const [login,] = useReplicant<L>("login", defaultLogin, { namespace: namespace });
@@ -52,13 +52,15 @@ export function CreateCommPointConnect<
             for (let key of Object.keys(fields)) {
                 login[key] = String(refs.current[key].value);
             }
-            listeners.sendTo("connect", login as L);
+            if (transformLogin) transformLogin(login as Partial<L>);
+
+            listeners.sendTo("connect", login as Partial<L>);
         }
 
         return <Form onSubmit={connect} className="vstack gap-3">
             {Object.keys(fields).map((key) => {
                 const field = key as keyof L & string;
-                return <FormInput key={field} field={field} label={fields[field]} defaultValue={login ? String(login[field] || "") : ""} refs={refs} />;
+                return <FormInput key={field} field={field} label={fields[field]!} defaultValue={login ? String(login[field] || "") : ""} refs={refs} />;
             })}
             <Button type="submit">Connect</Button>
         </Form>
