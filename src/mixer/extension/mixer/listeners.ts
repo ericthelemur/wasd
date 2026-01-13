@@ -1,9 +1,10 @@
-/*
+
 import { Channels, Login, Muted, TechMuted } from 'types/schemas';
 
-import { getNodeCG, Replicant, sendSuccess, storeNodeCG } from '../../../common/utils';
+import { getNodeCG, Replicant, sendError, sendSuccess, storeNodeCG } from '../../../common/utils';
 import { listenTo } from '../../messages';
 import { getX32 } from './utils';
+import { F, I } from 'osc';
 
 const x32 = getX32();
 
@@ -41,7 +42,7 @@ async function setDCAs(toScene?: string) {
         for (const [name, number] of Object.entries(channels.value.mutegroups)) {
             const enabledDCA = newActiveDCAs.includes(name);
             const address = `/config/mute/${number}`;
-            x32.sendToMixer({ address: address, args: [{ type: 'i', value: enabledDCA ? 0 : 1 }] });
+            x32.sendToMixer({ address: address, args: [{ type: 'i', value: enabledDCA ? 0 : 1 }] }).catch(e => x32.log.error(e));
         }
     }, 500);
 }
@@ -60,20 +61,22 @@ nodecg.listenFor("setDCAs", async (data: { toScene?: string; }) => {
     setDCAs(data.toScene);
 });
 
+
 // Mute initialization
 listenTo("connected", () => {
+    // TODO Use batch messages?? Are they supported??
     Object.entries(x32.replicants.channels.value.mics).forEach(([k, ch]) => {
         const adStr = String(ch).padStart(2, "0");
         // Poll for muted & solo for each
         x32.sendToMixer({ address: `/ch/${adStr}/mix/on`, args: [] }).then((r) => {
             const args = r.args as [{ type: "i", value: number }];
             x32.replicants.muted.value[k].muted = !Boolean(args[0].value);
-        });
+        }).catch(e => x32.log.error(e));
 
         x32.sendToMixer({ address: `/-stat/solosw/${adStr}`, args: [] }).then((r) => {
             const args = r.args as [{ type: "i", value: number }];
             x32.replicants.muted.value[k].soloed = Boolean(args[0].value);
-        });
+        }).catch(e => x32.log.error(e));
     })
 })
 
@@ -85,8 +88,8 @@ listenTo("setMute", async ({ mic, muted }, ack) => {
     const chIndex = channels.value.mics[mic];
     const chStr = String(chIndex).padStart(2, "0");
     const address = `/ch/${chStr}/mix/on`;
-    const response = await x32.sendToMixer<[{ type: 'f', value: number }]>({ address: address, args: [{ type: 'i', value: Number(!muted) }] });
-    sendSuccess(ack, response.args[0].value != 0);
+    const response = await x32.sendToMixer<[I]>({ address: address, args: [{ type: 'i', value: Number(!muted) }] }).catch(e => { x32.log.error(e); sendError(ack, e) });
+    if (response) sendSuccess(ack, response.args[0].value != 0);
 })
 
 // Mute toggle send
@@ -102,7 +105,7 @@ listenTo("setTalkback", async ({ mic, talkback, muted }) => {
     return Promise.all([
         x32.sendToMixer({ address: address, args: [{ type: 'i', value: Number(talkback) }] }),
         x32.sendToMixer({ address: muteAddress, args: [{ type: 'i', value: Number(muted === undefined ? !talkback : !muted) }] })
-    ])
+    ]).catch(e => x32.log.error(e))
 })
 
 // Mute toggle response
@@ -135,7 +138,7 @@ listenTo("connected", () => {
         // Poll fader for each on startup
         const busStr = String(b).padStart(2, "0");
         const address = b === 0 ? `/ch/${techCh}/mix/fader` : `/ch/${techCh}/mix/${busStr}/level`
-        x32.sendToMixer({ address, args: [] });
+        x32.sendToMixer({ address, args: [] }).catch(e => x32.log.error(e));
     })
 })
 
@@ -156,7 +159,7 @@ listenTo("setTechMuted", async ({ bus, muted }) => {
     if (busIndex === 0) address = `/ch/${techCh}/mix/fader`;
     else address = `/ch/${techCh}/mix/${busStr}/level`;
     nodecg.log.info("Tech", address);
-    return await x32.sendToMixer({ address, args: [{ type: 'f', value: muted ? 0 : 0.75 }] })
+    return await x32.sendToMixer({ address, args: [{ type: 'f', value: muted ? 0 : 0.75 }] }).catch(e => x32.log.error(e))
 })
 
 // Tech toggle response
@@ -181,4 +184,3 @@ listenTo("message", ({ address, args }) => {
         }
     }
 });
-*/

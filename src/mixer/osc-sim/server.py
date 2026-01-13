@@ -73,6 +73,7 @@ if __name__ == "__main__":
     dispatcher.map("/ch/*/mix/fader", save_handler_f, needs_reply_address=True)
     dispatcher.map("/ch/*/mix/*/level", save_handler_f, needs_reply_address=True)
     dispatcher.map("/ch/*/mix/on", save_handler_i, needs_reply_address=True)
+    dispatcher.map("/-stat/solosw/*", save_handler_i, needs_reply_address=True)
 
     server = osc_server.ThreadingOSCUDPServer((args.ip, args.port), dispatcher)
     print(f"Serving on {server.server_address}")

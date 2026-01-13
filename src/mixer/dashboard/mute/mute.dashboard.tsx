@@ -119,7 +119,7 @@ function TechMute() {
 
 
 function MutePanel() {
-	const [status,] = useReplicant<Status>("status", { "connection": "disconnected" }, { namespace: "mixer" });
+	const [status,] = useReplicant<Status>("status", { "connected": "disconnected" }, { namespace: "mixer" });
 
 	const [mic, setMic] = useState(fetchFromParams());
 	useEffect(() => {
@@ -127,7 +127,7 @@ function MutePanel() {
 		document.title = mic ? `${mic} | MUTE` : "MUTE";
 	}, [mic]);
 
-	if (!status || status.connection != "connected") return null;
+	if (!status || status.connected != "connected") return null;
 
 	if (mic) {
 		return <>
