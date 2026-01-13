@@ -80,11 +80,13 @@ declare module 'osc' {
     }
 
     export interface OscSender {
-        send(msg: OscMessage, address?: string, port?: number): void;
+        // Addition of log for modified class
+        send(msg: OscMessage, address?: string, port?: number, log?: boolean): void;
     }
 
     export abstract class Port extends EventEmitter implements OscSender {
-        send(msg: OscMessage, address?: string, port?: number): void;
+        // Addition of log for modified class
+        send(msg: OscMessage, address?: string, port?: number, log?: boolean): void;
 
         // Events
         on(event: 'ready', listener: () => void): this;

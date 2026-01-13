@@ -42,8 +42,8 @@ export class MixerCommPoint extends CommPoint<ListenerTypes, Replicants> {
 
         // Log sending traffic (wrap base send function with log)
         const baseSend = this.conn.send.bind(this.conn);
-        this.conn.send = (msg, address, port) => {
-            this.log.info(`Sending to mixer ${JSON.stringify(msg)}`);
+        this.conn.send = (msg, address, port, log = true) => {
+            if (log) this.log.info(`Sending to mixer ${JSON.stringify(msg)}`);
             baseSend(msg, address, port);
         }
 
@@ -67,9 +67,9 @@ export class MixerCommPoint extends CommPoint<ListenerTypes, Replicants> {
         });
 
         this.conn.on('message', (message) => {
-            this.log.info("Recieved from mixer", message);
             this.hasRecievedMessage = true;     // Mark as recieved a (/any) message
-            sendTo("message", message);
+            this.logResponse(message);
+            // sendTo("message", message);
 
             // try {
             //     if (message.address.endsWith('/fader') || message.address.endsWith('/level')) {
@@ -105,8 +105,8 @@ export class MixerCommPoint extends CommPoint<ListenerTypes, Replicants> {
                 this.reconnect();
             }
             this.hasRecievedMessage = false;
-            this.conn.send({ address: '/xremote', args: [] });
-            this.conn.send({ address: '/status', args: [] });
+            this.conn.send({ address: '/xremote', args: [] }, undefined, undefined, false);
+            this.conn.send({ address: '/status', args: [] }, undefined, undefined, false);
         } catch (e) {
             this.log.error(e);
         }
@@ -155,9 +155,21 @@ export class MixerCommPoint extends CommPoint<ListenerTypes, Replicants> {
         })
     }
 
-    private checkResponsePromises(msg: OscMessage) {
+    respondedToStatus = false;
+    respondedToXremote = false;
+    private logResponse(msg: OscMessage) {
+        if (msg.address == "/status") {
+            if (!this.respondedToStatus) this.respondedToStatus = true;
+            else return;
+        } else if (msg.address == "/xremote") {
+            if (!this.respondedToXremote) this.respondedToXremote = true;
+            else return;
+        }
+        this.log.info(this.respondedToStatus, this.respondedToXremote, msg.address);
         this.log.info("Recieved message from mixer", JSON.stringify(msg));
+    }
 
+    private checkResponsePromises(msg: OscMessage) {
         const promises = this.responsePromises[msg.address];
         if (!promises) return;
         this.responsePromises[msg.address] = [];  // Clear list immediately
