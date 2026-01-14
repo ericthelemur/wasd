@@ -318,24 +318,21 @@ export class OBSUtility extends OBSWebSocket {
                 // Set transition and duration
                 if (args.transitionName) this._tryCallOBS("SetCurrentSceneTransition",
                     { "transitionName": args.transitionName }, ack, "Error setting transition"
-                );
+                ).catch((e) => this.log.error("Error setting transition", e));
 
                 if (args.transitionDuration) this._tryCallOBS("SetCurrentSceneTransitionDuration",
                     { transitionDuration: args.transitionDuration }, ack, "Error setting transiton duration"
-                );
+                ).catch((e) => this.log.error("Error setting transition duration", e));;
 
                 // Trigger transition, needs different calls outside studio mode
                 if (this.replicants.obsStatus.value.studioMode) {
-                    this._tryCallOBS('SetCurrentProgramScene', { 'sceneName': args.sceneName },
-                        ack, 'Error setting preview scene for transition:')
-
                     // setTimeout(() => {
-                    //     this._tryCallOBS("TriggerStudioModeTransition", undefined, ack, "Error transitioning",
-                    //         (e) => this.replicants.obsStatus.value.transitioning = false);
+                    this._tryCallOBS("TriggerStudioModeTransition", undefined, ack, "Error transitioning",
+                        (e) => this.replicants.obsStatus.value.transitioning = false);
                     // }, 500);
                 } else {
                     if (!args.sceneName) {
-                        this.ackError(ack, "Error: Cannot transition", undefined);
+                        this.ackError(ack, "Error: Cannot transition to", args.sceneName);
                         this.replicants.obsStatus.value.transitioning = false;
                     } else this._tryCallOBS("SetCurrentProgramScene", { 'sceneName': args.sceneName }, ack, "Error transitioning",
                         (e) => this.replicants.obsStatus.value.transitioning = false);
@@ -390,7 +387,7 @@ export class OBSUtility extends OBSWebSocket {
     private _sendTransitioning(name: string, from?: string, to?: string) {
         // Avoid triggering duplicate transitioning events
         const now = Date.now();
-        if (to == this._lastTransitioningTarget && now - 60000 < this._lastTransitioningTime) return;
+        if (to == this._lastTransitioningTarget && now - 5000 < this._lastTransitioningTime) return;
 
         this._lastTransitioningTarget = to;
         this._lastTransitioningTime = now;

@@ -6,6 +6,8 @@ import { CreateCommPointConnect } from '../../common/commpoint/login';
 import listeners, { webhookListeners } from '../messages';
 import type { Replicants } from '../extension/tiltify';
 import { WebhookReplicants } from 'tiltify/extension/webhook';
+import { useReplicant } from 'use-nodecg';
+import { WebhookLogin } from 'types/schemas/tiltify';
 
 const root = createRoot(document.getElementById('root')!);
 
@@ -21,9 +23,12 @@ const WebhookControlForm = CreateCommPointConnect("tiltify-webhook", webhookList
     webhookID: "Webhook ID",
     webhookSecret: "Webhook Signing ID",
     targetSubdomain: "Requested Subdomain"
-} as const, {}, { connected: "disconnected", url: null }, ({ status }: { status: WebhookReplicants["status"] }) => <>
-    {status.connected == "connected" && <div>URL: {status.url || "Not Automatically Tunnelled"}</div>}
-</>);
+} as const, {}, { connected: "disconnected", url: null }, function ({ status }: { status: WebhookReplicants["status"] }) {
+    const [login,] = useReplicant<WebhookLogin>("login", {}, { namespace: "mixer" });
+    return <>{status.connected == "connected" && login?.targetSubdomain &&
+        <div className={status.url?.includes(login.targetSubdomain) ? "" : "text-danger"}>URL: {status.url || "Not Automatically Tunnelled"}</div>
+    }</>;
+});
 
 root.render(<>
     <ControlForm />

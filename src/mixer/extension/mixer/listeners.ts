@@ -48,7 +48,7 @@ async function setDCAs(toScene?: string) {
 }
 
 // Listen to OBS bundle's scene transition. Update DCAs with the scene
-nodecg.listenFor("transitioning", "obs", async (data: { transitionName: string; fromScene?: string; toScene?: string; }) => {
+nodecg.listenFor("transitioning", async (data: { transitionName: string; fromScene?: string; toScene?: string; }) => {
     if (!(await x32.isConnected())) return;
     if (!data.toScene) return;
     setDCAs(data.toScene);
