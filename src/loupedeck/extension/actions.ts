@@ -1,10 +1,7 @@
 import { getNodeCG } from '../../common/utils';
-import { channels } from '../../mixer/extension/mixer/replicants';
-import { getX32 } from '../../mixer/extension/mixer/utils';
-import { CellData, NodecgMsg, State } from '../../types/schemas/loupedeck';
-import { listenTo, sendTo } from '../messages';
+import { CellData, State } from '../../types/schemas/loupedeck';
 import { loupedeck } from './index.extension';
-import { getReplicant, getRepParentAt, getRepValAt } from './utils';
+import { getReplicant, getRepParentAt } from './utils';
 
 const nodecg = getNodeCG();
 
@@ -25,12 +22,17 @@ let tapTimes: { [id: string]: number } = {};
 function modifierInteractions(interaction: Category<"modifier">, action: Action, context: Context) {
     if (interaction.action == "tap-or-toggle") {
         if (action == "down") {
-            tapTimes[context.id] = Date.now();
-            doInteraction(interaction.interaction, "up", context);
+            if (tapTimes[context.id]) {
+                doInteraction(interaction.interaction, "up", context);
+            } else tapTimes[context.id] = Date.now();
+
+            doInteraction(interaction.interaction, "down", context);
         } else if (action == "up") {
             const pressTime = tapTimes[context.id];
+            // if (!pressTime) doInteraction(interaction.interaction, "up", context);
             const tapDelta = 500;
-            if (pressTime + tapDelta < Date.now()) {
+            if (Date.now() - pressTime > tapDelta) {    // If held for over 0.5s, then tap, otherwise wait until toggle
+                delete tapTimes[context.id];
                 doInteraction(interaction.interaction, "up", context);
             }
         }

@@ -9,7 +9,7 @@
             "const": "replicant"
         },
         "replicant": {
-            "$ref": "../replicant-ref.json"
+            "$ref": "../../replicant-ref.json"
         },
         "field": {
             "type": "string"

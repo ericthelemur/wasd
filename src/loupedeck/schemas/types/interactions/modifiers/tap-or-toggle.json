@@ -9,7 +9,14 @@
             "const": "tap-or-toggle"
         },
         "interaction": {
-            "$ref": "./interaction.json"
+            "oneOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "$ref": "../actions/actions.json"
+                }
+            ]
         }
     },
     "required": [
