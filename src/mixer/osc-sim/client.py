@@ -32,3 +32,8 @@ if __name__ == "__main__":
     reply = next(client.get_messages(2))
     print(str(reply))
     time.sleep(1)
+
+    
+# /xinfo 192.168.1.1 Warwick CU XR18 1.16
+# /status active 192.168.1.1 Warwick CU
+# /info V0.04 Warwick CU XR18 1.16

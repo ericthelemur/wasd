@@ -51,8 +51,8 @@ def save_handler_i(client_address: tuple[str, int], address: str, *osc_args: lis
 
 def static_response(response=None):
     def respond(address, *osc_args):
-        print(address, osc_args)
-        if response: return (address, response)
+        print(address, osc_args, "->", response)
+        if response: return (address, *response)
     return respond
 
 
@@ -62,11 +62,15 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=10024, help="The port to listen on")
     args = parser.parse_args()
 
+# /xinfo 192.168.1.1 Warwick CU XR18 1.16
+# /status active 192.168.1.1 Warwick CU
+# /info V0.04 Warwick CU XR18 1.16
+
     dispatcher = Dispatcher()
     dispatcher.set_default_handler(print)
-    dispatcher.map("/status", static_response(["active", "192.168.1.1", "WASD XR18"]))
-    dispatcher.map("/info", static_response(["V1.22", "WASD XR18", "XR18", "1.6"]))
-    dispatcher.map("/xinfo", static_response(["192.168.0.245", "WASD XR18", "XR18", "1.6"]))
+    dispatcher.map("/status", static_response(["active", args.ip, "WASD XR18"]))
+    dispatcher.map("/info", static_response(["V0.04", "WASD XR18", "XR18", "1.16"]))
+    dispatcher.map("/xinfo", static_response([args.ip, "WASD XR18", "XR18", "1.16"]))
     dispatcher.map("/xremote", subscribe, needs_reply_address=True)
     dispatcher.map("/dca/*/fader", save_handler_f, needs_reply_address=True)
     dispatcher.map("/ch/*/mix", save_handler_f, needs_reply_address=True)

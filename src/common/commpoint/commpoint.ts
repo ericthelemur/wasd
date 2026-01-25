@@ -80,7 +80,11 @@ export abstract class CommPoint<
             if (newVal && ["connected", "connecting", "retrying"].includes(newVal.connected)) {
                 this.reconnect(true);
             } else {
-                setTimeout(() => this.replicants.status.value.connected = "disconnected");
+                setTimeout(() => {
+                    try {
+                        this.replicants.status.value.connected = "disconnected"
+                    } catch (e) { this.log.error("Error marking disconnected", e) }
+                });
             }
         });
 

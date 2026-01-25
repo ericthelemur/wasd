@@ -44,11 +44,22 @@ export class MixerCommPoint extends CommPoint<ListenerTypes, Replicants> {
         const baseSend = this.conn.send.bind(this.conn);
         this.conn.send = (msg, address, port, log = true) => {
             this.log[log ? "info" : "debug"](`Sending to mixer ${JSON.stringify(msg)}`);
-            baseSend(msg, address, port);
+            (baseSend(msg, address, port) as any).catch((e: any) => this.log.error("Error sending", msg, ":", e));
         }
 
         // Register listener
         this.conn.on("message", this.checkResponsePromises.bind(this));
+
+        // Handle conn error
+        this.conn.on('error', (err) => {
+            if (!err.message.startsWith("A malformed type tag string was found while reading the arguments of an OSC message.")) {
+                this.log.warn('Error on connection', err);
+                this.log.debug('Error on connection:', err);
+                // status.value.connected = "error";
+            } else {
+                this.log.error("Error sending to mixer", err);
+            }
+        });
 
         // Ensure response before marking as connected (UDP just assumes connected)
         await this.sendToMixer({ address: '/status', args: [] });
@@ -81,14 +92,6 @@ export class MixerCommPoint extends CommPoint<ListenerTypes, Replicants> {
             //     this.log.warn('Error parsing message');
             //     this.log.debug('Error parsing message:', err);
             // }
-        });
-
-        this.conn.on('error', (err) => {
-            if (!err.message.startsWith("A malformed type tag string was found while reading the arguments of an OSC message.")) {
-                this.log.warn('Error on connection', err);
-                this.log.debug('Error on connection:', err);
-                // status.value.connected = "error";
-            }
         });
 
         this.resubscribeInterval = setInterval(async () => {
@@ -141,7 +144,7 @@ export class MixerCommPoint extends CommPoint<ListenerTypes, Replicants> {
         });
 
         // Send message to mixer now we are listening
-        this.conn.send(msg, undefined, undefined, log);
+        (this.conn.send(msg, undefined, undefined, log) as any).catch((e: any) => this.log.error("Erro sending", e));
 
         // Race response against timeout
         return Promise.race([requestPromise, new Promise<R>((resolve, reject) => {
