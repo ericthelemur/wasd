@@ -12,6 +12,7 @@ module.exports = function (nodecg: NodeCG.ServerAPI) {
     require("./donos/extension/index.extension");
     require("./loupedeck/extension/index.extension");
     require("./mixer/extension/index.extension");
+    require("./music/extension/index.extension");
     require("./obs/extension/index.extension");
     require("./people/extension/index.extension");
     require("./ticker/extension/index.extension");

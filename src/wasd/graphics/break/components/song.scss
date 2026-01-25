@@ -3,6 +3,7 @@
     // background-color: #2228;
     // border-radius: 7px;
     padding: 0 !important;
+    overflow: hidden;
 }
 
 .song {
@@ -53,7 +54,7 @@
 }
 
 :root {
-    --anim-time: 0.3s;
+    --anim-time: 0.2s;
     --anim-delay: 0.05s;
 }
 
