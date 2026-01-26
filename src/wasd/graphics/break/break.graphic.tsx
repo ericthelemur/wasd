@@ -7,7 +7,7 @@ import { createRoot } from 'react-dom/client';
 
 import { CountdownComp } from './components/countdown';
 import { Slides } from './components/slides';
-import { CurrentSong } from './components/song';
+import { CurrentSong } from '../../../music/dashboard/song';
 import { CustomBreakText } from '../../../types/schemas';
 import { useReplicant } from 'use-nodecg';
 

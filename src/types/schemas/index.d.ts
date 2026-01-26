@@ -7,6 +7,8 @@ export * from './loupedeck';
 // @ts-ignore
 export * from './mixer';
 // @ts-ignore
+export * from './music';
+// @ts-ignore
 export * from './obs';
 // @ts-ignore
 export * from './people';

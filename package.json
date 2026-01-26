@@ -43,6 +43,13 @@
         "headerColor": "#525F78"
       },
       {
+        "name": "music-control",
+        "title": "Music Control",
+        "width": 3,
+        "file": "music/dashboard/music.dashboard.html",
+        "headerColor": "#525F78"
+      },
+      {
         "name": "mute-control",
         "title": "Commentator Mute Control",
         "width": 3,

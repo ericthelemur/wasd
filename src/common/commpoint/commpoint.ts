@@ -3,7 +3,7 @@ import NodeCG from '@nodecg/types';
 import { ListenersT } from '../messages';
 import { BundleReplicant, getNodeCG, sendError, sendSuccess } from '../utils';
 
-type PartialNull<T> = { [P in keyof T]: T[P] | null };
+type PartialNull<T> = { [P in keyof T]: T[P] | null | undefined };
 
 export type Messages<C> = {
     "connect": Partial<C>,
@@ -53,7 +53,7 @@ export abstract class CommPoint<
 
         // Build any non-created replicants with default method
         for (const key in replicants) {
-            if (replicants[key] === null) {
+            if (replicants[key] === null || replicants[key] === undefined) {
                 replicants[key] = BundleReplicant(key, this.namespace);
             }
         }

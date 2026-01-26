@@ -17,12 +17,17 @@
     "properties": {
         "connected": {
             "$ref": "#/definitions/connStatus"
+        },
+        "playing": {
+            "type": "boolean"
         }
     },
     "required": [
-        "connected"
+        "connected",
+        "playing"
     ],
     "default": {
-        "connected": "disconnected"
+        "connected": "disconnected",
+        "playing": false
     }
 }

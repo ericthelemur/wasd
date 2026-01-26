@@ -15,8 +15,8 @@
     padding-right: none;
 
     & .art {
-        max-width: 150px;
-        min-height: 150px;
+        max-width: var(--art-height, 150px);
+        min-height: var(--art-height, 150px);
         height: 100%;
         aspect-ratio: 1 / 1;
         // border-radius: 7px;
@@ -34,7 +34,7 @@
         position: relative;
 
         flex: 1 1 0;
-        height: 100%;
+        height: var(--art-height, 150px);
 
         display: flex;
         flex-direction: column;

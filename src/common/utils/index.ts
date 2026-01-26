@@ -8,6 +8,9 @@ import { NodeCGServer } from 'speedcontrol-util/types/nodecg/lib/nodecg-instance
 export type NoNulls<T> = { [P in keyof T]: NonNullable<T[P]>; };
 export type AllNulls<T> = { [P in keyof T]: null; };
 
+export type NoUndef<T> = { [P in keyof T]: Exclude<T[P], undefined>; };
+export type AllUndef<T> = { [P in keyof T]: undefined; };
+
 // Define typed replicant, find schema in schemas/component/name.json
 export function Replicant<T>(name: string, component: string, args: NodeCG.Replicant.OptionsNoDefault = {}) {
     const path = args["schemaPath"] ? args["schemaPath"] : buildSchemaPath(component, name);
