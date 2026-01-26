@@ -144,7 +144,7 @@ export class MixerCommPoint extends CommPoint<ListenerTypes, Replicants> {
         });
 
         // Send message to mixer now we are listening
-        (this.conn.send(msg, undefined, undefined, log) as any).catch((e: any) => this.log.error("Erro sending", e));
+        this.conn.send(msg, undefined, undefined, log);
 
         // Race response against timeout
         return Promise.race([requestPromise, new Promise<R>((resolve, reject) => {

@@ -7,15 +7,17 @@ import type { Replicants } from "../extension/foobar";
 import listeners, { ListenerTypes, sendToF } from '../messages';
 import { CurrentSong } from './song';
 import { Status } from 'types/schemas/music';
-import { Button } from 'react-bootstrap';
-import { PauseFill, PlayFill } from 'react-bootstrap-icons';
+import { Button, ButtonGroup } from 'react-bootstrap';
+import { FastForwardFill, PauseFill, PlayFill } from 'react-bootstrap-icons';
 
 function PlayPause({ status }: { status: Status }) {
 	if (!status.connected) return <></>
 	return <>
-		<span className="ms-auto"></span>
-		<Button onClick={sendToF(status.playing ? "pause" : "play", undefined)}>{status.playing ? <PauseFill /> : <PlayFill />}</Button>
-		<div style={{ zoom: 0.7 }}>
+		{status.connected == "connected" && <ButtonGroup className="float-end mb-2">
+			<Button onClick={sendToF(status.playing ? "pause" : "play", undefined)}>{status.playing ? <PauseFill /> : <PlayFill />}</Button>
+			<Button variant="outline-primary" disabled={!status.playing} onClick={sendToF("skip", undefined)}>{<FastForwardFill />}</Button>
+		</ButtonGroup >}
+		<div style={{ zoom: 0.7 }} className={status.playing ? "" : "mb-5"}>
 			<CurrentSong />
 		</div>
 	</>

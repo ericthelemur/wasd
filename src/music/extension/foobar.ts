@@ -1,8 +1,8 @@
-import osc, { Arguments, F, OscMessage } from 'osc';
+import { CLOSED, createEventSource, EventSourceClient, OPEN } from 'eventsource-client';
+import { Login, MusicData, Status } from 'types/schemas/music';
 import { CommPoint } from '../../common/commpoint/commpoint';
-import { AllNulls, AllUndef, NoNulls, NoUndef, sendSuccess } from '../../common/utils';
-import listeners, { ListenerTypes, listenTo, sendTo } from '../messages';
-import { MusicData, Login, Status } from 'types/schemas/music';
+import { AllUndef, NoUndef } from '../../common/utils';
+import listeners, { ListenerTypes, listenTo } from '../messages';
 import { Foobar2000 } from './foobar2000';
 
 const replicants = {
@@ -20,9 +20,7 @@ export class FoobarCommPoint extends CommPoint<ListenerTypes, Replicants> {
     private auth: string | undefined;
     private headers: HeadersInit | undefined;
 
-    private decoder = new TextDecoder("UTF-8");
-    private aborter = new AbortController();
-    reader: ReadableStreamDefaultReader<Uint8Array<ArrayBuffer>> | undefined;
+    source: EventSourceClient | undefined;
 
     // private positionTimestamp = 0;
     // private positionInitial = 0;
@@ -40,43 +38,24 @@ export class FoobarCommPoint extends CommPoint<ListenerTypes, Replicants> {
         this.auth = (login.username && login.password) ? `Basic ${Buffer.from(`${login.username}:${login.password}`).toString('base64')}` : undefined;
         this.headers = this.auth ? { Authorization: this.auth } : undefined;
 
-        const resp = await this.request('get', '/query/updates?player=true&trcolumns=%artist%,%title%');
-        if (!resp.body) throw new Error('body was null');
+        this.source = createEventSource({
+            url: `http://${this.replicants.login.value.address}/api/query/updates?player=true&trcolumns=%artist%,%title%`,
+            headers: this.headers,
+            onMessage: ({ data }) => {  // Process message
+                try {
+                    this.log.info(data);
+                    const json = JSON.parse(data);
+                    this.processUpdate(json);
+                } catch (err) {
+                    this.log.error("Error parsing message", err);
+                    this.log.debug(data);
+                }
+            },
+            onDisconnect: () => {
+                this.disconnect();
+            },
 
-        const reader = resp.body.getReader();
-        this.reader = reader;
-        this.aborter = new AbortController();
-        const signal = this.aborter.signal;
-
-        // On reader close or error
-        this.reader.closed.then(() => this.disconnect()).catch(e => {
-            this.log.error("Error in reader", e);
-            this.disconnect();
-        })
-
-        const that = this;
-        reader.read().then(function pump(result): Promise<void> | undefined {
-            if (result.done) that.isConnected().then(c => { if (c) that.reconnect() });
-            if (result.done || signal.aborted) return;
-
-            // Decode JSON
-            let msg: Foobar2000.UpdateMsg | undefined;
-            let text = "";
-            try {
-                text = that.decoder.decode(result.value, { stream: true }).slice(6).replace(/(\r\n|\n|\r)/gm, '');
-                msg = JSON.parse(text);
-            } catch (err) {
-                that.log.error("Error parsing message on connection:", err, text);
-            }
-
-            // Call process update
-            if (msg) {
-                that.processUpdate(msg);
-            }
-
-            // Continue processing chunks
-            return reader.read().then(pump);
-        }).catch(err => this.log.error('Connection error:', err));
+        });
 
         // Listen to OBS transitions to play/pause correctly.
         // this.obs.conn.on('TransitionBegin', (data) => {
@@ -93,20 +72,20 @@ export class FoobarCommPoint extends CommPoint<ListenerTypes, Replicants> {
     override async _setupListeners() {
         listenTo("play", () => this.play());
         listenTo("pause", () => this.pause());
+        listenTo("skip", () => this.skip());
     }
 
 
     override async _disconnect() {
         // clearInterval(this.positionInterval);
-        if (this.aborter) this.aborter.abort();
-        if (this.reader) this.reader.cancel();
-        this.reader = undefined;
+        if (this.source && this.source?.readyState != CLOSED) this.source.close();
+        this.source = undefined;
         this.auth = undefined;
         this.headers = undefined;
     }
 
     override async isConnected() {
-        return this.replicants.status.value.connected === "connected" && Boolean(this.reader) && !this.aborter.signal.aborted;
+        return this.replicants.status.value.connected === "connected" && Boolean(this.source) && this.source?.readyState == OPEN;
     }
 
 
@@ -158,6 +137,16 @@ export class FoobarCommPoint extends CommPoint<ListenerTypes, Replicants> {
             this.log.info('Successfully paused');
         } catch (e) {
             this.log.error('Error pausing', e);
+        }
+    }
+
+    async skip() {
+        if (!await this.isConnected()) return;
+        try {
+            await this.request('post', '/player/next');
+            this.log.info('Successfully skipped');
+        } catch (e) {
+            this.log.error('Error skipping', e);
         }
     }
 

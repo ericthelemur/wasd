@@ -7,7 +7,8 @@ export type ListenerTypes = {
     connected: undefined,
 
     play: undefined,
-    pause: undefined
+    pause: undefined,
+    skip: undefined
 }
 
 export const listeners = createMessageListenersBundle<ListenerTypes>("music");
