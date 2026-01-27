@@ -38,13 +38,12 @@ export class MixerCommPoint extends CommPoint<ListenerTypes, Replicants> {
             metadata: true,
             localPort: 0    // Should open a random open port
         });
-        this.conn.open();
 
         // Log sending traffic (wrap base send function with log)
         const baseSend = this.conn.send.bind(this.conn);
         this.conn.send = (msg, address, port, log = true) => {
             this.log[log ? "info" : "debug"](`Sending to mixer ${JSON.stringify(msg)}`);
-            (baseSend(msg, address, port) as any).catch((e: any) => this.log.error("Error sending", msg, ":", e));
+            baseSend(msg, address, port);
         }
 
         // Register listener
@@ -60,6 +59,8 @@ export class MixerCommPoint extends CommPoint<ListenerTypes, Replicants> {
                 this.log.error("Error sending to mixer", err);
             }
         });
+
+        this.conn.open();
 
         // Ensure response before marking as connected (UDP just assumes connected)
         await this.sendToMixer({ address: '/status', args: [] });
