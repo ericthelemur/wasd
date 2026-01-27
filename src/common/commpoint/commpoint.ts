@@ -34,8 +34,8 @@ export abstract class CommPoint<
     public replicants: Replicants<R>;
     protected listeners: ListenersT<M>;
 
-    protected reconnectInterval = 1;
-    protected retryPeriod: number = -1;
+    protected initialRetryPeriod = 1;
+    protected retryPeriod: number = this.initialRetryPeriod;
     protected _reconnectInterval: NodeJS.Timeout | undefined = undefined;
 
     protected ignoreCloseEvents: boolean = false;
@@ -186,7 +186,7 @@ export abstract class CommPoint<
             await this._disconnect();   // Run disconnect cleanup (if not startup)
         }
         this.replicants.status.value.connected = "retrying";
-        this.retryPeriod = this.reconnectInterval;  // Reset retry period (doubles each attempt)
+        this.retryPeriod = this.initialRetryPeriod;  // Reset retry period (doubles each attempt)
         this._reconnectInterval = setTimeout(() => this._reconnect(), this.retryPeriod * 1000);
     }
 
@@ -204,7 +204,7 @@ export abstract class CommPoint<
 
     protected stopRetry() {
         // Cancel retrying
-        this.retryPeriod = 0;
+        this.retryPeriod = this.initialRetryPeriod;
         if (this._reconnectInterval) {
             clearInterval(this._reconnectInterval);
             this._reconnectInterval = undefined;

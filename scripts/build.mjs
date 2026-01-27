@@ -21,6 +21,12 @@ import types from "./typesLib.mjs";
 
 // Parse cmd line flags
 function argParse(def) {
+  const allowedArgs = ["--all", "--default", "--clean-only", "--browser", "--extension", "--dashboard", "--graphics", "--shared", "--schemas", "--types", "--node-modules", "--production", "--watch", "--clean"];
+  const unknownArgs = argv.slice(2).filter(a => !allowedArgs.includes(a));
+  if (unknownArgs.length > 0) {
+    console.error("Unknown arguments included:", unknownArgs.join(" "));
+    process.exit(1);
+  }
   const buildAll = argv.includes('--all');
   const buildDefault = def || argv.includes('--default');
   const cleanOnly = argv.includes("--clean-only");
