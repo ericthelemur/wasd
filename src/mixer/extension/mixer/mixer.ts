@@ -130,15 +130,28 @@ export class MixerCommPoint extends CommPoint<ListenerTypes, Replicants> {
         return this.replicants.status.value.connected === "connected" && Boolean(this.conn);
     }
 
+    // timeoutOperation<R>(operation: () => Promise<R>, limit = 5000) {
+    //     let opPromise: Promise<void> | null = null;
+    //     let timeout: NodeJS.Timeout | undefined = undefined;
+    //     return new Promise((resolve, reject) => {
+    //         opPromise = operation().then(r => resolve(r));
+    //         timeout = setTimeout(() => reject(), limit);
+    //     }).finally(() => {
+    //         clearTimeout(timeout);
+    //     })
+    // }
+
     // Keep dict of list of promises for pending replies
     responsePromises: { [address: string]: ((response: OscMessage) => any)[] } = {};
     sendToMixer<T extends Arguments, R extends OscMessage<T> = OscMessage<T>>(msg: OscMessage, log = true, timeout = 8000) {
         let process: ((m: OscMessage) => any) | null = null;
+        let requestReject: ((reason?: any) => void) | null = null;
         let timeoutTimeout: NodeJS.Timeout;
 
         // Promise that handles relaying the response to the message
         const requestPromise = new Promise<R>((resolve, reject) => {
             process = resolve as (m: OscMessage) => any; // Cast into a more generic type
+            requestReject = reject;
             // Add to promise list
             if (!this.responsePromises[msg.address]) this.responsePromises[msg.address] = [process];
             else this.responsePromises[msg.address].push(process);
@@ -152,6 +165,7 @@ export class MixerCommPoint extends CommPoint<ListenerTypes, Replicants> {
             timeoutTimeout = setTimeout(() => reject(`Response to ${msg.address} timed out`), timeout);
         })]).finally(() => {  // After either finishes, unlisten and remove promise
             clearTimeout(timeoutTimeout);
+            if (requestReject) requestReject();
             if (this.responsePromises[msg.address]) {   // Make sure promise is removed from list
                 const index = this.responsePromises[msg.address].indexOf(process!);
                 if (index > -1) this.responsePromises[msg.address].splice(index, 1);
