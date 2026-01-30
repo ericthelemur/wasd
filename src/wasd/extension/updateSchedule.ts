@@ -18,7 +18,7 @@ function upcoming() {
 
         const behind = expectedCurrRunStart - actualCurrRunStart;
 
-        nodecg.log.info(now, timer, currRun?.scheduledS, actualCurrRunStart, expectedCurrRunStart, behind);
+        // nodecg.log.info(now, timer, currRun?.scheduledS, actualCurrRunStart, expectedCurrRunStart, behind);
 
         streamState.value.minsBehind = 5 * Math.round(behind / (1000 * 60 * 5));
         if (Math.abs(streamState.value.minsBehind) <= 15) streamState.value.minsBehind = 0;
