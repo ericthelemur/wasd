@@ -1,0 +1,31 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "appID": {
+            "type": "string"
+        },
+        "token": {
+            "type": "string"
+        },
+        "server": {
+            "type": "string"
+        },
+        "scheduleChannel": {
+            "type": "string"
+        },
+        "donationChannel": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "appID",
+        "token",
+        "server"
+    ],
+    "default": {
+        "appID": "",
+        "token": "",
+        "server": ""
+    }
+}

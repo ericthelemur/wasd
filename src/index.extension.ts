@@ -9,6 +9,7 @@ module.exports = function (nodecg: NodeCG.ServerAPI) {
     require("./tiltify/extension/index.extension");
     require("./countdown/extension/index.extension");
     require("./dev/extension/index.extension");
+    require("./discord/extension/index.extension");
     require("./donos/extension/index.extension");
     require("./loupedeck/extension/index.extension");
     require("./mixer/extension/index.extension");

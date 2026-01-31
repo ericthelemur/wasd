@@ -5,10 +5,9 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type MusicData = null | {
-	title?: string;
-	artist?: string;
-	position?: number;
-	duration?: number;
-	artwork?: string;
-};
+export type ConnStatus = 'connected' | 'connecting' | 'disconnected' | 'error' | 'retrying';
+
+export interface Status {
+	connected: ConnStatus;
+	[k: string]: unknown;
+}

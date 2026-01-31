@@ -1,0 +1,15 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "additionalProperties": {
+        "type": "object",
+        "properties": {
+            "discordID": {
+                "type": "string"
+            },
+            "messageID": {
+                "type": "string"
+            }
+        }
+    }
+}

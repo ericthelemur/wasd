@@ -5,10 +5,10 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type MusicData = null | {
-	title?: string;
-	artist?: string;
-	position?: number;
-	duration?: number;
-	artwork?: string;
-};
+export interface EventStatuses {
+	[k: string]: {
+		discordID?: string;
+		messageID?: string;
+		[k: string]: unknown;
+	};
+}

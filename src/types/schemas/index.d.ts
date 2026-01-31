@@ -1,6 +1,8 @@
 // @ts-ignore
 export * from './common';
 // @ts-ignore
+export * from './discord';
+// @ts-ignore
 export * from './donos';
 // @ts-ignore
 export * from './loupedeck';
