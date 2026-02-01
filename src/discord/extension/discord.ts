@@ -1,4 +1,4 @@
-import { REST, Routes, Client, Events, GatewayIntentBits } from 'discord.js';
+import { REST, Routes, Client, Events, GatewayIntentBits, TextChannel } from 'discord.js';
 
 import { Login, EventStatuses, Status } from 'types/schemas/discord';
 import { CommPoint } from '../../common/commpoint/commpoint';
@@ -17,6 +17,7 @@ const replicantNamesOnly = replicants as AllUndef<typeof replicants>;
 
 export class DiscordCommPoint extends CommPoint<ListenerTypes, Replicants> {
     client: Client | undefined;
+    rest: REST | undefined;
 
     constructor() {
         super("discord", replicantNamesOnly, listeners);
@@ -29,6 +30,7 @@ export class DiscordCommPoint extends CommPoint<ListenerTypes, Replicants> {
         const login = this.replicants.login.value;
 
         this.client = new Client({ intents: [GatewayIntentBits.Guilds] });
+        this.rest = new REST({ version: '10' }).setToken(login.token);
 
         // Setup promise to wait for login to finish login
         let onLogin: (v: any) => any;
@@ -50,9 +52,8 @@ export class DiscordCommPoint extends CommPoint<ListenerTypes, Replicants> {
         ];
 
         // Register commands
-        const rest = new REST({ version: '10' }).setToken(login.token);
         try {
-            await rest.put(Routes.applicationCommands(login.appID), { body: commands });
+            await this.rest?.put(Routes.applicationCommands(login.appID), { body: commands });
         } catch (e) {
             this.log.error("Error updating commands", e);
         }
@@ -69,9 +70,31 @@ export class DiscordCommPoint extends CommPoint<ListenerTypes, Replicants> {
     override async _disconnect() {
         if (this.client) await this.client.destroy();
         this.client = undefined;
+        this.rest = undefined;
     }
 
     override async isConnected() {
-        return this.replicants.status.value.connected == "connected" && Boolean(this.client?.isReady());
+        return this.replicants.status.value.connected == "connected" && Boolean(this.client?.isReady()) && Boolean(this.rest);
+    }
+
+    async sendMessage(content: string, channelID: string) {
+        if (!(await this.isConnected())) return;
+
+        const channel = this.client?.channels.cache.get(channelID);
+        if (!channel) {
+            this.log.error(`Discord channel ${channelID} does not exist or is inaccessible`);
+            return;
+        }
+        if (!channel.isSendable()) {
+            this.log.error(`Unable to post in Discord channel ${channelID} (${channel.name})`);
+            return;
+        }
+
+        try {
+            return await channel.send(content);
+        } catch (e) {
+            this.log.error(`Error sending Discord message to ${channelID}`, e);
+            return;
+        }
     }
 }

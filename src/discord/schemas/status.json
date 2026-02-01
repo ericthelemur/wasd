@@ -17,6 +17,12 @@
     "properties": {
         "connected": {
             "$ref": "#/definitions/connStatus"
+        },
+        "postSchedule": {
+            "type": "boolean"
+        },
+        "postDonations": {
+            "type": "boolean"
         }
     },
     "required": [

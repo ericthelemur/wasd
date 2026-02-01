@@ -9,5 +9,7 @@ export type ConnStatus = 'connected' | 'connecting' | 'disconnected' | 'error' |
 
 export interface Status {
 	connected: ConnStatus;
+	postSchedule?: boolean;
+	postDonations?: boolean;
 	[k: string]: unknown;
 }

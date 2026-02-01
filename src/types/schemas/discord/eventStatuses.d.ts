@@ -7,7 +7,7 @@
 
 export interface EventStatuses {
 	[k: string]: {
-		discordID?: string;
+		eventID?: string;
 		messageID?: string;
 		[k: string]: unknown;
 	};
