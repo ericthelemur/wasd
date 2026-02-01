@@ -317,6 +317,7 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         // fs.writeFileSync(`key${index}.png`, buffer)
 
         // Save for interface
+        this.log.warn("Updated image for ", index);
         this.replicants.images.value[index] = canvas.toBuffer("image/png").toString("base64");
 
         // Send to loupedeck
@@ -342,7 +343,6 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
 
     getCurrentPage() {
         const disp = this.replicants.display.value;
-        this.log.info("Current", disp.current);
         if (disp.current == "page") {
             return this.pagesMenu();
         } else {

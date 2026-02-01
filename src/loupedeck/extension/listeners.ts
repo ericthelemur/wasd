@@ -7,9 +7,11 @@ import { Screen } from '../../types/schemas/loupedeck';
 
 listenTo("setPage", (page, ack) => {
     if (page in loupedeck.replicants.display.value.pages) {
+        loupedeck.log.info(`Setting page to ${page}`);
         loupedeck.replicants.display.value.current = page;
         sendSuccess(ack, page);
     } else {
+        loupedeck.log.error(`Page ${page} does not exist. Options: ${Object.keys(loupedeck.replicants.display.value.pages).join(", ")}`);
         sendError(ack, `Page ${page} does not exist. Options: ${Object.keys(loupedeck.replicants.display.value.pages).join(", ")}`);
     }
 })

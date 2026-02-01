@@ -33,21 +33,23 @@ export function getCellState(index: number) {
 
 // const stateBuffers = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
 export function checkButton(index: number) {   // Check if button state has been changed by replicant update
-    if (!loupedeck || !loupedeck.isConnected()) return;
+    if (!loupedeck) return;
 
     const page = loupedeck.getCurrentPage();
     const cell = page.screen[index];
-    if (!cell) return;
+    if (!cell) return redrawIfNecessary(index, null);
+    loupedeck.log.info("Attempting to update", index, "for", page.display, ". Cell:", JSON.stringify(cell));
 
     // Evaluate updated state
     updateSubscriptions(cell, index);
     const oldState = cellStates[index];
     const state = evaluateButtonState(cell, index);
     cellStates[index] = state;
+    loupedeck.log.info("State is", state);
 
     // If state has changed, try to redraw button to match
     if (!state) redrawIfNecessary(index, null);
-    else if (state != oldState) {
+    else /*if (state != oldState)*/ {
         const graphic = cell.states[state].graphic;
         redrawIfNecessary(index, graphic || null);
     }
@@ -62,10 +64,11 @@ function updateAll() {
 listenTo("connected", () => {
     updateAll();
 
-    loupedeck.replicants.display.off("change", updateAll);
-    loupedeck.replicants.display.on("change", updateAll);
+    // loupedeck.replicants.display.off("change", updateAll);
+    // loupedeck.replicants.display.on("change", updateAll);
 })
 
+loupedeck.replicants.display.on("change", updateAll);
 
 
 function updateSubscriptions(cell: CellData, index: number) {
@@ -91,12 +94,15 @@ function evaluateButtonState(cell: CellData, index: number) {
         if (state.isActive) {   // Find active state
             const cellRep = cellReplicants[index];
             const active = evalCondition(state.isActive, cellRep);
+            loupedeck.log.info("Evaluating", key, "result:", active);
             if (active) return key;   // Return first active state
         } else if (!elseState) {  // Find state without condition - "else" state, if no others are active
+            loupedeck.log.info("Setting else state", key);
             elseState = key;
         }
         if (!firstState) firstState = key;    // Ultimate fallback
     }
+    loupedeck.log.info("Using else state", elseState || firstState);
     if (elseState) return elseState;    // If no active state, return else state
     return firstState;                  // If no else state, default back to first state
 }
