@@ -4,13 +4,21 @@ import '../../common/uwcs-bootstrap.css';
 import Form from "react-bootstrap/Form";
 import { CreateCommPointConnect } from '../../common/commpoint/login';
 import type { Replicants } from "../extension/discord";
-import listeners, { ListenerTypes } from '../messages';
+import listeners, { ListenerTypes, sendToF } from '../messages';
+import { useReplicant } from 'use-nodecg';
+import { Status } from 'types/schemas/discord';
+import { useRef } from 'react';
+import { Button } from 'react-bootstrap';
 
 function DiscordControl() {
+	const [status, setStatus] = useReplicant<Status>("status", { "connected": "connected" }, { "namespace": "discord" });
+	if (!status) return <></>;
+
 	return <div className="m-3">
 		<Form>
-			<Form.Check type="switch" label="Schedule Messages" />
-			<Form.Check type="switch" label="Donation Messages" />
+			<Form.Check type="switch" label="Schedule Messages" checked={status?.postSchedule} onClick={e => setStatus({ ...status, postSchedule: !status.postSchedule })} />
+			<Form.Check type="switch" label="Donation Messages" checked={status?.postDonations} onClick={e => setStatus({ ...status, postDonations: !status.postDonations })} />
+			<Button onClick={sendToF("updateEvents", undefined)}>Update Discord Events</Button>
 		</Form>
 	</div>
 }

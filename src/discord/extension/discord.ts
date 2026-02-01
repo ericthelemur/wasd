@@ -1,4 +1,4 @@
-import { REST, Routes, Client, Events, GatewayIntentBits, TextChannel } from 'discord.js';
+import { REST, Routes, Client, Events, GatewayIntentBits, TextChannel, GuildScheduledEventManager, GuildScheduledEventCreateOptions } from 'discord.js';
 
 import { Login, EventStatuses, Status } from 'types/schemas/discord';
 import { CommPoint } from '../../common/commpoint/commpoint';
@@ -95,6 +95,45 @@ export class DiscordCommPoint extends CommPoint<ListenerTypes, Replicants> {
         } catch (e) {
             this.log.error(`Error sending Discord message to ${channelID}`, e);
             return;
+        }
+    }
+
+    async createEvent(args: GuildScheduledEventCreateOptions) {
+        if (!(await this.isConnected())) return;
+        const guildID = this.replicants.login.value.server;
+        if (!guildID) return;
+        const guild = this.client?.guilds.cache.get(guildID);
+        if (!guild) return;
+
+        const eventManager = guild.scheduledEvents;
+        try {
+            await eventManager.create(args);
+        } catch (e) {
+            this.log.error(`Error creating event ${args.name}`, e);
+        }
+    }
+
+    async modifyEvent(existingEventID: string, args: GuildScheduledEventCreateOptions) {
+        if (!(await this.isConnected())) return;
+        const guildID = this.replicants.login.value.server;
+        if (!guildID) return;
+        const guild = this.client?.guilds.cache.get(guildID);
+        if (!guild) return;
+
+        const eventManager = guild.scheduledEvents;
+
+        const existing = eventManager.cache.get(existingEventID);
+        if (!existing) return await this.createEvent(args);
+        if (args.name && args.name != existing.name) return;
+        if (args.description && args.description != existing.description) return;
+        if (args.scheduledStartTime && args.scheduledStartTime != existing.scheduledStartTimestamp) return;
+        if (args.scheduledEndTime && args.scheduledEndTime != existing.scheduledEndTimestamp) return;
+
+        this.log.info("Updating", existing.name);
+        try {
+            await eventManager.edit(existingEventID, args);
+        } catch (e) {
+            this.log.error(`Error creating event ${args.name}`, e);
         }
     }
 }
