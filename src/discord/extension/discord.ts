@@ -1,4 +1,4 @@
-import { REST, Routes, Client, Events, GatewayIntentBits, TextChannel, GuildScheduledEventManager, GuildScheduledEventCreateOptions, GuildScheduledEventStatus } from 'discord.js';
+import { REST, Routes, Client, Events, GatewayIntentBits, TextChannel, GuildScheduledEventManager, GuildScheduledEventCreateOptions, GuildScheduledEventStatus, MessagePayload, MessageCreateOptions } from 'discord.js';
 
 import { Login, EventStatuses, Status } from 'types/schemas/discord';
 import { CommPoint } from '../../common/commpoint/commpoint';
@@ -87,7 +87,7 @@ export class DiscordCommPoint extends CommPoint<ListenerTypes, Replicants> {
         return guild;
     }
 
-    async sendMessage(content: string, channelID: string) {
+    async sendMessage(content: string | MessagePayload | MessageCreateOptions, channelID: string) {
         if (!(await this.isConnected())) return;
 
         const channel = this.client?.channels.cache.get(channelID);
