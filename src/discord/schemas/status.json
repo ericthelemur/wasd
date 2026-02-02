@@ -23,6 +23,9 @@
         },
         "postDonations": {
             "type": "boolean"
+        },
+        "startAndEndEvents": {
+            "type": "boolean"
         }
     },
     "required": [

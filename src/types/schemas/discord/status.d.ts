@@ -11,5 +11,6 @@ export interface Status {
 	connected: ConnStatus;
 	postSchedule?: boolean;
 	postDonations?: boolean;
+	startAndEndEvents?: boolean;
 	[k: string]: unknown;
 }

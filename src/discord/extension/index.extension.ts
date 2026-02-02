@@ -104,6 +104,7 @@ listenTo("updateEvents", async () => {
 
 // Start new event on change of run
 sc.runDataActiveRun.on("change", async (newVal) => {
+    if (!discord.replicants.status.value.startAndEndEvents) return;
     if (!newVal || !newVal.category || newVal.category == "Setup") return;
     if (!(await discord.isConnected())) return;
 
@@ -118,6 +119,7 @@ sc.runDataActiveRun.on("change", async (newVal) => {
 
 // End previous event on change of run
 sc.runDataActiveRun.on("change", async (newVal, oldVal) => {
+    if (!discord.replicants.status.value.startAndEndEvents) return;
     if (!oldVal || !oldVal.category || oldVal.category == "Setup") return;
     if (!(await discord.isConnected())) return;
 
