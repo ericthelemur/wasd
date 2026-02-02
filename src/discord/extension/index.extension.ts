@@ -50,16 +50,19 @@ sc.runDataActiveRun.on("change", async (newVal) => {
 export const streamState = Replicant<StreamState>("streamState", "wasd");
 listenTo("updateEvents", async () => {
     if (!(await discord.isConnected())) return;
+    const status = discord.replicants.status.value;
 
     const eventStatuses = discord.replicants.eventStatuses.value;
 
-    for (let run of sc.getRunDataArray().slice(0, 3)) {
-        if (!run.category || run.category == "Setup") return;
+    for (let run of sc.getRunDataArray()/*.slice(0, 3)*/) {
+        discord.log.info("Trying to update", run);
+        if (!run.category || run.category == "Setup") continue;
         try {
             const runStatus = eventStatuses[run.id];
             const players = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
             // Calculate adjusted time TODO: read off rundata - if active, make
             let baseTime = 1000 * (run.scheduledS || 0) - 1000 * 60 * (streamState.value.minsBehind || 0);
+            discord.log.info("Adjusted start time is", new Date(baseTime));
 
             const currentRun = sc.getCurrentRun();
             const isActiveRun = currentRun && run.id == currentRun.id;
@@ -90,7 +93,7 @@ listenTo("updateEvents", async () => {
                     else eventStatuses[run.id] = { name: run.game || "", eventID: result.id };
 
                     // Start event if created when run is in progress
-                    if (isActiveRun) {
+                    if (isActiveRun && status.startAndEndEvents) {
                         discord.setEventStatus(result.id, GuildScheduledEventStatus.Active);
                     }
                 }
