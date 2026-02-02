@@ -1,4 +1,4 @@
-import { REST, Routes, Client, Events, GatewayIntentBits, TextChannel, GuildScheduledEventManager, GuildScheduledEventCreateOptions } from 'discord.js';
+import { REST, Routes, Client, Events, GatewayIntentBits, TextChannel, GuildScheduledEventManager, GuildScheduledEventCreateOptions, GuildScheduledEventStatus } from 'discord.js';
 
 import { Login, EventStatuses, Status } from 'types/schemas/discord';
 import { CommPoint } from '../../common/commpoint/commpoint';
@@ -77,6 +77,16 @@ export class DiscordCommPoint extends CommPoint<ListenerTypes, Replicants> {
         return this.replicants.status.value.connected == "connected" && Boolean(this.client?.isReady()) && Boolean(this.rest);
     }
 
+
+    async getGuild() {
+        if (!(await this.isConnected())) return;
+        const guildID = this.replicants.login.value.server;
+        if (!guildID) return;
+        const guild = this.client?.guilds.cache.get(guildID);
+        if (!guild) return;
+        return guild;
+    }
+
     async sendMessage(content: string, channelID: string) {
         if (!(await this.isConnected())) return;
 
@@ -98,42 +108,77 @@ export class DiscordCommPoint extends CommPoint<ListenerTypes, Replicants> {
         }
     }
 
-    async createEvent(args: GuildScheduledEventCreateOptions) {
-        if (!(await this.isConnected())) return;
-        const guildID = this.replicants.login.value.server;
-        if (!guildID) return;
-        const guild = this.client?.guilds.cache.get(guildID);
-        if (!guild) return;
 
+    async createEvent(args: GuildScheduledEventCreateOptions) {
+        const guild = await this.getGuild();
+        if (!guild) return;
         const eventManager = guild.scheduledEvents;
+
         try {
-            await eventManager.create(args);
+            this.log.info("Creating event", args.name);
+            const event = await eventManager.create(args);
+            return event;
         } catch (e) {
             this.log.error(`Error creating event ${args.name}`, e);
         }
     }
 
     async modifyEvent(existingEventID: string, args: GuildScheduledEventCreateOptions) {
-        if (!(await this.isConnected())) return;
-        const guildID = this.replicants.login.value.server;
-        if (!guildID) return;
-        const guild = this.client?.guilds.cache.get(guildID);
+        const guild = await this.getGuild();
         if (!guild) return;
-
         const eventManager = guild.scheduledEvents;
 
         const existing = eventManager.cache.get(existingEventID);
+        this.log.info("Existing event", existing);
+
         if (!existing) return await this.createEvent(args);
-        if (args.name && args.name != existing.name) return;
-        if (args.description && args.description != existing.description) return;
-        if (args.scheduledStartTime && args.scheduledStartTime != existing.scheduledStartTimestamp) return;
-        if (args.scheduledEndTime && args.scheduledEndTime != existing.scheduledEndTimestamp) return;
+        // If no change in important fields, don't change
+        if (args.name == existing.name
+            && args.description == existing.description
+            && args.scheduledStartTime == existing.scheduledStartTimestamp
+            && args.scheduledEndTime == existing.scheduledEndTimestamp) {
+            this.log.warn("No change to event, not updating");
+            return;
+        }
+
+        // If over, it's gone, don't update
+        if (existing.isCanceled() || existing.isCompleted()) {
+            this.log.warn("Event already over, not updating");
+            return;
+        }
+
+        // If started, don't update start time
+        if (!existing.isScheduled() && args.scheduledStartTime && existing.scheduledStartTimestamp) {
+            args.scheduledStartTime = existing.scheduledStartTimestamp;
+        }
 
         this.log.info("Updating", existing.name);
-        try {
-            await eventManager.edit(existingEventID, args);
-        } catch (e) {
-            this.log.error(`Error creating event ${args.name}`, e);
+        await eventManager.edit(existingEventID, args).catch(e => this.log.error(`Error creating event ${args.name}`, e));
+    }
+
+    async setEventStatus(existingEventID: string, status: GuildScheduledEventStatus.Active | GuildScheduledEventStatus.Completed | GuildScheduledEventStatus.Canceled) {
+        const guild = await this.getGuild();
+        if (!guild) return;
+        const eventManager = guild.scheduledEvents;
+        const existing = eventManager.cache.get(existingEventID);
+        if (!existing) {    // Check event exists
+            this.log.error("Cannot start event, event doesn't exist", existingEventID);
+            return;
         }
+
+        // Don't start an already started event (or cancelled or compeleted)
+        if (status == GuildScheduledEventStatus.Active && existing.status != GuildScheduledEventStatus.Scheduled) {
+            this.log.error("Cannot start event, event isn't scheduled", existingEventID);
+            return;
+        }
+
+        // Don't end an already finished event
+        if (status == GuildScheduledEventStatus.Completed && existing.status != GuildScheduledEventStatus.Active) {
+            this.log.error("Cannot start event, event isn't scheduled", existingEventID);
+            return;
+        }
+        existing.setStatus(status)
+            .then(e => this.log.info("Started event", existingEventID))
+            .catch(e => this.log.error("Error starting event", e));
     }
 }

@@ -4,12 +4,18 @@
     "additionalProperties": {
         "type": "object",
         "properties": {
+            "name": {
+                "type": "string"
+            },
             "eventID": {
                 "type": "string"
             },
             "messageID": {
                 "type": "string"
             }
-        }
+        },
+        "required": [
+            "name"
+        ]
     }
 }

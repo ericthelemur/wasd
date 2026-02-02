@@ -13,8 +13,8 @@ export type AllUndef<T> = { [P in keyof T]: undefined; };
 
 // Define typed replicant, find schema in schemas/component/name.json
 export function Replicant<T>(name: string, component: string, args: NodeCG.Replicant.OptionsNoDefault = {}) {
-    const path = args["schemaPath"] ? args["schemaPath"] : buildSchemaPath(component, name);
-    if (!fs.existsSync(path)) ncg.log.error(`Cannot find schema ${path} for replicant ${component}/${name}`);
+    const path = "schemaPath" in args ? args["schemaPath"] : buildSchemaPath(component, name);
+    if (path && !fs.existsSync(path)) ncg.log.error(`Cannot find schema ${path} for replicant ${component}/${name}`);
     return ncg.Replicant<T>(name, { "schemaPath": path, ...args }) as unknown as NodeCG.ServerReplicantWithSchemaDefault<T>;
 }
 

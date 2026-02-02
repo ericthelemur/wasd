@@ -7,6 +7,7 @@
 
 export interface EventStatuses {
 	[k: string]: {
+		name: string;
 		eventID?: string;
 		messageID?: string;
 		[k: string]: unknown;
