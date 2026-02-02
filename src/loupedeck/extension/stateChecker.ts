@@ -11,7 +11,7 @@ import { getReplicant, getRepValAt } from './utils';
 import type NodeCG from '@nodecg/types';
 const nodecg = getNodeCG();
 
-type CellRep = { [name: string]: NodeCG.ServerReplicant<unknown> };
+type CellRep = { [name: string]: NodeCG.ServerReplicantWithSchemaDefault<unknown> };
 const cellReplicants: CellRep[] = [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}];
 
 function getOrAddRep(index: number, key: string, rep: ValueOf<NonNullable<CellData["replicants"]>>) {
@@ -33,11 +33,11 @@ export function getCellState(index: number) {
 
 // const stateBuffers = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
 export function checkButton(index: number) {   // Check if button state has been changed by replicant update
-    if (!loupedeck) return;
+    if (!loupedeck || !loupedeck.replicants.display) return;
 
     const page = loupedeck.getCurrentPage();
     const cell = page.screen[index];
-    if (!cell) return redrawIfNecessary(index, null);
+    if (!page || !cell) return redrawIfNecessary(index, null);
     loupedeck.log.info("Attempting to update", index, "for", page.display, ". Cell:", JSON.stringify(cell));
 
     // Evaluate updated state
@@ -68,7 +68,7 @@ listenTo("connected", () => {
     // loupedeck.replicants.display.on("change", updateAll);
 })
 
-loupedeck.replicants.display.on("change", updateAll);
+loupedeck.replicants.display.on("change", (v, old) => { if (old) updateAll() });
 
 
 function updateSubscriptions(cell: CellData, index: number) {
