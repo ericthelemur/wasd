@@ -50,9 +50,7 @@ listenTo("postMessage", async (data, ack) => {
     if (msg && data.runID) {
         const eventStatuses = discord.replicants.eventStatuses.value;
         let runStatus = eventStatuses[data.runID];
-        discord.log.info(runStatus);
         if (runStatus) runStatus.messageID = msg.id;
-        discord.log.info(runStatus);
     }
 
     if (msg) sendSuccess(ack, msg.id);

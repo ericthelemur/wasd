@@ -129,15 +129,14 @@ export class DiscordCommPoint extends CommPoint<ListenerTypes, Replicants> {
         const eventManager = guild.scheduledEvents;
 
         const existing = eventManager.cache.get(existingEventID);
-        this.log.info("Existing event", existing);
-
         if (!existing) return await this.createEvent(args);
+
         // If no change in important fields, don't change
         if (args.name == existing.name
             && args.description == existing.description
             && args.scheduledStartTime == existing.scheduledStartTimestamp
             && args.scheduledEndTime == existing.scheduledEndTimestamp) {
-            this.log.warn("No change to event, not updating");
+            this.log.info("No change to event, not updating");
             return;
         }
 
@@ -153,7 +152,9 @@ export class DiscordCommPoint extends CommPoint<ListenerTypes, Replicants> {
         }
 
         this.log.info("Updating", existing.name);
-        await eventManager.edit(existingEventID, args).catch(e => this.log.error(`Error creating event ${args.name}`, e));
+        await eventManager.edit(existingEventID, args)
+            .then(() => this.log.info("Event upated", existing.name))
+            .catch(e => this.log.error(`Error creating event ${args.name}`, e));
     }
 
     async setEventStatus(existingEventID: string, status: GuildScheduledEventStatus.Active | GuildScheduledEventStatus.Completed | GuildScheduledEventStatus.Canceled) {

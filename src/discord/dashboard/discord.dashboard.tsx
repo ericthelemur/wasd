@@ -9,7 +9,7 @@ import { useReplicant } from 'use-nodecg';
 import { Status } from 'types/schemas/discord';
 import { SetStateAction, useEffect, useRef, useState } from 'react';
 import { Button, ButtonGroup, FloatingLabel } from 'react-bootstrap';
-import { Send } from 'react-bootstrap-icons';
+import { Ban, Send } from 'react-bootstrap-icons';
 import { MessageCreateOptions } from 'discord.js';
 
 function DiscordControl() {
@@ -47,21 +47,31 @@ function DiscordControl() {
 		setMsg({ channelID: msg.channelID, isJSON: false, channelName: msg.channelName });
 	}
 
+	function clear() {
+		if (!msg) return;
+		setMsg({ isJSON: false, channelID: msg?.channelID, channelName: msg?.channelName });
+		if (msgRef.current) msgRef.current.value = "";
+	}
+
 	return <div className="m-3">
 		<Form>
+			{/* <Form.Check type="switch" label="Donation Messages" checked={status?.postDonations} onClick={e => setStatus({ ...status, postDonations: !status.postDonations })} /> */}
 			<Form.Check type="switch" label="Schedule Messages" checked={status?.postSchedule} onClick={e => setStatus({ ...status, postSchedule: !status.postSchedule })} />
 			<Form.Check type="switch" label="Start & End Events" checked={status?.startAndEndEvents} onClick={e => setStatus({ ...status, startAndEndEvents: !status.startAndEndEvents })} />
-			<Button onClick={sendToF("updateEvents", undefined)}>Update Discord Events</Button>
 
-			{/* <Form.Check type="switch" label="Donation Messages" checked={status?.postDonations} onClick={e => setStatus({ ...status, postDonations: !status.postDonations })} /> */}
-			<Form.Group className="my-3">
-				<FloatingLabel label="Schedule Message Preview">
-					<Form.Control as="textarea" ref={msgRef} onSubmit={post} />
-				</FloatingLabel>
+			<Button onClick={sendToF("updateEvents", undefined)} className="my-3">Update Discord Events</Button>
+
+			<FloatingLabel label="Schedule Message Preview">
+				<Form.Control as="textarea" ref={msgRef} onSubmit={post} />
+			</FloatingLabel>
+			<ButtonGroup>
 				<Button className="flex-grow-1" disabled={!msg || !msg.channelID} variant={msg && msg.runID ? "danger" : "outline-primary"} onClick={post}>
 					<Send /> Send Message{msg && msg.channelName ? ` to #${msg.channelName}` : ""}
 				</Button>
-			</Form.Group>
+				<Button className="flex-grow-0" disabled={!msg || !msg.channelID} variant="outline-secondary" onClick={clear}>
+					<Ban />
+				</Button>
+			</ButtonGroup>
 		</Form>
 	</div>
 }
