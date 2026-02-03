@@ -96,7 +96,7 @@ export abstract class CommPoint<
     async connect(isRetry: boolean = false) {
         let err: string | null = null;
         if (await this.isConnected()) return "Currently connected. Disconnect before connecting again";
-        if (this.ignoreCloseEvents && isRetry) return "Disconnecting in progress...";
+        // if (this.ignoreCloseEvents && isRetry) return "Disconnecting in progress...";
         this.ignoreCloseEvents = false;
         await this._connect().then(() => {
             this.stopRetry();
@@ -196,8 +196,8 @@ export abstract class CommPoint<
         this.log.warn(`Retrying ${this.namespace} connection`);
         const err = await this.connect(true);
         if (err) {
-            this.log.warn(`Retrying connection again in ${this.retryPeriod}s`);
             this.retryPeriod *= 2;      // Exponential back-off for retries - doesn't spam every 10s forever
+            this.log.warn(`Retrying connection again in ${this.retryPeriod}s, error: ${String(err).replaceAll("\n", "\\n")}`);
             this._reconnectInterval = setTimeout(() => this._reconnect(), this.retryPeriod * 1000);
         }
     }

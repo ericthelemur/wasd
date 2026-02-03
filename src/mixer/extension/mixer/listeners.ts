@@ -42,7 +42,7 @@ async function setDCAs(toScene?: string) {
         for (const [name, number] of Object.entries(channels.value.mutegroups)) {
             const enabledDCA = newActiveDCAs.includes(name);
             const address = `/config/mute/${number}`;
-            x32.sendToMixer({ address: address, args: [{ type: 'i', value: enabledDCA ? 0 : 1 }] }).catch(e => x32.log.error(e));
+            x32.sendToMixer({ address: address, args: [{ type: 'i', value: enabledDCA ? 0 : 1 }] }, false).catch(e => x32.log.error(e));
         }
     }, 500);
 }
@@ -68,12 +68,12 @@ listenTo("connected", () => {
     Object.entries(x32.replicants.channels.value.mics).forEach(([k, ch]) => {
         const adStr = String(ch).padStart(2, "0");
         // Poll for muted & solo for each
-        x32.sendToMixer({ address: `/ch/${adStr}/mix/on`, args: [] }).then((r) => {
+        x32.sendToMixer({ address: `/ch/${adStr}/mix/on`, args: [] }, false).then((r) => {
             const args = r.args as [{ type: "i", value: number }];
             x32.replicants.muted.value[k].muted = !Boolean(args[0].value);
         }).catch(e => x32.log.error(e));
 
-        x32.sendToMixer({ address: `/-stat/solosw/${adStr}`, args: [] }).then((r) => {
+        x32.sendToMixer({ address: `/-stat/solosw/${adStr}`, args: [] }, false).then((r) => {
             const args = r.args as [{ type: "i", value: number }];
             x32.replicants.muted.value[k].soloed = Boolean(args[0].value);
         }).catch(e => x32.log.error(e));
@@ -138,7 +138,7 @@ listenTo("connected", () => {
         // Poll fader for each on startup
         const busStr = String(b).padStart(2, "0");
         const address = b === 0 ? `/ch/${techCh}/mix/fader` : `/ch/${techCh}/mix/${busStr}/level`
-        x32.sendToMixer({ address, args: [] }).catch(e => x32.log.error(e));
+        x32.sendToMixer({ address, args: [] }, false).catch(e => x32.log.error(e));
     })
 })
 

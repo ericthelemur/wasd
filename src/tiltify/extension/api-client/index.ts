@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosRequestConfig } from "axios";
+import axios, { AxiosError, AxiosRequestConfig, Method } from "axios";
 import type { Router } from 'express';
 import type { Request, Response } from 'express-serve-static-core';
 
@@ -79,7 +79,7 @@ export default class TiltifyClient {
         const url = `${this.oauthUrl}?client_id=${this.clientID}&client_secret=${this.clientSecret}&${tail}`;
         try {
             // this.info(url);
-            const payload = await axios({ url, method: 'POST' }).catch(e => { /*this.scheduleRetry();*/ throw e })
+            const payload = await axios({ url, method: 'POST', timeout: 5000 }).catch(e => { /*this.scheduleRetry();*/ throw e })
             // this.info("Status", payload.status);
             // this.info(payload.data);
             if (payload.status === 200 && payload.data && payload.data.expires_in) {
@@ -106,7 +106,7 @@ export default class TiltifyClient {
         return new URL("./" + path, this.apiUrl + (this.apiUrl.endsWith("/") ? "" : "/"));
     }
 
-    async _processRequest<T>(path: string | URL, method: string = 'GET', payload?: Object) {
+    async _processRequest<T>(path: string | URL, method: Method = 'GET', payload?: Object) {
         if (!this.apiKey) {
             this.error('Client has not been initalized or apiKey is missing');
             return null;
@@ -115,7 +115,7 @@ export default class TiltifyClient {
         let url = path;
         if (typeof path == "string") url = this.convertToURL(path);
 
-        const options: AxiosRequestConfig<string | undefined> = {
+        const options: AxiosRequestConfig = {
             url: String(url),
             headers: {
                 Authorization: `Bearer ${this.apiKey}`,
@@ -126,7 +126,7 @@ export default class TiltifyClient {
 
         if (payload) options.data = JSON.stringify(payload);
 
-        return await axios<TiltifyResponse<T>>(options).catch((e) => {
+        return await axios(options).catch((e) => {
             this.errorParse(e, `Error sending request to ${String(url)}:`)
         });
     }
@@ -141,7 +141,7 @@ export default class TiltifyClient {
      * @param {string} method HTTP method to make calls with, default to GET
      * @param {Object} payload JSON payload to send
      */
-    async _doRequest<T>(path: string | URL, method: string = 'GET', payload?: Object) {
+    async _doRequest<T>(path: string | URL, method: Method = 'GET', payload?: Object) {
         return this._processRequest<T>(path, method, payload).then(r => r && r.status == 200 ? r.data.data : null);
     }
 
@@ -179,7 +179,7 @@ export default class TiltifyClient {
     errorParse(e: Error | AxiosError, msg?: string) {
         if (msg) this.error(msg);
 
-        if (e === undefined) this.error(e);
+        else if (e === undefined) this.error(e);
         else if ("response" in e) this.error(e.response?.status, e.response?.statusText);
         else if (e.cause) this.error(e.cause);
         else if (e.message) this.error(e.message);

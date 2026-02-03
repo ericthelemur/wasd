@@ -29,7 +29,8 @@ export class DiscordCommPoint extends CommPoint<ListenerTypes, Replicants> {
     override async _connect() {
         const login = this.replicants.login.value;
 
-        this.client = new Client({ intents: [GatewayIntentBits.Guilds] });
+        const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+        this.client = client;
         this.rest = new REST({ version: '10' }).setToken(login.token);
 
         // Setup promise to wait for login to finish login
@@ -37,7 +38,14 @@ export class DiscordCommPoint extends CommPoint<ListenerTypes, Replicants> {
         const loggedInPromise = new Promise((resolve, reject) => { this.log.info("Logged in"); onLogin = resolve });
         this.client.on(Events.ClientReady, readyClient => onLogin(readyClient));
 
-        this.client.on(Events.ShardError, (e) => this.log.warn("Connection error", e));
+        this.client.on(Events.ShardError, (e) => {
+            if (this.client == client) {    // Don't spam logs if disconnected
+                this.log.error("Connection error", e);
+                this.reconnect();
+            } else {
+                this.log.debug("Ignored connection error", e);
+            }
+        });
 
         // Call login and wait for logged in/ready event
         await this.client.login(login.token);
@@ -68,7 +76,9 @@ export class DiscordCommPoint extends CommPoint<ListenerTypes, Replicants> {
 
 
     override async _disconnect() {
-        if (this.client) await this.client.destroy();
+        if (this.client) {
+            await this.client.destroy();
+        }
         this.client = undefined;
         this.rest = undefined;
     }

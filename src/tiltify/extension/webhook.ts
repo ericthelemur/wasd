@@ -12,6 +12,7 @@ export type WebhookReplicants = {
     login: WebhookLogin
 }
 
+const tunnels: localtunnel.Tunnel[] = [];
 export class WebhookCommPoint extends CommPoint<WebhookListenerTypes, WebhookReplicants> {
     client: TiltifyClient;
     tunnel?: localtunnel.Tunnel;
@@ -74,7 +75,7 @@ export class WebhookCommPoint extends CommPoint<WebhookListenerTypes, WebhookRep
         if (!subscribeData) throw new Error("Subscribing to Webhook Failed");
 
         // If tunneling, create tunnel
-        if (login.targetSubdomain) this.createTunnel(login.targetSubdomain);
+        if (login.targetSubdomain) await this.createTunnel(login.targetSubdomain);
     }
 
     /**
@@ -82,21 +83,20 @@ export class WebhookCommPoint extends CommPoint<WebhookListenerTypes, WebhookRep
      * without extra configuration or installation. Subdomain passed in is a target, check message for result
      * @param subdomain Target subdomain to assign. If it is currently in use elsewhere, localtunnel will assign random one
      */
-    createTunnel(subdomain: string) {
+    async createTunnel(subdomain: string) {
         this.log.info("Creating webhook tunnel with localtunnel...");
-        localtunnel({ port: 9090, subdomain }).then(t => {
-            this.tunnel = t;
-            this.log.info(`Tiltify webhook tunnel created for ${t.url}/tiltify/webhook`);
-            const expected = `https://${subdomain}.loca.lt`;
-            if (t.url != expected) {    // Check webhook url matches expectation
-                this.log.error("Webhook tunnel url is unexpected. Expected:", expected, "Actual:", t.url, ". If expected, update webhook URL on tiltify. If not, check nothing else is using the subdomain and restart. If happens repeatedly, use Cloudflare Tunnel instead");
-            }
-            this.replicants.status.value.url = t.url;
+        const t = await localtunnel({ port: 9090, subdomain });
+        this.tunnel = t;
+        this.log.info(`Tiltify webhook tunnel created for ${t.url}/tiltify/webhook`);
+        const expected = `https://${subdomain}.loca.lt`;
+        if (t.url != expected) {    // Check webhook url matches expectation
+            this.log.warn("Webhook tunnel url is unexpected. Expected:", expected, "Actual:", t.url, ". If expected, update webhook URL on tiltify. If not, check nothing else is using the subdomain and restart. If happens repeatedly, use Cloudflare Tunnel instead");
+        }
+        this.replicants.status.value.url = t.url;
 
-            t.on("request", data => data.path != "/tiltify/test" && this.log.info("Webhook message", data));
-            t.on("close", () => { this.log.warn("Tunnel closed"); setTimeout(() => this.createTunnel(subdomain), 1000) });
-
-        }).catch((e) => this.log.error("Failed to create tunnel", e));
+        t.on("request", data => data.path != "/tiltify/test" && this.log.info("Webhook message", data));
+        t.on("close", () => { this.log.warn("Tunnel closed"); this.reconnect() });
+        t.on("error", (e) => { this.log.error("Tunnel error", e); this.reconnect() });
     }
 
     override async _setupListeners() {
@@ -130,7 +130,6 @@ export class WebhookCommPoint extends CommPoint<WebhookListenerTypes, WebhookRep
         this.connectionPoll = undefined;
 
         if (this.tunnel) {  // Try to close tunnel if exists
-            this.log.warn("Closing Tunnel");
             try {
                 this.tunnel.close();
                 this.tunnel = undefined;

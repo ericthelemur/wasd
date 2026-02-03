@@ -49,7 +49,7 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
     constructor() {
         super("tiltify", replicantNamesOnly, listeners);
 
-        this.client = new TiltifyClient(undefined, undefined, (...args) => this.log.info(...args), (...args) => this.log.error(...args));
+        this.client = new TiltifyClient(undefined, undefined, (...args) => this.log.info(...args), (...args) => { this.log.error(...args); this.reconnect() });
     }
 
     async _connect() {
@@ -164,10 +164,12 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
             this.askTiltifyFor((id, cb) => Campaigns.getDonors(id, cb), this.replicants.donors)
         ];
         askTiltifyForBasic.forEach(f => f());
-        this.basicsPoll = setInterval(() => {
+        this.basicsPoll = setInterval(async () => {
             const campaignID = this.getCampaignID();
             if (!campaignID) return;
-            askTiltifyForBasic.forEach(f => f())
+            if (await this.isConnected()) {
+                askTiltifyForBasic.forEach(f => f())
+            }
         }, 30 * 1000);
 
         // Poll full list of donos occasionally
