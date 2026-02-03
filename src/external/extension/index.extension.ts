@@ -16,10 +16,24 @@ router.get('/test', (req, res) => {
 
 const mainPages: string[] = ["mute.html", "donos.html"];
 
+router.get("/", (req, res, next) => {
+    const fileLocation = path.resolve(process.cwd(), "shared", "external.html");
+    res.sendFile(fileLocation, (err: NodeJS.ErrnoException) => {
+        if (err) {
+            if (err.code === 'ENOENT') {
+                return res.type(path.extname(fileLocation)).sendStatus(404);
+            }
+
+            if (!res.headersSent) next(err);
+        }
+        return undefined;
+    });
+})
+
 router.get("/:file", (req, res, next) => {
     console.log(req.params.file, mainPages.includes(req.params.file));
     if (!mainPages.includes(req.params.file)) {
-        const fileLocation = path.resolve(process.cwd(), "shared", req.params.file);
+        let fileLocation = path.resolve(process.cwd(), "shared", req.params.file);
         console.log(fileLocation, fs.existsSync(fileLocation));
         res.sendFile(fileLocation, (err: NodeJS.ErrnoException) => {
             if (err) {

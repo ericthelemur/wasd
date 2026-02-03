@@ -19,6 +19,7 @@ function fetchFromParams() {
 	if (mic) return mic || null;
 
 	const standalone = params.get("standalone");
+	if (url.pathname.includes("external")) return null;
 	if (!standalone || standalone != "true") return "TECH";
 	return null;
 }
