@@ -81,7 +81,7 @@ export class MixerCommPoint extends CommPoint<ListenerTypes, Replicants> {
         this.conn.on('message', (message) => {
             this.hasRecievedMessage = true;     // Mark as recieved a (/any) message
             this.logResponse(message);
-            // sendTo("message", message);
+            sendTo("message", message);
 
             // try {
             //     if (message.address.endsWith('/fader') || message.address.endsWith('/level')) {

@@ -15,7 +15,12 @@ import { CommPointStatus } from '../../../common/commpoint/login';
 function fetchFromParams() {
 	const url = new URL(window.location.href);
 	var params = url.searchParams;
-	return params.get("mic");
+	const mic = params.get("mic");
+	if (mic) return mic || null;
+
+	const standalone = params.get("standalone");
+	if (!standalone || standalone != "true") return "TECH";
+	return null;
 }
 
 function copyToParams(mic: string | null) {

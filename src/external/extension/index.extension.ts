@@ -19,7 +19,7 @@ const mainPages: string[] = ["mute.html", "donos.html"];
 router.get("/:file", (req, res, next) => {
     console.log(req.params.file, mainPages.includes(req.params.file));
     if (!mainPages.includes(req.params.file)) {
-        const fileLocation = path.resolve(process.cwd(), "bundles/wasd/shared", req.params.file);
+        const fileLocation = path.resolve(process.cwd(), "shared", req.params.file);
         console.log(fileLocation, fs.existsSync(fileLocation));
         res.sendFile(fileLocation, (err: NodeJS.ErrnoException) => {
             if (err) {
@@ -32,7 +32,7 @@ router.get("/:file", (req, res, next) => {
             return undefined;
         });
     } else {
-        const fileLocation = path.resolve(process.cwd(), "bundles/wasd/shared", req.params.file);
+        const fileLocation = path.resolve(process.cwd(), "shared", req.params.file);
         console.log(fileLocation, fs.existsSync(fileLocation));
 
         fs.readFile(fileLocation, { encoding: 'utf8' }, (error, data) => {
@@ -40,10 +40,17 @@ router.get("/:file", (req, res, next) => {
 
             const scripts = [];
 
+            if (nodecg.config.sentry.enabled) { // Include sentry
+                scripts.unshift(
+                    '<script src="/node_modules/@sentry/browser/build/bundle.es6.min.js"></script>',
+                    '<script src="/sentry.js"></script>',
+                );
+            }
+
             scripts.push(`<script>globalThis.ncgConfig = ${JSON.stringify(nodecg.config)};</script>`);
             scripts.push('<script src="/socket.io/socket.io.js"></script>');
             scripts.push('<script src="/socket.js"></script>');
-            scripts.push('<script src="/nodecg-api.min.js"></script>');
+            scripts.push('<script src="/api.js"></script>');
             const partialBundle = {
                 name: nodecg.bundleName, config: nodecg.bundleConfig, version: nodecg.bundleVersion, git: nodecg.bundleGit, _hasSounds: false
             };
