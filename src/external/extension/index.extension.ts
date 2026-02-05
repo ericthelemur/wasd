@@ -11,20 +11,24 @@ const router = nodecg.Router();
 
 const external = BundleReplicant<External>("external", "external");
 
+const mainPages: string[] = ["mute.html", "donos.html"];
+const isMain = (p: string) => mainPages.includes(p) || mainPages.includes(p + ".html");
+
+
+// For external routes, add basic shared token authentication
 router.use(async (req, res, next) => {
-    log.info(req.path);
-    if (!external.value.externalKey || req.path == "/external/error") {
+    if (!external.value.externalKey || req.path == "/error" || req.path == "/error.html") {
         next();
         return;
     }
 
-    const paramKey = req.query["externalToken"];
+    const paramKey = req.query["token"];
     const cookieKey = req.cookies["externalToken"];
     const key = paramKey ?? cookieKey;
 
     if (key == external.value.externalKey) {
         // Save to cookie
-        if (paramKey && !cookieKey) {
+        if (key != cookieKey) {
             res.cookie("externalToken", paramKey, {
                 secure: req.secure,
                 sameSite: req.secure ? "none" : undefined,
@@ -44,11 +48,9 @@ router.use(async (req, res, next) => {
 
 });
 
-router.get('/test', (req, res) => {
-    res.send('You are authorized as external!');
-});
-
-const mainPages: string[] = ["mute.html", "donos.html"];
+// router.get('/test', (req, res) => {
+//     res.send('You are authorized as external!');
+// });
 
 router.get("/", (req, res, next) => {
     const fileLocation = path.resolve(process.cwd(), "shared", "external.html");
@@ -65,10 +67,10 @@ router.get("/", (req, res, next) => {
 })
 
 router.get("/:file", (req, res, next) => {
-    console.log(req.params.file, mainPages.includes(req.params.file));
-    if (!mainPages.includes(req.params.file)) {
+    if (!isMain(req.params.file)) {  // Load resource files
         let fileLocation = path.resolve(process.cwd(), "shared", req.params.file);
-        console.log(fileLocation, fs.existsSync(fileLocation));
+        if (!req.params.file.includes(".")) fileLocation += ".html";
+
         res.sendFile(fileLocation, (err: NodeJS.ErrnoException) => {
             if (err) {
                 if (err.code === 'ENOENT') {
@@ -79,9 +81,9 @@ router.get("/:file", (req, res, next) => {
             }
             return undefined;
         });
-    } else {
-        const fileLocation = path.resolve(process.cwd(), "shared", req.params.file);
-        console.log(fileLocation, fs.existsSync(fileLocation));
+    } else {    // Load main files
+        let fileLocation = path.resolve(process.cwd(), "shared", req.params.file);
+        if (!req.params.file.includes(".")) fileLocation += ".html";
 
         fs.readFile(fileLocation, { encoding: 'utf8' }, (error, data) => {
             if (error) return nodecg.log.error(error);
