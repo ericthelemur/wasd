@@ -2,13 +2,47 @@
 import path from 'path';
 import fs from 'fs';
 
-import { getNodeCG } from '../../common/utils';
+import { BundleReplicant, getNodeCG } from '../../common/utils';
+import { External } from 'types/schemas/external';
 
 const nodecg = getNodeCG();
+const log = new nodecg.Logger("external");
 const router = nodecg.Router();
 
+const external = BundleReplicant<External>("external", "external");
 
-// router.use((nodecg.util as any).authCheckRole(["external"], "/external/test"));
+router.use(async (req, res, next) => {
+    log.info(req.path);
+    if (!external.value.externalKey || req.path == "/external/error") {
+        next();
+        return;
+    }
+
+    const paramKey = req.query["externalToken"];
+    const cookieKey = req.cookies["externalToken"];
+    const key = paramKey ?? cookieKey;
+
+    if (key == external.value.externalKey) {
+        // Save to cookie
+        if (paramKey && !cookieKey) {
+            res.cookie("externalToken", paramKey, {
+                secure: req.secure,
+                sameSite: req.secure ? "none" : undefined,
+            });
+        }
+
+        // Move mic to cookie
+        const mic = req.query["mic"];
+        if (mic) {
+            res.cookie("mic", mic);
+        }
+
+        next();
+    } else {
+        res.status(403).redirect("/external/error");
+    }
+
+});
 
 router.get('/test', (req, res) => {
     res.send('You are authorized as external!');

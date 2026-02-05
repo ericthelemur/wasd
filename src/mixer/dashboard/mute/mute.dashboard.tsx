@@ -8,6 +8,7 @@ import Form from 'react-bootstrap/Form';
 import { createRoot } from 'react-dom/client';
 import { Channels, Muted, TechMuted, Status } from 'types/schemas/mixer';
 import { useReplicant } from 'use-nodecg';
+import Cookies from "js-cookie";
 
 import { sendTo, sendToF } from '../../messages';
 import { CommPointStatus } from '../../../common/commpoint/login';
@@ -16,7 +17,12 @@ function fetchFromParams() {
 	const url = new URL(window.location.href);
 	var params = url.searchParams;
 	const mic = params.get("mic");
-	if (mic) return mic || null;
+	if (mic) return mic;
+
+	// const cookieMic = await cookieStore.get("mic");
+	const cookieMic = Cookies.get("mic");
+	console.log(cookieMic);
+	if (cookieMic) return cookieMic;
 
 	const standalone = params.get("standalone");
 	if (url.pathname.includes("external")) return null;
@@ -28,8 +34,14 @@ function copyToParams(mic: string | null) {
 	const url = new URL(window.location.href);
 	var params = url.searchParams;
 	// Object.entries(settings).filter(([k, v]) => v).forEach(([k, v]) => params.set(k, v.toString()));
-	if (mic) params.set("mic", mic);
-	else params.delete("mic");
+
+	if (mic) {
+		Cookies.set("mic", mic);
+		params.set("mic", mic);
+	} else {
+		Cookies.remove("mic");
+		params.delete("mic");
+	}
 	history.replaceState(null, "", url.href);
 }
 
@@ -37,8 +49,12 @@ function MicChoice({ setMic }: { setMic: (m: string) => void }) {
 	const [channels,] = useReplicant<Channels>("channels", { dcas: {}, mics: {}, tech: -1, scenes: {}, mutegroups: {} }, { namespace: "mixer" });
 
 	if (!channels || !channels.mics) return <>No active mics</>;
+	const url = new URL(window.location.href);
 	return <div className="gap-2 mb-2 d-flex flex-wrap">
-		{Object.keys(channels.mics).map(m => <Button key={m} variant="outline-primary" onClick={() => setMic(m)}>{m}</Button>)}
+		{Object.keys(channels.mics).map(m => {
+			if (m == "TECH" && url.pathname.includes("external")) return;
+			return <Button key={m} variant="outline-primary" onClick={() => setMic(m)}>{m}</Button>
+		})}
 	</div>
 }
 

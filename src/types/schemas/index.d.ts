@@ -5,6 +5,8 @@ export * from './discord';
 // @ts-ignore
 export * from './donos';
 // @ts-ignore
+export * from './external';
+// @ts-ignore
 export * from './loupedeck';
 // @ts-ignore
 export * from './mixer';

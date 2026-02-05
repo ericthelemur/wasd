@@ -174,7 +174,6 @@ listenTo("message", ({ address, args }) => {
         else if (suffix.endsWith("/level")) {
             channelNo = parseInt(suffix.split("/")[0]);
         }
-        nodecg.log.warn("suffix", suffix, "chNo", channelNo, "buses", channels.value.buses);
         if (channelNo !== null && channels.value.buses) {
             const channel = Object.entries(channels.value.buses).find(([b, n]) => n === channelNo);
             if (channel) {
