@@ -6,6 +6,7 @@
  */
 
 export interface WebhookLogin {
+	disabled?: boolean;
 	webhookID?: string;
 	webhookSecret?: string;
 	targetSubdomain?: null | string;

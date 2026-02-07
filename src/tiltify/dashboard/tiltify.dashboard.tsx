@@ -7,7 +7,8 @@ import listeners, { webhookListeners } from '../messages';
 import type { Replicants } from '../extension/tiltify';
 import { WebhookReplicants } from 'tiltify/extension/webhook';
 import { useReplicant } from 'use-nodecg';
-import { WebhookLogin } from 'types/schemas/tiltify';
+import { WebhookLogin, WebhookStatus } from 'types/schemas/tiltify';
+import Form from 'react-bootstrap/Form';
 
 const root = createRoot(document.getElementById('root')!);
 
@@ -30,7 +31,23 @@ const WebhookControlForm = CreateCommPointConnect("tiltify-webhook", webhookList
     }</>;
 });
 
+function WebhookEnableDisable() {
+    const [login, setLogin] = useReplicant<WebhookLogin>("login", {}, { namespace: "tiltify-webhook" });
+    const [status,] = useReplicant<WebhookStatus>("status", { "connected": "disconnected", "url": "" }, { namespace: "tiltify-webhook" });
+    if (!login || !status) return;
+
+    function toggle() {
+        setLogin({ ...login, disabled: !(login?.disabled) });
+        if (status?.connected) webhookListeners.sendTo("disconnect");
+    }
+
+    return <>
+        <Form.Switch className="m-3" label="Use Webhook" checked={!login.disabled} onClick={toggle} />
+        {!login.disabled && <WebhookControlForm />}
+    </>
+}
+
 root.render(<>
     <ControlForm />
-    <WebhookControlForm />
+    <WebhookEnableDisable />
 </>);
