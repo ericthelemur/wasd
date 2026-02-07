@@ -20,7 +20,7 @@ function VR() {
 }
 
 export function Bar() {
-    const [total, _] = useReplicant<Total>("total", { "currency": "GBP", "value": 0 });
+    const [total, _] = useReplicant<Total>("total", { "currency": "GBP", "value": 0 }, { namespace: "tiltify" });
     const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "numeric" });
 
     const [time, setTime] = useState(timeFormat.format(Date.now()));

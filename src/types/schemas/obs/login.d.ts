@@ -8,7 +8,7 @@
 /**
  * Login information for OBS Websocket, used to communicate with and remotely control OBS Studio.
  */
-export interface ObsLogin {
+export interface Login {
 	ip: string;
 	password: string;
 }

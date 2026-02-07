@@ -84,8 +84,8 @@ function Overlay({ aspect }: { aspect: [number, number] }) {
 
 function OverlayWrapper() {
     const [{ aspect, scene },] = useState<URLParams>(fetchFromParams());
-    const [sceneData,] = useReplicant<SceneData>("sceneData", {});
-    const [activeRun,] = useReplicant<RunData | undefined>("runDataActiveRun", undefined);
+    const [sceneData,] = useReplicant<SceneData>("sceneData", {}, { namespace: "tiltify" });
+    const [activeRun,] = useReplicant<RunData | undefined>("runDataActiveRun", undefined, { namespace: "nodecg-speedcontrol" });
 
     const [info, setInfo] = useState<SceneInfo>({ name: "", run: null });
 

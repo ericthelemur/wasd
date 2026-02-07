@@ -1,57 +1,48 @@
 import '../../../common/uwcs-bootstrap.css';
 
+import type NodeCG from '@nodecg/types';
 import clone from 'clone';
-import { msToTimeString } from 'countdown/utils';
 import { FormEvent, useState } from 'react';
-import {
-    ArrowCounterclockwise, BrushFill, Controller, PlayFill, RecordFill, Wifi
-} from 'react-bootstrap-icons';
+import { createRoot } from 'react-dom/client';
+import { useReplicant } from 'use-nodecg';
+
+import { ArrowCounterclockwise, BrushFill, Controller, PlayFill, RecordFill, Wifi } from 'react-bootstrap-icons';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Stack from 'react-bootstrap/Stack';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
-import { createRoot } from 'react-dom/client';
+
 import { RunData, RunDataActiveRun, RunDataArray } from 'speedcontrol-util/types/speedcontrol';
 import { RunDataActiveRunSurrounding } from 'speedcontrol-util/types/speedcontrol/schemas';
 import { Timer } from 'speedcontrol-util/types/speedcontrol/schemas/timer';
-import {
-    ConnStatus, Countdown, ObsStatus, PreviewScene, ProgramScene, StreamState, XrStatus
-} from 'types/schemas';
-import { useReplicant } from 'use-nodecg';
 
+import { CommPointStatus } from 'common/commpoint/login';
+import { msToTimeString } from 'countdown/utils';
+import { Countdown, StreamState } from 'types/schemas';
+import { Status as OBSStatus, PreviewScene, ProgramScene } from 'types/schemas/obs';
+import { Status as MixerStatus } from 'types/schemas/mixer';
 import { sendTo as sendToCountdown } from '../../../countdown/messages';
 import { sendTo as sendToOBS } from '../../../obs/messages';
 
-import type NodeCG from '@nodecg/types';
 declare const nodecg: NodeCG.ServerAPI;
-
-function OBSStatus({ status }: { status?: ConnStatus }) {
-    switch (status) {
-        case "connected": return <Badge bg="success">Connected</Badge>
-        case "connecting": return <Badge bg="info">Connecting</Badge>
-        case "disconnected": return <Badge bg="danger">Disconnected</Badge>
-        case "error": return <Badge bg="danger">Error</Badge>
-    }
-    return null;
-}
 
 // These should be imported from the relevant sections, but Parcel is having a fit, so not atm
 export function OBSStatuses() {
-    const [previewScene,] = useReplicant<PreviewScene>("previewScene", null);
-    const [programScene,] = useReplicant<ProgramScene>("programScene", null);
-    const [status,] = useReplicant<ObsStatus>("obsStatus", { "connection": "disconnected", "streaming": false, "recording": false, "studioMode": false, "transitioning": false, "moveCams": false, "controlRecording": false });
+    const [previewScene,] = useReplicant<PreviewScene>("previewScene", null, { namespace: "obs" });
+    const [programScene,] = useReplicant<ProgramScene>("programScene", null, { namespace: "obs" });
+    const [status,] = useReplicant<OBSStatus>("status", { "connected": "disconnected", "streaming": false, "recording": false, "studioMode": false, "transitioning": false, "moveCams": false, "controlRecording": false }, { namespace: "obs" });
 
     return <div className="mt-0">
         <Stack direction="horizontal" gap={1}>
             <b>OBS:</b>
-            <OBSStatus status={status?.connection} />
+            <CommPointStatus status={status?.connected} />
             {status?.streaming && <Badge bg="danger"><Wifi /> LIVE</Badge>}
             {status?.recording && <Badge bg="danger"><RecordFill /> Recording</Badge>}
             {status?.transitioning && <Badge bg="info">Transitioning</Badge>}
         </Stack>
-        {status?.connection === "connected" &&
+        {status?.connected === "connected" &&
             <Stack direction="horizontal" gap={1}>
                 <b style={{ opacity: 0 }}>OBS:</b>
                 {previewScene && <Badge bg="secondary"><BrushFill /> {previewScene.name}</Badge>}
@@ -60,22 +51,14 @@ export function OBSStatuses() {
     </div>
 }
 
-export function XRStatus() {
-    const [status,] = useReplicant<XrStatus>("xrStatus", { "connection": "disconnected" });
-    switch (status?.connection) {
-        case "connected": return <Badge bg="success">Connected</Badge>
-        case "connecting": return <Badge bg="info">Connecting</Badge>
-        case "disconnected": return <Badge bg="danger">Disconnected</Badge>
-        case "error": return <Badge bg="danger">Error</Badge>
-    }
-    return null;
-}
-
 export function MixerStatuses() {
+    const [status,] = useReplicant<MixerStatus>("status", { "connected": "disconnected" }, { namespace: "mixer" });
+    if (!status) return;
+
     return <div className="mt-0">
         <Stack direction="horizontal" gap={1}>
             <b>Mixer:</b>
-            <XRStatus />
+            <CommPointStatus status={status.connected} />
         </Stack>
     </div>
 }
@@ -113,9 +96,9 @@ function findRunType(programScene: ProgramScene | undefined, runDataArray: RunDa
 function MainControls() {
     const [lastScene, setLastScene] = useState("");
     const [showReassignment, setReassignment] = useState(false);
-    const [programScene,] = useReplicant<ProgramScene>("programScene", null);
-    const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
-    const [obsStatus,] = useReplicant<ObsStatus>("obsStatus", { connection: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false });
+    const [programScene,] = useReplicant<ProgramScene>("programScene", null, { namespace: "obs" });
+    const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" }, { namespace: "obs" });
+    const [obsStatus,] = useReplicant<OBSStatus>("status", { connected: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false }, { namespace: "obs" });
     const [runDataArray,] = useReplicant<RunDataArray>("runDataArray", [], { namespace: "nodecg-speedcontrol" });
     const [runDataActiveRunSurrounding,] = useReplicant<RunDataActiveRunSurrounding>("runDataActiveRunSurrounding", { previous: undefined, current: undefined, next: undefined }, { namespace: "nodecg-speedcontrol" });
     const [run,] = useReplicant<RunDataActiveRun>("runDataActiveRun", { id: "", teams: [], customData: {} }, { namespace: "nodecg-speedcontrol" });
@@ -186,11 +169,11 @@ interface ControlPage {
 
 function ToBreakButton({ goToScene, programScene, controlRecording }: ControlPage) {
     const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
-    const [obsStatus,] = useReplicant<ObsStatus>("obsStatus", { connection: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false });
+    const [obsStatus,] = useReplicant<OBSStatus>("status", { connected: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false }, { namespace: "obs" });
     const [runDataArray,] = useReplicant<RunDataArray>("runDataArray", [], { namespace: "nodecg-speedcontrol" });
     const [runDataActiveRunSurrounding,] = useReplicant<RunDataActiveRunSurrounding>("runDataActiveRunSurrounding", { previous: undefined, current: undefined, next: undefined }, { namespace: "nodecg-speedcontrol" });
 
-    const isRecording = controlRecording && obsStatus?.connection == "connected" && obsStatus?.recording;
+    const isRecording = controlRecording && obsStatus?.connected == "connected" && obsStatus?.recording;
     return <Button onClick={() => {
         isRecording && sendToOBS("stopRecording");
         setState({ ...state, state: "BREAK" });
@@ -238,7 +221,7 @@ function CountdownRow() {
 
 function BreakControls({ goToScene, programScene, controlRecording }: ControlPage) {
     const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
-    const [obsStatus,] = useReplicant<ObsStatus>("obsStatus", { connection: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false });
+    const [obsStatus,] = useReplicant<OBSStatus>("status", { connected: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false }, { namespace: "obs" });
 
     return <div className="vstack gap-2">
         <CountdownRow />
@@ -256,7 +239,7 @@ function BreakControls({ goToScene, programScene, controlRecording }: ControlPag
 
 function IntroControls({ lastScene, goToScene, programScene, controlRecording, currentType: t }: ControlPage) {
     const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
-    const [obsStatus,] = useReplicant<ObsStatus>("obsStatus", { connection: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false });
+    const [obsStatus,] = useReplicant<OBSStatus>("status", { connected: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false }, { namespace: "obs" });
 
     return <div className="vstack gap-2">
         <Button disabled={programScene == "COMMS"} variant="outline-primary" onClick={() => goToScene("COMMS")}>Scene COMMS (no runner)</Button>
@@ -310,11 +293,11 @@ function RunControls({ lastScene, goToScene, programScene, currentType: t }: Con
 
 
 function MainForm() {
-    const [obsStatus,] = useReplicant<ObsStatus>("obsStatus", { connection: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false });
+    const [obsStatus,] = useReplicant<OBSStatus>("status", { connected: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false }, { namespace: "obs" });
 
     return <div className="m-3 vstack gap-3">
         <AllStatuses />
-        {obsStatus?.connection == "connected" && <MainControls />}
+        {obsStatus?.connected == "connected" && <MainControls />}
     </div>
 }
 

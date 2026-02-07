@@ -20,7 +20,10 @@ type NotUndefined<X extends Dict> = { [P in keyof X]: X[P] extends undefined ? P
 
 export type ListenersT<X extends Dict> = {
     listenTo: <T extends keyof X & string>(name: T, listener: Listener<X[T]>, prefix?: string) => void;
-    sendToF: <T extends keyof X & string>(name: T, data: X[T], prefix?: string) => (() => void | Promise<unknown>);
+    sendToF: {
+        <T extends NotUndefined<X>>(name: T, data?: undefined, prefix?: string): (() => void | Promise<unknown>);
+        <T extends keyof X & string>(name: T, data: X[T], prefix?: string): (() => void | Promise<unknown>);
+    }
     sendTo: {       // Cursed type to allow omitting data value for messages that don't have args
         <T extends NotUndefined<X>>(name: T, data?: undefined, prefix?: string): void | Promise<unknown>;
         <T extends keyof X>(name: T, data: X[T], prefix?: string): void | Promise<unknown>;
@@ -41,7 +44,7 @@ export function createMessageListeners<X extends Dict>(): ListenersT<X> {
         })
     }
 
-    function sendToF<T extends keyof X & string>(name: T, data: X[T], prefix: string | undefined = undefined) {
+    function sendToF(name: string, data: any, prefix?: string) {
         const prename = addPrefix(prefix, name);
         return () => {
             console.log("Sending", prename, "with", data);
@@ -71,7 +74,7 @@ export function createMessageListenersBundle<X extends Dict>(namespace?: string,
         })
     }
 
-    function sendToF<T extends keyof X & string>(name: T, data: X[T]) {
+    function sendToF(name: string, data: any) {
         return () => {
             if (!noLogList.includes(name)) logger.info("Sending", bundle, name, data == undefined ? "" : "with", data == undefined ? "" : data);
             return ncg.sendMessageToBundle(name, bundle, data);

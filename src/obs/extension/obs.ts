@@ -1,225 +1,132 @@
-import fsPromises from 'fs/promises';
-import getCurrentLine from 'get-current-line';
-import OBSWebSocket, { OBSRequestTypes } from 'obs-websocket-js';
-import path from 'path';
-import {
-    Namespaces, ObsLogin, ObsScene, ObsSource, ObsStatus, PreviewScene, ProgramScene, SceneList
-} from 'types/schemas/obs';
+import NodeCG from "@nodecg/types";
+import fsPromises from "fs/promises";
+import OBSWebSocket, { OBSRequestTypes } from "obs-websocket-js";
+import path from "path";
+import { Login, ObsScene, ObsSource, PreviewScene, ProgramScene, SceneList, Status } from "types/schemas/obs";
+import { CommPoint } from "../../common/commpoint/commpoint";
+import { BundleReplicant, getSpeedControlUtil, sendError, sendSuccess } from "../../common/utils";
+import listeners, { ListenerTypes, listenTo, sendTo } from "../messages";
 
-import NodeCG from '@nodecg/types';
+const replicants = {
+    status: null as null | Status,
+    login: null as null | Login,
 
-import { getSpeedControlUtil, PrefixedReplicant, Replicant } from '../../common/utils';
-import { ListenerTypes, listenTo, sendTo } from '../messages';
-
-type PreTransitionProps = ListenerTypes["transition"];
-export interface Hooks {
-    preTransition(obs: OBSUtility, opts: PreTransitionProps):
-        PreTransitionProps | void | Promise<PreTransitionProps> | Promise<void>
+    previewScene: null as null | PreviewScene,
+    programScene: null as null | ProgramScene
 }
 
-const usedNamespaces = new Set();
+export type Replicants = {
+    status: Status,
+    login: Login,
 
+    previewScene: PreviewScene,
+    programScene: ProgramScene,
+    sceneList: SceneList
+};
 
-function getFilename() {
-    const run = getSpeedControlUtil().runDataActiveRun.value;
-    if (!run) return "Unknown";
-    const runners = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
+export class OBSCommPoint extends CommPoint<ListenerTypes, Replicants> {
+    obs: OBSWebSocket = new OBSWebSocket();
 
-    const times = getSpeedControlUtil().runFinishTimes.value;
-    const time = times ? times[run?.id] : undefined;
-
-    return [
-        run.game,
-        run.category ? " - " : "",
-        run.category,
-        " - ",
-        runners,
-        time ? " in " : "",
-        time?.time,
-        " (WASD 2025)"
-    ].join("");
-}
-
-
-export class OBSUtility extends OBSWebSocket {
-    nodecg: NodeCG.ServerAPI;
-    namespace: string;
-    hooks: Partial<Hooks>;
-    replicants: {
-        login: NodeCG.ServerReplicantWithSchemaDefault<ObsLogin>;
-        programScene: NodeCG.ServerReplicantWithSchemaDefault<ProgramScene>;
-        previewScene: NodeCG.ServerReplicantWithSchemaDefault<PreviewScene>;
-        sceneList: NodeCG.ServerReplicantWithSchemaDefault<SceneList>;
-        obsStatus: NodeCG.ServerReplicantWithSchemaDefault<ObsStatus>;
-    };
-    log: NodeCG.Logger;
-
-    private _ignoreConnectionClosedEvents = false;
-    private _reconnectInterval: NodeJS.Timeout | null = null;
-
+    // Used to avoid accidental double transitions
     private _lastTransitioningTarget: string | undefined = undefined;
     private _lastTransitioningTime: number = 0;
-    private _transitioningBackupTimeout: NodeJS.Timeout | null = null;
 
-    constructor(nodecg: NodeCG.ServerAPI, opts: { namespace?: string; hooks?: Partial<Hooks> } = {}) {
-        super();
-        this.nodecg = nodecg;
-        let namespace = opts.namespace || '';
+    // Use to revert status.transitioning if no response
+    private _transitioningHardEndTimeout: NodeJS.Timeout | null = null;
 
-        if (usedNamespaces.has(namespace)) {
-            throw new Error(`Namespace "${namespace}" has already been used. Please choose a different namespace.`);
+    constructor() {
+        super("obs", {
+            status: null,   // Initialize status & login with default replicant args
+            login: null,
+            programScene: BundleReplicant("programScene", "obs", { persistent: false }), // Make the scene info non-persistent
+            previewScene: BundleReplicant("previewScene", "obs", { persistent: false }),
+            sceneList: BundleReplicant("sceneList", "obs", { persistent: false })
+        }, listeners);
+    }
+
+    async _connect() {
+        const login = this.replicants.login.value;
+        const status = this.replicants.status.value;
+        await this.obs.connect(login.ip, login.password);
+    }
+
+    async isConnected() {
+        return this.replicants.status.value.connected == "connected";
+    }
+
+    async _disconnect() {
+        try {
+            this.obs.disconnect();
+        } catch (e) {
+            this.log.error("Error disconnecting", e);
         }
+    }
 
-        usedNamespaces.add(namespace);
-        this.namespace = namespace;
-        const namespacesReplicant = Replicant<Namespaces>("namespaces", "obs", { persistent: false });
-        namespacesReplicant.value.push(namespace);
 
-        this.replicants = {
-            login: PrefixedReplicant<ObsLogin>(namespace, "obsLogin", "obs"),
-            programScene: PrefixedReplicant<ProgramScene>(namespace, "programScene", "obs", { persistent: false }),
-            previewScene: PrefixedReplicant<PreviewScene>(namespace, "previewScene", "obs", { persistent: false }),
-            sceneList: PrefixedReplicant<SceneList>(namespace, "sceneList", "obs", { persistent: false }),
-            obsStatus: PrefixedReplicant<ObsStatus>(namespace, "obsStatus", "obs")
-        };
-        this.log = new nodecg.Logger(namespace ? "obs:" + namespace : "obs");
-        this.hooks = opts.hooks || {};
+    async _setupListeners() {
+        await this._fullUpdate();
 
-        this._connectionListeners();
+        this.obs.on("ConnectionClosed", () => {
+            this.log.warn("Connection closed");
+            this.reconnect();
+        });
+
+        this.obs.on("ConnectionError", (e: Error) => {
+            this.log.error("Connection error", e);
+            this.reconnect();
+        });
+
         this._replicantListeners();
         this._transitionListeners();
         this._interactionListeners();
-    }
 
-
-    private _connectionListeners() {
-        this.replicants.obsStatus.once('change', newVal => {
-            // If we were connected last time, try connecting again now.
-            if (newVal && (newVal.connection === 'connected' || newVal.connection === 'connecting')) {
-                this.replicants.obsStatus.value.connection = 'connecting';
-                this._connectToOBS().then().catch(() => {
-                    this.replicants.obsStatus.value.connection = 'error';
-                });
+        this.listeners.listenTo("DEBUG:callOBS", async (data, ack) => {
+            if (!data.name || !data.args) {
+                this.log.error("No name or args");
+                sendError(ack, "No name or args");
+                return;
             }
-        });
 
-        this.nodecg.listenFor("DEBUG:callOBS", async (data, ack) => {
-            if (!data.name || !data.args) return this.ackError(ack, "No name or args", undefined);
             this.log.info("Called", data.name, "with", data.args);
             try {
-                const res = await this.call(data.name, data.args);
-                if (ack && !ack.handled) ack(undefined, res);
+                const res = await this.obs.call(data.name, data.args);
+                sendSuccess(ack, res);
                 this.log.info("Result:", res);
             } catch (err) {
-                this.ackError(ack, `Error calling ${data.name}`, err);
+                this.log.error(`Error calling ${data.name}`);
+                sendError(ack, `Error calling ${data.name}: ${err}`);
             }
         })
 
-        listenTo("obsConnect", (params, ack) => {
-            this._ignoreConnectionClosedEvents = false;
-            clearInterval(this._reconnectInterval!);
-            this._reconnectInterval = null;
-
-            this.replicants.login.value = { ...this.replicants.login.value, ...params };
-
-            this._connectToOBS().then(() => {
-                if (ack && !ack.handled) ack();
-            }).catch(err => {
-                this.replicants.obsStatus.value.connection = 'error';
-                this.ackError(ack, `Failed to connect`, err);
-            });
-        }, this.namespace);
-
-        listenTo("obsDisconnect", (_, ack) => {
-            this._ignoreConnectionClosedEvents = true;
-            clearInterval(this._reconnectInterval!);
-            this._reconnectInterval = null;
-
-            this.replicants.obsStatus.value.connection = 'disconnected';
-            this.disconnect();
-            this.log.info('Operator-requested disconnect.');
-
-            if (ack && !ack.handled) ack();
-        }, this.namespace);
-
-        this.on("ConnectionClosed", this._reconnectToOBS);
-
-        (this as any).on("error", (e: Error) => {
-            this.ackError(undefined, "", e);
-            this._reconnectToOBS();
-        });
-
-        setInterval(() => {
-            if (this.replicants.obsStatus.value.connection === 'connected' && this.socket?.readyState !== this.socket?.OPEN) {
-                this.log.warn('Thought we were connected, but the automatic poll detected we were not. Correcting.');
-                clearInterval(this._reconnectInterval!);
-                this._reconnectInterval = null;
-                this._reconnectToOBS();
-            }
-        }, 5000);
-    }
-
-
-    private _connectToOBS() {
-        const login = this.replicants.login.value;
-        const status = this.replicants.obsStatus.value;
-        if (status.connection === 'connected') {
-            throw new Error('Attempted to connect to OBS while already connected!');
-        }
-
-        status.connection = 'connecting';
-
-        return this.connect(login.ip, login.password).then(() => {
-            this.log.info('Connected');
-            clearInterval(this._reconnectInterval!);
-            this._reconnectInterval = null;
-            status.connection = 'connected';
-            // this.call("SetStudioModeEnabled", { studioModeEnabled: true });
-            return this._fullUpdate();
-        });
-    }
-
-    private _reconnectToOBS() {
-        if (this._reconnectInterval) return;
-
-        const status = this.replicants.obsStatus.value;
-        if (this._ignoreConnectionClosedEvents) {
-            status.connection = 'disconnected';
-            return;
-        }
-
-        status.connection = 'connecting';
-        this.log.warn('Connection closed, will attempt to reconnect every 5 seconds.');
-        // Retry, ignoring errors
-        this._reconnectInterval = setInterval(() => this._connectToOBS().catch(() => { }), 5000);
     }
 
 
     private _replicantListeners() {
-        this.on("SceneListChanged", ({ scenes }) => this._updateSceneList(scenes as { sceneName: string }[]));
-        this.on("SceneItemCreated", ({ sceneName }) => this._updateSceneItems(this.replicants.sceneList, sceneName, sceneName));
-        this.on("SceneItemRemoved", ({ sceneName }) => this._updateSceneItems(this.replicants.sceneList, sceneName, sceneName));
-        this.on("SceneItemTransformChanged", ({ sceneName }) => this._updateSceneItems(this.replicants.sceneList, sceneName, sceneName));
+        this.obs.on("SceneListChanged", ({ scenes }) => this._updateSceneList(scenes as { sceneName: string }[]));
+        this.obs.on("SceneItemCreated", ({ sceneName }) => this._updateSceneItems(this.replicants.sceneList, sceneName, sceneName));
+        this.obs.on("SceneItemRemoved", ({ sceneName }) => this._updateSceneItems(this.replicants.sceneList, sceneName, sceneName));
+        this.obs.on("SceneItemTransformChanged", ({ sceneName }) => this._updateSceneItems(this.replicants.sceneList, sceneName, sceneName));
 
-        this.on("CurrentPreviewSceneChanged", ({ sceneName }) => this._updateSceneItems(this.replicants.previewScene, sceneName));
-        this.on("CurrentProgramSceneChanged", ({ sceneName }) => this._updateSceneItems(this.replicants.programScene, sceneName));
+        this.obs.on("CurrentPreviewSceneChanged", ({ sceneName }) => this._updateSceneItems(this.replicants.previewScene, sceneName));
+        this.obs.on("CurrentProgramSceneChanged", ({ sceneName }) => this._updateSceneItems(this.replicants.programScene, sceneName));
 
 
         // Clear or set preview on studio mode set or unset
-        this.on("StudioModeStateChanged", ({ studioModeEnabled }) => {
-            this.replicants.obsStatus.value.studioMode = studioModeEnabled;
+        this.obs.on("StudioModeStateChanged", ({ studioModeEnabled }) => {
+            this.replicants.status.value.studioMode = studioModeEnabled;
             if (!studioModeEnabled) this.replicants.previewScene.value = null;
             else this._tryCallOBS("GetCurrentPreviewScene")
                 .then(({ currentPreviewSceneName }) => this._updateSceneItems(this.replicants.previewScene, currentPreviewSceneName))
-                .catch(err => this.ackError(undefined, 'Error fetching preview scene:', err));
+                .catch(err => this.log.error('Error fetching preview scene:', err));
         });
 
-        this.on("RecordStateChanged", ({ outputActive }) => this.replicants.obsStatus.value.recording = outputActive);
-        this.on("StreamStateChanged", ({ outputActive }) => this.replicants.obsStatus.value.streaming = outputActive);
+        this.obs.on("RecordStateChanged", ({ outputActive }) => this.replicants.status.value.recording = outputActive);
+        this.obs.on("StreamStateChanged", ({ outputActive }) => this.replicants.status.value.streaming = outputActive);
     }
 
+
     private _fullUpdate() {
-        this.replicants.obsStatus.value.transitioning = false;
+        this.replicants.status.value.transitioning = false;
 
         return Promise.all([
             this._updateScenes().then(
@@ -227,9 +134,9 @@ export class OBSUtility extends OBSWebSocket {
                     this._updateSceneItems(this.replicants.previewScene, res.currentPreviewSceneName),
                     this._updateSceneItems(this.replicants.programScene, res.currentProgramSceneName)
                 ])
-            ).catch(err => this.ackError(undefined, 'Error updating scenes list:', err)),
+            ).catch(e => this.log.error('Error updating scenes list:', e)),
             this._updateStatus()
-        ]).catch(err => this.ackError(undefined, 'Error in full update:', err));
+        ]).catch(e => this.log.error('Error in full update:', e));
     }
 
     private _updateScenes() {
@@ -243,7 +150,7 @@ export class OBSUtility extends OBSWebSocket {
     private _updateSceneList(scenes: { sceneName: string }[]) {
         Promise.all(scenes.map(s => this._fetchSceneInfo(s.sceneName)))
             .then(r => this.replicants.sceneList.value = r)
-            .catch((err) => this.ackError(undefined, "Error updating scene list", err));
+            .catch((e) => this.log.error("Error updating scene list", e));
         return scenes;
     }
 
@@ -257,10 +164,10 @@ export class OBSUtility extends OBSWebSocket {
                     if (scene) scene.sources = v.sources;
                     else (replicant.value as ObsScene[]).push(v);
                 }
-            })
-                .catch(err => this.ackError(undefined, `Error updating ${replicant.name} scene:`, err));
+            }).catch(e => this.log.error(`Error updating ${replicant.name} scene:`, e));
         }
     }
+
 
     private _fetchSceneInfo(sceneName: string): Promise<ObsScene> {
         return this._tryCallOBS("GetSceneItemList", { sceneName: sceneName })
@@ -270,36 +177,32 @@ export class OBSUtility extends OBSWebSocket {
 
     private _updateStatus() {
         return Promise.all([
-            this._tryCallOBS('GetStudioModeEnabled').then(({ studioModeEnabled }) => this.replicants.obsStatus.value.studioMode = studioModeEnabled),
-            this._tryCallOBS('GetRecordStatus').then(({ outputActive }) => this.replicants.obsStatus.value.recording = outputActive),
-            this._tryCallOBS('GetStreamStatus').then(({ outputActive }) => this.replicants.obsStatus.value.streaming = outputActive)
+            this._tryCallOBS('GetStudioModeEnabled').then(({ studioModeEnabled }) => this.replicants.status.value.studioMode = studioModeEnabled),
+            this._tryCallOBS('GetRecordStatus').then(({ outputActive }) => this.replicants.status.value.recording = outputActive),
+            this._tryCallOBS('GetStreamStatus').then(({ outputActive }) => this.replicants.status.value.streaming = outputActive)
         ]);
     }
 
 
     private async _tryCallOBS<Type extends keyof OBSRequestTypes>(requestType: Type, requestData?: OBSRequestTypes[Type], ack?: NodeCG.Acknowledgement, errMsg?: string, catchF?: (e: any) => {}) {
         this.log.info("Calling", requestType, "with", requestData);
-        if (this.replicants.obsStatus.value.connection != "connected") {
+        if (!(await this.isConnected())) {
             if (catchF) catchF("OBS is not connected");
-            this.ackError(ack, `Error calling ${requestType}: OBS is not connected`, null);
+            this.log.error(`Error calling ${requestType}: OBS is not connected`);
+            if (ack) sendError(ack, `Error calling ${requestType}: OBS is not connected`);
             throw new Error("OBS is not connected");
         }
 
-        return this.call(requestType, requestData).then((res) => {
+        return this.obs.call(requestType, requestData).then((res) => {
             if (ack && !ack.handled) ack();
             return res;
-        }).catch((err) => {
-            if (catchF) catchF(err);
-            this.ackError(ack, errMsg ? errMsg : `Error calling ${requestType}`, err);
-            throw err;
+        }).catch((e) => {
+            if (catchF) catchF(e);
+            this.log.error(errMsg ? errMsg : `Error calling ${requestType}`, e);
+            throw e;
         });
     }
 
-    private ackError(ack: NodeCG.Acknowledgement | undefined, errmsg: string, err: any) {
-        const line = getCurrentLine({ frames: 2 });
-        this.log.error(`[${line.file}:${line.line}:${line.char}]`, errmsg, err);
-        if (ack && !ack.handled) ack(err);
-    }
 
     private _transitionListeners() {
         listenTo("transition", async (args, ack) => {
@@ -307,13 +210,7 @@ export class OBSUtility extends OBSWebSocket {
             try {
                 args = args ? args : {};
                 // Mark that we're starting to transition. Resets to false after SwitchScenes.
-                this.replicants.obsStatus.value.transitioning = true;
-
-                // Call hook
-                if (this.hooks.preTransition !== undefined) {
-                    const res = await this.hooks.preTransition(this, args);
-                    if (res) args = res;
-                }
+                this.replicants.status.value.transitioning = true;
 
                 // Set transition and duration
                 if (args.transitionName) this._tryCallOBS("SetCurrentSceneTransition",
@@ -325,36 +222,45 @@ export class OBSUtility extends OBSWebSocket {
                 ).catch((e) => this.log.error("Error setting transition duration", e));;
 
                 // Trigger transition, needs different calls outside studio mode
-                if (this.replicants.obsStatus.value.studioMode) {
+                if (this.replicants.status.value.studioMode) {
                     // setTimeout(() => {
                     this._tryCallOBS("TriggerStudioModeTransition", undefined, ack, "Error transitioning",
-                        (e) => this.replicants.obsStatus.value.transitioning = false);
+                        (e) => this.replicants.status.value.transitioning = false);
                     // }, 500);
                 } else {
                     if (!args.sceneName) {
-                        this.ackError(ack, "Error: Cannot transition to", args.sceneName);
-                        this.replicants.obsStatus.value.transitioning = false;
+                        this.log.error("Error: Cannot transition to", args.sceneName);
+                        sendError(ack, `Error: Cannot transition to ${args.sceneName}`);
+                        this.replicants.status.value.transitioning = false;
                     } else this._tryCallOBS("SetCurrentProgramScene", { 'sceneName': args.sceneName }, ack, "Error transitioning",
-                        (e) => this.replicants.obsStatus.value.transitioning = false);
+                        (e) => this.replicants.status.value.transitioning = false);
                 }
-            } catch (err) {
-                this.ackError(undefined, 'Error transitioning:', err);
+            } catch (e) {
+                this.log.error(`Error transitioning with ${args}: ${e}`);
+                sendError(ack, `Error transitioning with ${args}: ${e}`);
             }
-        }, this.namespace);
+        });
 
         listenTo("preview", async (args, ack) => {
-            if (!this.replicants.obsStatus.value.studioMode) this.ackError(ack, "Cannot preview when not in studio mode", undefined);
+            if (!this.replicants.status.value.studioMode) {
+                this.log.error(`Cannot preview when not in studio mode`);
+                sendError(ack, `Cannot preview when not in studio mode`);
+            }
 
             this._tryCallOBS('SetCurrentPreviewScene', { 'sceneName': args.sceneName },
                 ack, 'Error setting preview scene for transition:')
-                .catch(err => this.ackError(undefined, 'Error changing preview scene:', err));
-        }, this.namespace);
+                .catch(e => {
+                    this.log.error(`Error changing preview scene: ${e}`);
+                    sendError(ack, `Error changing preview scene: ${e}`);
+                })
+        });
 
         this.replicants.programScene.on("change", (newVal, oldVal) => {
             this._sendTransitioning("", oldVal?.name, newVal?.name);
         })
 
-        this.on("SceneTransitionStarted", ({ transitionName }) => {
+
+        this.obs.on("SceneTransitionStarted", ({ transitionName }) => {
             const pro = this.replicants.programScene.value;
             const from = pro?.name;
 
@@ -363,14 +269,16 @@ export class OBSUtility extends OBSWebSocket {
 
                 // this.replicants.obsStatus.value.transitioning = true;
                 this._sendTransitioning(transitionName, from, to);
-            }).catch(err => this.ackError(undefined, 'Error sending transitioning:', err));
+            }).catch(e => {
+                this.log.error(`Error sending transitioning: ${e}`);
+            });
         })
 
-        this.on("SceneTransitionEnded", () => this.replicants.obsStatus.value.transitioning = false);
+        this.obs.on("SceneTransitionEnded", () => this.replicants.status.value.transitioning = false);
         // SceneTransitionEnded doesn't trigger if user cancelled transition, so cya
-        this.on("CurrentProgramSceneChanged", () => {
-            if (this.replicants.obsStatus.value.transitioning) {
-                this.replicants.obsStatus.value.transitioning = false;
+        this.obs.on("CurrentProgramSceneChanged", () => {
+            if (this.replicants.status.value.transitioning) {
+                this.replicants.status.value.transitioning = false;
             }
         })
 
@@ -378,8 +286,8 @@ export class OBSUtility extends OBSWebSocket {
             this._lastTransitioningTarget = toScene;
             this._lastTransitioningTime = Date.now();
 
-            clearInterval(this._transitioningBackupTimeout ?? undefined);
-            this._transitioningBackupTimeout = setTimeout(() => this.replicants.obsStatus.value.transitioning = false, 2000);
+            clearInterval(this._transitioningHardEndTimeout ?? undefined);
+            this._transitioningHardEndTimeout = setTimeout(() => this.replicants.status.value.transitioning = false, 2000);
         });
 
     }
@@ -392,7 +300,7 @@ export class OBSUtility extends OBSWebSocket {
         this._lastTransitioningTarget = to;
         this._lastTransitioningTime = now;
 
-        this.replicants.obsStatus.value.transitioning = true;
+        this.replicants.status.value.transitioning = true;
         sendTo("transitioning", {
             transitionName: name,
             fromScene: from,
@@ -402,43 +310,91 @@ export class OBSUtility extends OBSWebSocket {
 
     private _interactionListeners() {
         listenTo("moveItem", ({ sceneName, sceneItemId, transform }, ack) => {
-            if (this.replicants.obsStatus.value.moveCams) {
+            if (this.replicants.status.value.moveCams) {
                 this._tryCallOBS("SetSceneItemTransform", { sceneName: sceneName, sceneItemId: sceneItemId, sceneItemTransform: transform as any })
-                    .catch(err => this.ackError(undefined, `Error moving ${sceneItemId} in ${sceneName}:`, err));
+                    .catch(e => {
+                        this.log.error(`Error moving ${sceneItemId} in ${sceneName}: ${e}`);
+                        sendError(ack, `Error moving ${sceneItemId} in ${sceneName}: ${e}`);
+                    });
             }
         })
 
         // Recording Listeners
-        listenTo("startRecording", (_, ack) => {
-            if (!this.replicants.obsStatus.value.controlRecording) this.ackError(ack, "Error starting recording:", "Recording Control is disabled")
-            else if (this.replicants.obsStatus.value.connection != "connected") this.ackError(ack, "Error starting recording:", "OBS is disconnected")
-            else if (this.replicants.obsStatus.value.recording) this.ackError(ack, "Error starting recording:", "Recording is already in progress")
-            else {
+        listenTo("startRecording", async (_, ack) => {
+            let error = null;
+            if (!this.replicants.status.value.controlRecording) error = "Recording Control is disabled";
+            else if (!(await this.isConnected())) error = "OBS is disconnected";
+            else if (this.replicants.status.value.recording) error = "Recording is already in progress";
+
+            if (error) {
+                this.log.error(`Error starting recording: ${error}`);
+                sendError(ack, `Error starting recording: ${error}`);
+            } else {
                 this.log.info("Starting Recording");
                 this._tryCallOBS("StartRecord", undefined, ack)
-                    .catch(err => this.ackError(ack, "Error starting recording:", err));
+                    .catch(err => {
+                        this.log.error("Error starting recording:", err);
+                        sendError(ack, `Error starting recording: ${err}`);
+                    });
             }
         });
 
-        listenTo("stopRecording", (_, ack) => {
-            if (!this.replicants.obsStatus.value.controlRecording) this.ackError(ack, "Error stopping recording:", "Recording Control is disabled")
-            else if (this.replicants.obsStatus.value.connection != "connected") this.ackError(ack, "Error stopping recording:", "OBS is disconnected")
-            else if (!this.replicants.obsStatus.value.recording) this.ackError(ack, "Error stopping recording:", "Recording is already stopped")
-            else {
-                this._tryCallOBS("StopRecord", undefined, ack).then(({ outputPath }) => {
-                    // Rename OBS output to include run
-                    const newFilename = getFilename();
-                    const currPath = path.parse(outputPath);
-                    const newName = `${currPath.name} ${newFilename.replace(/[\\/:*?"<>|]/g, " ")}${currPath.ext}`
-                    currPath.base = newName;
-                    const targetPath = path.format(currPath);
-                    setTimeout(() => fsPromises.rename(outputPath, targetPath)
-                        .then(() => this.log.info(`Renamed ${outputPath} to ${targetPath}`))
-                        .catch((e) => this.log.error(`Error renaming ${outputPath} to ${targetPath}: ${e}`)), 5000);
-                }).catch(err => this.ackError(undefined, 'Error stopping recording:', err));
-            }
-        });
+        listenTo("stopRecording", async (_, ack) => {
+            let error = null;   // Check if can stop
+            if (!this.replicants.status.value.controlRecording) error = "Recording Control is disabled";
+            else if (!(await this.isConnected())) error = "OBS is disconnected";
+            else if (!this.replicants.status.value.recording) error = "Recording is already stopped";
 
-        listenTo("refreshOBS", () => this._fullUpdate());
+            if (error) {
+                this.log.error(`Error stopping recording: ${error}`);
+                sendError(ack, `Error stopping recording: ${error}`);
+                return;
+            }
+
+            // Attempt to stop recording
+            this._tryCallOBS("StopRecord", undefined, ack).catch(e => {
+                this.log.error("Error stopping recording:", e);
+                sendError(ack, `Error stopping recording: ${e}`);
+            }).then((resp) => {
+                // Rename OBS output to include run info
+                if (!resp) return;
+                const outputPath = resp.outputPath;
+                const newFilename = this.getFilename();
+                if (!newFilename) return;
+                const currPath = path.parse(outputPath);
+                const newName = `${currPath.name} ${newFilename.replace(/[\\/:*?"<>|]/g, " ")}${currPath.ext}`
+                currPath.base = newName;
+                const targetPath = path.format(currPath);
+                setTimeout(() => fsPromises.rename(outputPath, targetPath)
+                    .then(() => this.log.info(`Renamed ${outputPath} to ${targetPath}`))
+                    .catch((e) => this.log.error(`Error renaming ${outputPath} to ${targetPath}: ${e}`)), 5000);
+            }).catch(e => {
+                this.log.error("Error renaming file:", e);
+                sendError(ack, `Error renaming file: ${e}`);
+            });
+        });
     }
+
+    getFilename() {
+        const sc = getSpeedControlUtil();
+        const run = sc.runDataActiveRun.value;
+        if (!run) return null;
+        const runners = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
+
+        const times = sc.runFinishTimes.value;
+        const time = times ? times[run?.id] : undefined;
+
+        return [
+            run.game,
+            run.category ? " - " : "",
+            run.category,
+            " - ",
+            runners,
+            time ? " in " : "",
+            time?.time,
+            " (WASD 2025)"
+        ].filter(x => x).join("");
+    }
+
+
 }

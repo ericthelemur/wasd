@@ -193,10 +193,10 @@ export function Slides({ side }: { side?: boolean }) {
     const [Func, setFunc] = useState<PageComp>(() => AboutComp);
 
     const [total,] = useReplicant<Total>("total", { "currency": "GBP", "value": 0 });
-    const [milestones,] = useReplicant<Milestones>("milestones", []);
-    const [polls,] = useReplicant<Polls>("polls", []);
-    const [targets,] = useReplicant<Targets>("targets", []);
-    const [rewards,] = useReplicant<Rewards>("rewards", []);
+    const [milestones,] = useReplicant<Milestones>("milestones", [], { namespace: "tiltify" });
+    const [polls,] = useReplicant<Polls>("polls", [], { namespace: "tiltify" });
+    const [targets,] = useReplicant<Targets>("targets", [], { namespace: "tiltify" });
+    const [rewards,] = useReplicant<Rewards>("rewards", [], { namespace: "tiltify" });
     const [runDataArray,] = useReplicant<RunDataArray>("runDataArray", [], { namespace: "nodecg-speedcontrol" });
     const [runDataActiveRunSurrounding,] = useReplicant<RunDataActiveRunSurrounding>("runDataActiveRunSurrounding", { previous: undefined, current: undefined, next: undefined }, { namespace: "nodecg-speedcontrol" });
     const [custom,] = useReplicant<CustomBreakText>("customBreakText", {});

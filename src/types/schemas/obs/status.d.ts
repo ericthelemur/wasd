@@ -5,13 +5,13 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type ConnStatus = 'connected' | 'connecting' | 'disconnected' | 'error';
+export type ConnStatus = 'connected' | 'connecting' | 'disconnected' | 'error' | 'retrying';
 
 /**
  * Status of OBS outputs
  */
-export interface ObsStatus {
-	connection: ConnStatus;
+export interface Status {
+	connected: ConnStatus;
 	streaming: boolean;
 	recording: boolean;
 	transitioning: boolean;

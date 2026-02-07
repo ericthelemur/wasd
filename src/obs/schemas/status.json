@@ -7,7 +7,8 @@
 				"connected",
 				"connecting",
 				"disconnected",
-				"error"
+				"error",
+				"retrying"
 			],
 			"default": "disconnected"
 		}
@@ -16,7 +17,7 @@
 	"description": "Status of OBS outputs",
 	"additionalProperties": false,
 	"properties": {
-		"connection": {
+		"connected": {
 			"$ref": "#/definitions/connStatus"
 		},
 		"streaming": {
@@ -39,7 +40,7 @@
 		}
 	},
 	"required": [
-		"connection",
+		"connected",
 		"streaming",
 		"recording",
 		"transitioning",
@@ -48,7 +49,7 @@
 		"controlRecording"
 	],
 	"default": {
-		"connection": "disconnected",
+		"connected": "disconnected",
 		"streaming": false,
 		"recording": false,
 		"transitioning": false,

@@ -38,7 +38,7 @@ export function CreateCommPointConnect<
     R extends ReplicantTypes<S, L>,
     S extends { connected: ConnStatus; } = R["status"],
     L = R["login"]
->(namespace: string, listeners: ListenersT<M>, fields: { [key in keyof Partial<L>]-?: string }, defaultLogin: L, defaultStatus: S, ExtraStatus?: (props: { status: S }) => React.JSX.Element, transformLogin?: (login: Partial<L>) => void) {
+>(namespace: string, listeners: ListenersT<M>, fields: { [key in keyof Partial<L>]-?: string }, defaultLogin: L, defaultStatus: S, ExtraStatus?: (props: { status: S }) => React.JSX.Element | undefined, transformLogin?: (login: Partial<L>) => void) {
 
     function ConnectForm() {
         const [login,] = useReplicant<L>("login", defaultLogin, { namespace: namespace });

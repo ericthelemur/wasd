@@ -1,17 +1,16 @@
 import './cam.scss';
 
 import { it } from 'node:test';
-import { ListenerTypes as OBSMsgTypes } from '../../../../obs/messages';
+import { ListenerTypes as OBSMsgTypes, sendTo, unlistenTo } from '../../../../obs/messages';
 import { ObsSource, ObsTransform, SceneList } from 'types/schemas';
 import { createContext, CSSProperties, useContext, useEffect, useRef, useState } from 'react';
 import { SceneInfo } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
 import { NodeCGAPIClient } from '@nodecg/types/client/api/api.client';
+import { listenTo } from '../../../../obs/messages';
 
 export const SceneInfoContext = createContext<SceneInfo>({ name: "Blank", run: null });
-
-declare var nodecg: NodeCGAPIClient;
 
 function fd(a: number, b: number, e: number = 1) {
     return Math.abs(a - b) < e;
@@ -39,7 +38,7 @@ export function Camera({ camName, aspectRatio, dims, style, flexGrow }: { camNam
     const ref = useRef<HTMLDivElement>(null);
 
     const sceneInfo = useContext(SceneInfoContext);
-    const [scenes,] = useReplicant<SceneList>("sceneList", []);
+    const [scenes,] = useReplicant<SceneList>("sceneList", [], { namespace: "obs" });
     const [sceneSource, setSceneSource] = useState<ObsSource | null>(null);
 
     const [lastPos, setLastPos] = useState({ x: 0, y: 0, w: 0, h: 0 });
@@ -62,17 +61,18 @@ export function Camera({ camName, aspectRatio, dims, style, flexGrow }: { camNam
                 const target = { x: dims.x, y: dims.y, w: dims.width, h: dims.height };
                 const newTransform = calculateTransform(sceneSource.sceneItemTransform, target, 6);
                 setLastPos(target);
-                nodecg.sendMessage("moveItem", { sceneName: sceneInfo.name, sceneItemId: sceneSource.sceneItemId, transform: newTransform } as OBSMsgTypes["moveItem"])
+                sendTo("moveItem", { sceneName: sceneInfo.name, sceneItemId: sceneSource.sceneItemId, transform: newTransform });
             }
         }
 
         // Poll for movement on timer and force move on msg
         const interval = setInterval(moveOBSSrc, 1000);
         const forceF = () => moveOBSSrc(true);
-        nodecg.listenFor("moveOBSSources", forceF);
+        listenTo("moveOBSSources", forceF);
+
         return () => {
             clearInterval(interval);
-            nodecg.unlisten("moveOBSSources", forceF);
+            unlistenTo("moveOBSSources", forceF);
         };
     }, [ref, sceneSource, lastPos]);
 
