@@ -111,7 +111,7 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
 
         // Draw Key Images from replicant
         // this.currentDisplay = Array(this.loupedeck.lcdKeyColumns * this.loupedeck.lcdKeyRows).fill(null);
-        // this.currentBuffers = Array(this.loupedeck.lcdKeyColumns * this.loupedeck.lcdKeyRows).fill(null);
+        this.currentBuffers = Array(this.loupedeck.lcdKeyColumns * this.loupedeck.lcdKeyRows).fill(null);
         // this.replicants.display.on("change", async newVal => {
         //     const current = newVal.pages[newVal.current].screen;
         //     for (let i = 0; i < this.currentDisplay.length; i++) {
@@ -323,7 +323,6 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         // Send to loupedeck
         if (!this.loupedeck) return;
         const output = this.convertCanvasToBuffer(canvas);
-        this.currentBuffers[index] = output;
         this.drawBuffer(index, output);
     }
 

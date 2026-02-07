@@ -5,7 +5,7 @@ import { getNodeCG } from '../../common/utils';
 import { CellData, Condition } from '../../types/schemas/loupedeck';
 import { listenTo } from '../messages';
 import { loupedeck } from './index.extension';
-import { redrawIfNecessary } from './redraw';
+import { redrawIfNecessary, resetCache } from './redraw';
 import { getReplicant, getRepValAt } from './utils';
 
 import type NodeCG from '@nodecg/types';
@@ -62,6 +62,7 @@ function updateAll() {
 }
 
 listenTo("connected", () => {
+    resetCache();
     updateAll();
 
     // loupedeck.replicants.display.off("change", updateAll);

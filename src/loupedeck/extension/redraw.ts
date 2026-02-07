@@ -5,6 +5,10 @@ import { loupedeck } from './index.extension';
 
 let currentGraphics: (Graphic | null)[] = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null];
 
+export function resetCache() {
+    currentGraphics = currentGraphics.map(() => null);
+}
+
 export function redrawIfNecessary(index: number, newGraphic: Graphic | null) {
     const oldGraphic = currentGraphics[index];
     loupedeck.log.info("Trying to redraw", index, newGraphic, oldGraphic);
