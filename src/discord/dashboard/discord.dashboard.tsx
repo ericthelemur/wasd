@@ -53,27 +53,25 @@ function DiscordControl() {
 		if (msgRef.current) msgRef.current.value = "";
 	}
 
-	return <div className="m-3">
-		<Form>
-			{/* <Form.Check type="switch" label="Donation Messages" checked={status?.postDonations} onClick={e => setStatus({ ...status, postDonations: !status.postDonations })} /> */}
-			<Form.Check type="switch" label="Schedule Messages" checked={status?.postSchedule} onClick={e => setStatus({ ...status, postSchedule: !status.postSchedule })} />
-			<Form.Check type="switch" label="Start & End Events" checked={status?.startAndEndEvents} onClick={e => setStatus({ ...status, startAndEndEvents: !status.startAndEndEvents })} />
+	return <Form>
+		{/* <Form.Check type="switch" label="Donation Messages" checked={status?.postDonations} onClick={e => setStatus({ ...status, postDonations: !status.postDonations })} /> */}
+		<Form.Check type="switch" label="Schedule Messages" checked={status?.postSchedule} onClick={e => setStatus({ ...status, postSchedule: !status.postSchedule })} />
+		<Form.Check type="switch" label="Start & End Events" checked={status?.startAndEndEvents} onClick={e => setStatus({ ...status, startAndEndEvents: !status.startAndEndEvents })} />
 
-			<Button onClick={sendToF("updateEvents", undefined)} className="my-3">Update Discord Events</Button>
+		<Button onClick={sendToF("updateEvents", undefined)} className="my-3">Update Discord Events</Button>
 
-			<FloatingLabel label="Schedule Message Preview">
-				<Form.Control as="textarea" ref={msgRef} onSubmit={post} />
-			</FloatingLabel>
-			<ButtonGroup>
-				<Button className="flex-grow-1" disabled={!msg || !msg.channelID} variant={msg && msg.runID ? "danger" : "outline-primary"} onClick={post}>
-					<Send /> Send Message{msg && msg.channelName ? ` to #${msg.channelName}` : ""}
-				</Button>
-				<Button className="flex-grow-0" disabled={!msg || !msg.channelID} variant="outline-secondary" onClick={clear}>
-					<Ban />
-				</Button>
-			</ButtonGroup>
-		</Form>
-	</div>
+		<FloatingLabel label="Schedule Message Preview">
+			<Form.Control as="textarea" ref={msgRef} onSubmit={post} />
+		</FloatingLabel>
+		<ButtonGroup>
+			<Button className="flex-grow-1" disabled={!msg || !msg.channelID} variant={msg && msg.runID ? "danger" : "outline-primary"} onClick={post}>
+				<Send /> Send Message{msg && msg.channelName ? ` to #${msg.channelName}` : ""}
+			</Button>
+			<Button className="flex-grow-0" disabled={!msg || !msg.channelID} variant="outline-secondary" onClick={clear}>
+				<Ban />
+			</Button>
+		</ButtonGroup>
+	</Form>
 }
 
 const ControlForm = CreateCommPointConnect<ListenerTypes, Replicants>("discord", listeners, {
