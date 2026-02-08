@@ -1,20 +1,25 @@
 import { getNodeCG } from '../../common/utils';
 import { CellData, State } from '../../types/schemas/loupedeck';
 import { loupedeck } from './index.extension';
-import { getReplicant, getRepParentAt } from './utils';
+import { getReplicant } from "./utils";
+import { getRepParentAt } from '../common/jsonDeep';
 
 const nodecg = getNodeCG();
 
 type Interaction = State["interaction"]; // Temp, until schema to type realizes Interaction should be its own type
 type Category<T> = Extract<Interaction, { category: T }>;   // Type for interactions with a particular category
 export type Action = "down" | "up";
-type Context = { id: string, cell: CellData, state: State };
+type Context = { id: string, cell?: CellData, state?: State };
 
 export function doInteraction(interaction: Interaction | undefined, action: Action, context: Context) {
     if (!interaction) return;
     loupedeck.log.info(`Doing ${interaction.category}.${interaction.action} for ${context.id}`);
-    if (interaction.category == "modifier") return modifierInteractions(interaction, action, context);
-    if (interaction.category == "nodecg") return nodecgInteractions(interaction, action, context);
+    try {
+        if (interaction.category == "modifier") return modifierInteractions(interaction, action, context);
+        if (interaction.category == "nodecg") return nodecgInteractions(interaction, action, context);
+    } catch (e) {
+        loupedeck.log.error(`Error carrying out interaction ${interaction.category}.${interaction.action} for ${context.id}: ${e}`);
+    }
 }
 
 
@@ -55,7 +60,6 @@ function nodecgInteractions(interaction: Category<"nodecg">, action: Action, con
         if (action == "up") {
             loupedeck.log.info(`Setting replicant ${interaction.replicant} at path ${interaction.field} to value ${interaction.value}`);
             const replicant = getReplicant(interaction.replicant);
-            loupedeck.log.info("Replicant", replicant, replicant.value);
             if (!interaction.field) replicant.value = interaction.value;
             else {
                 const [parent, child] = getRepParentAt(replicant, interaction.field);

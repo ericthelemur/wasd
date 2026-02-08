@@ -6,12 +6,13 @@ import { CellData, Condition } from '../../types/schemas/loupedeck';
 import { listenTo } from '../messages';
 import { loupedeck } from './index.extension';
 import { redrawIfNecessary, resetCache } from './redraw';
-import { getReplicant, getRepValAt } from './utils';
+import { getReplicant } from './utils';
+import { getRepValAt } from '../common/jsonDeep';
 
 import type NodeCG from '@nodecg/types';
 const nodecg = getNodeCG();
 
-type CellRep = { [name: string]: NodeCG.ServerReplicantWithSchemaDefault<unknown> };
+type CellRep = { [name: string]: NodeCG.ServerReplicant<unknown> };
 const cellReplicants: CellRep[] = [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}];
 
 function getOrAddRep(index: number, key: string, rep: ValueOf<NonNullable<CellData["replicants"]>>) {

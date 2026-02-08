@@ -44,7 +44,7 @@
                                 "type": "null"
                             },
                             {
-                                "$ref": "cell/state.json"
+                                "$ref": "interactions/interaction.json"
                             }
                         ]
                     },
@@ -81,7 +81,7 @@
                         "type": "null"
                     },
                     {
-                        "$ref": "cell/state.json"
+                        "$ref": "interactions/interaction.json"
                     }
                 ]
             }

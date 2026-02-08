@@ -86,11 +86,12 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
     }
 
     override async isConnected() {
+        return this.replicants.status.value.connected == "connected" && Boolean(this.loupedeck);
         // If cannot fetch serial number, must be disconnected
-        if (!this.loupedeck || this.replicants.status.value.connected != "connected") return false;
-        let connected = false;
-        await this.loupedeck?.getSerialNumber().then((r) => { connected = Boolean(r) }).catch(() => connected = false);
-        return connected;
+        // if (!this.loupedeck || this.replicants.status.value.connected != "connected") return false;
+        // let connected = false;
+        // await this.loupedeck?.getSerialNumber().then((r) => { connected = Boolean(r) }).catch(() => connected = false);
+        // return connected;
     }
 
     override async _setupListeners() {
@@ -194,6 +195,7 @@ export class Loupedeck extends CommPoint<ListenerTypes, LoupeReplicants> {
         this.log.info("Drawing key", index, graphic);
 
         if (!graphic) {     // Draw solid black if no content
+            this.replicants.images.value[index] = null;
             this.loupedeck?.drawKeyBuffer(index, this.blackBuffer!, LoupedeckBufferFormat.RGB);
             return;
         };

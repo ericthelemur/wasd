@@ -4,6 +4,7 @@ import { Action, doInteraction } from './actions';
 import { loupedeck } from './index.extension';
 import { getCellStateData } from './utils';
 import { Screen } from '../../types/schemas/loupedeck';
+import { getX32 } from '../../mixer/extension/mixer/utils';
 
 listenTo("setPage", (page, ack) => {
     if (page in loupedeck.replicants.display.value.pages) {
@@ -16,34 +17,34 @@ listenTo("setPage", (page, ack) => {
     }
 })
 
-loupedeck.replicants.display.on("change", (disp) => {
-    const currPages = disp.pages["page"]?.pages as string[];
-    const newPages = Object.keys(disp.pages);
-    if (!currPages || !newPages || newPages.some(p => !currPages.includes(p)) || currPages.some(p => !newPages.includes(p))) {
-        const cells: Screen = Array(15).fill(null) as Screen;
-        Object.entries(disp.pages).forEach(([key, page], i) => cells[i] = {
-            "states": {
-                "default": {
-                    "graphic": {
-                        "text": page.display || key
-                    },
-                    "interaction": {
-                        "category": "nodecg",
-                        "action": "message",
-                        "bundle": "loupedeck",
-                        "message": "setPage",
-                        "data": key
-                    }
-                }
-            }
-        });
+// loupedeck.replicants.display.on("change", (disp) => {
+//     const currPages = disp.pages["page"]?.pages as string[];
+//     const newPages = Object.keys(disp.pages);
+//     if (!currPages || !newPages || newPages.some(p => !currPages.includes(p)) || currPages.some(p => !newPages.includes(p))) {
+//         const cells: Screen = Array(15).fill(null) as Screen;
+//         Object.entries(disp.pages).forEach(([key, page], i) => cells[i] = {
+//             "states": {
+//                 "default": {
+//                     "graphic": {
+//                         "text": page.display || key
+//                     },
+//                     "interaction": {
+//                         "category": "nodecg",
+//                         "action": "message",
+//                         "bundle": "loupedeck",
+//                         "message": "setPage",
+//                         "data": key
+//                     }
+//                 }
+//             }
+//         });
 
-        disp.pages["page"] = {
-            "pages": newPages,
-            "screen": cells
-        };
-    }
-});
+//         disp.pages["page"] = {
+//             "pages": newPages,
+//             "screen": cells
+//         };
+//     }
+// });
 
 
 
@@ -58,28 +59,30 @@ setInterval(async () => {
     count = (count + 1 / steps) % (colours.length);
     const c1 = colours[Math.floor(count)], c2 = colours[Math.ceil(count) % (colours.length)];
     const promise = sendTo("setButtonColour", { button: 0, colour: [lerp(c1[0], c2[0], count % 1), lerp(c1[1], c2[1], count % 1), lerp(c1[2], c2[2], count % 1)] });
-    if (promise) promise.then(r => { console.log(r); if (r == "Not connected!") loupedeck.reconnect() })
+    if (promise) promise.then(r => { loupedeck.log.info(r); if (r == "Not connected!") loupedeck.reconnect() })
 }, 1000);
 
 
 // Send knob adjustments to mixer channels
 
-// listenTo("knobRotate", ({ knob, amount }) => {
-//     // Sets a channel's volume with rotation
-//     const disp = loupedeck.replicants.display.value;
-//     const page = disp.pages[disp.current];
-//     if (!page) return;
-//     const knobs = page.interactions?.knobs;
-//     const channelName = knobs.channels[knob];
-//     if (!channelName) return;
-//     let cmd = channelName;
-//     if (!cmd.startsWith("/")) {     // Config value can either be name of a channel or a OSC command. If channel name, lookup here
-//         const channelIndex = channels.value.mics[channelName];
-//         if (!channelIndex) return;
-//         cmd = `/ch/${String(channelIndex).padStart(2, "0")}/mix/fader`;
-//     }
-//     getX32().incrementFader(cmd, knobs.rotateScale * amount);
-// });
+listenTo("knobRotate", ({ knob, amount }) => {
+    // Sets a channel's volume with rotation
+    const disp = loupedeck.replicants.display.value;
+    const page = disp.pages[disp.current];
+    const knobs = page?.knobs;
+    if (!knobs) return;
+
+    const channelName = knobs.channels[knob];
+    if (!channelName) return;
+    let cmd = channelName;
+    if (!cmd.startsWith("/")) {     // Config value can either be name of a channel or a OSC command. If channel name, lookup here
+        const channels = getX32().replicants.channels;
+        const channelIndex = channels.value.mics[channelName];
+        if (!channelIndex) return;
+        cmd = `/ch/${String(channelIndex).padStart(2, "0")}/mix/fader`;
+    }
+    getX32().incrementFader(cmd, knobs.rotateScale * amount);
+});
 
 function screenAction(key: number, action: Action) {
     const cellData = loupedeck.getCurrentPage().screen[key];
@@ -90,3 +93,26 @@ function screenAction(key: number, action: Action) {
 
 listenTo("screenDown", ({ key }) => screenAction(key, "down"));
 listenTo("screenUp", ({ key }) => screenAction(key, "up"));
+
+
+function buttonAction(button: number, action: Action) {
+    const buttons = loupedeck.getCurrentPage().buttons;
+    if (!buttons) return;
+    const btnData = buttons[button];
+    if (!btnData) return;
+    doInteraction(btnData, action, { id: "btn-" + button });
+}
+
+listenTo("buttonDown", ({ button }) => buttonAction(button, "down"));
+listenTo("buttonUp", ({ button }) => buttonAction(button, "up"));
+
+
+function knobAction(knob: number, action: Action) {
+    const knobs = loupedeck.getCurrentPage().knobs;
+    if (!knobs) return;
+    const knobData = knobs.buttons[knob];
+    doInteraction(knobData, action, { id: "knob-" + knob });
+}
+
+listenTo("knobDown", ({ knob }) => knobAction(knob, "down"));
+listenTo("knobUp", ({ knob }) => knobAction(knob, "up"));

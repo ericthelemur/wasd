@@ -7,7 +7,7 @@ import Form from 'react-bootstrap/Form';
 import { createRoot } from 'react-dom/client';
 import { ReplicantList } from 'types/schemas';
 
-import CodeEditor from './codeeditor';
+import { RepEditor } from './codeeditor';
 import { useReplicant } from './useNodeCGCustom';
 
 export function EditConsole() {
@@ -49,49 +49,10 @@ export function EditConsole() {
             {repRep && `Editing ${repRep.namespace}:${repRep.name}`}
             {!repRep.validate && "Replicant has no schema, be extra careful editing"}
 
-            {repVal && <JsonEditor
-                data={repVal as object}
-                setData={(v) => setRepVal(v)}
-                onUpdate={({ newData }) => {
-                    console.log("Validating", newData);
-                    if (!repRep.validate) return true;
-                    try {
-                        const valid = repRep.validate(newData);
-                        console.log("Validity:", valid);
-                        return valid;
-                    } catch (e: any) {
-                        return String(e.message);
-                    }
-                }}
-                rootName="value"
-                indent={2}
-                collapse={3}
-                restrictDrag={false}
-                theme={githubDarkTheme}
-                maxWidth="100%"
-                minWidth="75%"
-                errorMessageTimeout={5000}
-                className="overflow-auto"
-                TextEditor={
-                    (props) => (
-                        <Suspense
-                            fallback={
-                                <div className="loading" style={{ height: `${getLineHeight(repVal)}lh` }}>
-                                    Loading code editor...
-                                </div>
-                            }
-                        >
-                            <CodeEditor {...props} />
-                        </Suspense>
-                    )
-                }
-            />
-            }
+            {repVal && <RepEditor data={repRep.value} setData={(newVal) => setRepVal(newVal)} validate={repRep.validate} />}
         </>
     </Container>
 }
-
-const getLineHeight = (data: any) => JSON.stringify(data, null, 2).split('\n').length
 
 const root = createRoot(document.getElementById('root')!);
 root.render(<EditConsole />);

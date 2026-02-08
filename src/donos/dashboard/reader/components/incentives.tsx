@@ -12,7 +12,7 @@ import { useReplicant } from 'use-nodecg';
 import { formatAmount, sortMapSingle } from '../utils';
 import { ProgressBar } from './progress';
 import { BarChartFill, FlagFill, StarFill } from 'react-bootstrap-icons';
-import { formatTime } from 'common/utils/formats';
+import { formatTime } from '../../../../common/utils/formats';
 
 const hitBadge = <Badge bg="success-subtle" className="small text-success"> Hit</Badge>;
 

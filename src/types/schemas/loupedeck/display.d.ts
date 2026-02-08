@@ -48,7 +48,12 @@ export interface Page {
 	 * @minItems 4
 	 * @maxItems 4
 	 */
-	buttons?: [null | State, null | State, null | State, null | State];
+	buttons?: [
+		null | (null | (NodecgMsg | NodecgReplicant) | TapOrToggle),
+		null | (null | (NodecgMsg | NodecgReplicant) | TapOrToggle),
+		null | (null | (NodecgMsg | NodecgReplicant) | TapOrToggle),
+		null | (null | (NodecgMsg | NodecgReplicant) | TapOrToggle)
+	];
 	[k: string]: unknown;
 }
 export interface CellData {
@@ -115,6 +120,9 @@ export interface Knobs {
 	 * @minItems 2
 	 * @maxItems 2
 	 */
-	buttons: [null | State, null | State];
+	buttons: [
+		null | (null | (NodecgMsg | NodecgReplicant) | TapOrToggle),
+		null | (null | (NodecgMsg | NodecgReplicant) | TapOrToggle)
+	];
 	[k: string]: unknown;
 }
