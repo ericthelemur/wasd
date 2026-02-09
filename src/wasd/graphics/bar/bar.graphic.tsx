@@ -12,7 +12,7 @@ import { useReplicant } from 'use-nodecg';
 import specialeffect from '../assets/specialeffect-exclam.png';
 import logo from '../assets/wasd-w.svg';
 import { AnimTextFit } from '../components/animtext';
-import { formatAmount, formatTime } from 'common/utils/formats';
+import { formatAmount, formatTime } from '../../../common/utils/formats';
 import { SafeMarkdown } from '../../../common/utils/barmarkdown';
 
 function VR() {

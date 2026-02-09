@@ -7,7 +7,7 @@ import { Textfit } from 'react-textfit';
 import { RunData } from 'speedcontrol-util/types/speedcontrol';
 import { StreamState } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
-import { formatTime } from 'common/utils/formats';
+import { formatTime } from '../../../../common/utils/formats';
 
 
 export function RunTime({ run, minsBehind, delay }: { run: RunData, minsBehind?: number, delay?: boolean }) {

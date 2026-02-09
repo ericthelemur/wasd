@@ -7,14 +7,6 @@ import { CommPoint } from "../../common/commpoint/commpoint";
 import { BundleReplicant, getSpeedControlUtil, sendError, sendSuccess } from "../../common/utils";
 import listeners, { ListenerTypes, listenTo, sendTo } from "../messages";
 
-const replicants = {
-    status: null as null | Status,
-    login: null as null | Login,
-
-    previewScene: null as null | PreviewScene,
-    programScene: null as null | ProgramScene
-}
-
 export type Replicants = {
     status: Status,
     login: Login,
@@ -46,8 +38,11 @@ export class OBSCommPoint extends CommPoint<ListenerTypes, Replicants> {
 
     async _connect() {
         const login = this.replicants.login.value;
-        const status = this.replicants.status.value;
-        await this.obs.connect(login.ip, login.password);
+        let ip = login.ip;
+        this.log.warn(ip.startsWith("ws://"), ip.startsWith("wss://"), /:\d+$/.test(ip));
+        if (!ip.startsWith("ws://") && !ip.startsWith("wss://")) ip = "ws://" + ip;
+        if (!(/:\d+$/.test(ip))) ip = ip + ":4455";
+        await this.obs.connect(ip, login.password);
     }
 
     async isConnected() {
