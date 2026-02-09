@@ -63,7 +63,7 @@ function Overlay({ aspect }: { aspect: [number, number] }) {
 
 function OverlayWrapper() {
     const [{ aspect, scene },] = useState<URLParams>(fetchFromParams());
-    const [sceneData,] = useReplicant<SceneData>("sceneData", {}, { namespace: "obs" });
+    const [sceneData,] = useReplicant<SceneData>("sceneData", {});
     const [activeRun,] = useReplicant<RunData | undefined>("runDataActiveRun", undefined, { namespace: "nodecg-speedcontrol" });
 
     const [info, setInfo] = useState<SceneInfo>({ name: "", run: null });
@@ -72,7 +72,6 @@ function OverlayWrapper() {
         if (sceneData && scene) {
             const info = sceneData[scene];
             if (info) {
-                console.log("Set sceneinfo");
                 setInfo(clone(info));
                 return;
             }
