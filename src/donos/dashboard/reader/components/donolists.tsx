@@ -58,11 +58,11 @@ export function LiveDonations(props: DonoListProps) {
 	const [d,] = useReplicant<Donations>("donations", [], { namespace: "tiltify" });
 	const donos = d === undefined ? [] : d;
 	return <>
-		<p>
+		{!props.sortSettings.mini && <p>
 			Use Approve / Censor to show/hide dono from appearing on stream - do this as soon as you see it. Use Read to mark when it has been read out on stream.
 			<br />
 			Use the filters above to show/hide read/unread and approved/undecided/censored donos.
-		</p>
+		</p>}
 		<SortedDonations donos={donos} {...props} />
 	</>
 }

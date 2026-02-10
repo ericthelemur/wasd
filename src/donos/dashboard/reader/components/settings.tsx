@@ -13,6 +13,7 @@ export interface SortSettings {
     dir: string,
     show: string[];
     term: string;
+    mini?: boolean;
 }
 
 interface SettingsProps {
