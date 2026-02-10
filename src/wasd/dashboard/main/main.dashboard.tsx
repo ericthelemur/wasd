@@ -20,7 +20,7 @@ import { Timer } from 'speedcontrol-util/types/speedcontrol/schemas/timer';
 
 import { CommPointStatus } from 'common/commpoint/login';
 import { msToTimeString } from 'countdown/utils';
-import { Countdown, StreamState } from 'types/schemas';
+import { ConnStatus, Countdown, StreamState } from 'types/schemas';
 import { Status as OBSStatus, PreviewScene, ProgramScene } from 'types/schemas/obs';
 import { Status as MixerStatus } from 'types/schemas/mixer';
 import { sendTo as sendToCountdown } from '../../../countdown/messages';
@@ -41,32 +41,42 @@ export function OBSStatuses() {
             {status?.streaming && <Badge bg="danger"><Wifi /> LIVE</Badge>}
             {status?.recording && <Badge bg="danger"><RecordFill /> Recording</Badge>}
             {status?.transitioning && <Badge bg="info">Transitioning</Badge>}
+
+            {status?.connected === "connected" &&
+                <>
+                    {previewScene && <Badge bg="secondary"><BrushFill /> {previewScene.name}</Badge>}
+                    {programScene && <Badge bg="danger"><PlayFill /> {programScene.name}</Badge>}
+                </>}
         </Stack>
-        {status?.connected === "connected" &&
-            <Stack direction="horizontal" gap={1}>
-                <b style={{ opacity: 0 }}>OBS:</b>
-                {previewScene && <Badge bg="secondary"><BrushFill /> {previewScene.name}</Badge>}
-                {programScene && <Badge bg="danger"><PlayFill /> {programScene.name}</Badge>}
-            </Stack>}
     </div>
 }
 
-export function MixerStatuses() {
-    const [status,] = useReplicant<MixerStatus>("status", { "connected": "disconnected" }, { namespace: "mixer" });
-    if (!status) return;
+export function Statuses() {
+    const statuses = {
+        "Mixer": "mixer",
+        "Loupedeck": "loupedeck",
+        "Music": "music",
+        "Tiltify": "tiltify",
+        "Tiltify Webhook": "tiltify-webhook",
+        "Discord": "discord"
+    }
 
     return <div className="mt-0">
-        <Stack direction="horizontal" gap={1}>
-            <b>Mixer:</b>
-            <CommPointStatus status={status.connected} />
-        </Stack>
-    </div>
+        <span>
+            {Object.entries(statuses).map(([name, ns]) => <span key={ns} className="me-2"><b style={{ "whiteSpace": "nowrap" }}>{name}: <PartStatus namespace={ns} /></b>{" "}</span>)}
+        </span>
+    </div>;
+}
+
+function PartStatus(props: { namespace: string }) {
+    const [status,] = useReplicant<{ "connected": ConnStatus }>("status", { "connected": "disconnected" }, { "namespace": props.namespace });
+    return <CommPointStatus status={status?.connected} />;
 }
 
 
 function AllStatuses() {
     return <div className="statuses">
-        <MixerStatuses />
+        <Statuses />
         <OBSStatuses />
     </div>
 }
@@ -97,7 +107,7 @@ function MainControls() {
     const [lastScene, setLastScene] = useState("");
     const [showReassignment, setReassignment] = useState(false);
     const [programScene,] = useReplicant<ProgramScene>("programScene", null, { namespace: "obs" });
-    const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" }, { namespace: "obs" });
+    const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
     const [obsStatus,] = useReplicant<OBSStatus>("status", { connected: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false }, { namespace: "obs" });
     const [runDataArray,] = useReplicant<RunDataArray>("runDataArray", [], { namespace: "nodecg-speedcontrol" });
     const [runDataActiveRunSurrounding,] = useReplicant<RunDataActiveRunSurrounding>("runDataActiveRunSurrounding", { previous: undefined, current: undefined, next: undefined }, { namespace: "nodecg-speedcontrol" });
@@ -108,7 +118,7 @@ function MainControls() {
     function goToScene(newSceneName: string) {
         if (programScene) setLastScene(programScene.name);
         if (obsStatus?.studioMode) {
-
+            sendToOBS("transition", { sceneName: newSceneName });
         } else {
             sendToOBS("transition", { sceneName: newSceneName });
         }

@@ -19,6 +19,7 @@
         "title": "Break Countdown",
         "width": 2,
         "file": "countdown/dashboard/countdown/countdown.dashboard.html",
+        "workspace": "Connection Settings",
         "headerColor": "#525F78"
       },
       {
@@ -47,6 +48,7 @@
         "title": "Mixer Control",
         "width": 3,
         "file": "mixer/dashboard/mixer-control/mixer.dashboard.html",
+        "workspace": "Connection Settings",
         "headerColor": "#525F78"
       },
       {
@@ -54,6 +56,7 @@
         "title": "Music Control",
         "width": 3,
         "file": "music/dashboard/music.dashboard.html",
+        "workspace": "Connection Settings",
         "headerColor": "#525F78"
       },
       {
@@ -75,6 +78,7 @@
         "title": "People",
         "width": 3,
         "file": "people/dashboard/people-control/people.dashboard.html",
+        "workspace": "Connection Settings",
         "headerColor": "#525F78"
       },
       {
@@ -97,6 +101,7 @@
         "title": "Tiltify Control",
         "width": 3,
         "file": "tiltify/dashboard/tiltify.dashboard.html",
+        "workspace": "Connection Settings",
         "headerColor": "#525F78"
       },
       {
