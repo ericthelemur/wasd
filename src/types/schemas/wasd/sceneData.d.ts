@@ -11,6 +11,17 @@ export interface SceneData {
 export interface SceneInfo {
 	name: string;
 	run: RunData | null;
+	camStack?: {
+		[k: string]: {
+			direction?: 'horizontal' | 'vertical';
+			gap?: number;
+			cams?: string[];
+			[k: string]: unknown;
+		};
+	};
+	cams?: {
+		[k: string]: Cam;
+	};
 	[k: string]: unknown;
 }
 export interface RunData {
@@ -51,4 +62,10 @@ export interface RunData {
 	};
 	id: string;
 	externalID?: string;
+}
+export interface Cam {
+	sourceName: string;
+	crop?: 'start' | 'center' | 'end' | 'custom';
+	aspectRatio?: string;
+	[k: string]: unknown;
 }

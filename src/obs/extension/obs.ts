@@ -179,7 +179,7 @@ export class OBSCommPoint extends CommPoint<ListenerTypes, Replicants> {
     }
 
 
-    private async _tryCallOBS<Type extends keyof OBSRequestTypes>(requestType: Type, requestData?: OBSRequestTypes[Type], ack?: NodeCG.Acknowledgement, errMsg?: string, catchF?: (e: any) => {}) {
+    private async _tryCallOBS<Type extends keyof OBSRequestTypes>(requestType: Type, requestData?: OBSRequestTypes[Type], ack?: NodeCG.Acknowledgement, errMsg?: string, catchF?: (e: any) => any) {
         this.log.info("Calling", requestType, "with", requestData);
         if (!(await this.isConnected())) {
             if (catchF) catchF("OBS is not connected");
@@ -217,7 +217,7 @@ export class OBSCommPoint extends CommPoint<ListenerTypes, Replicants> {
                 ).catch((e) => this.log.error("Error setting transition duration", e));;
 
                 // Trigger transition, needs different calls outside studio mode
-                if (this.replicants.status.value.studioMode) {
+                if (this.replicants.status.value.studioMode && !args.sceneName) {
                     // setTimeout(() => {
                     this._tryCallOBS("TriggerStudioModeTransition", undefined, ack, "Error transitioning",
                         (e) => this.replicants.status.value.transitioning = false);
@@ -228,7 +228,11 @@ export class OBSCommPoint extends CommPoint<ListenerTypes, Replicants> {
                         sendError(ack, `Error: Cannot transition to ${args.sceneName}`);
                         this.replicants.status.value.transitioning = false;
                     } else this._tryCallOBS("SetCurrentProgramScene", { 'sceneName': args.sceneName }, ack, "Error transitioning",
-                        (e) => this.replicants.status.value.transitioning = false);
+                        (e) => {
+                            this.log.error("Error transitioning", e);
+                            sendError(ack, `Error transitioning ${e}`);
+                            this.replicants.status.value.transitioning = false;
+                        });
                 }
             } catch (e) {
                 this.log.error(`Error transitioning with ${args}: ${e}`);

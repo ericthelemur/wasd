@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 
-import { Camera, SceneInfoContext } from './cam';
+import { Camera, NewCamera, NewStack, SceneInfoContext } from './cam';
 import { Game, TimerComp } from './game';
 import { PeopleComp } from './people';
 
@@ -20,7 +20,8 @@ export function Sidebar(props: SidebarArgs) {
 
     return <div className={className} {...divProps}>
         <div style={{ maxWidth: 400, margin: "auto", display: "flex", flexDirection: "column", height: "100%" }}>
-            <Camera camName={sceneInfo.name === "RUN-1" ? "CAM-1" : "CAM-2"} aspectRatio={"4 / 3"} dims={["100%", null]} />
+            {/* <NewCamera cam={sceneInfo.cams && sceneInfo.cams["CAM"]} dims={["100%", null]} /> */}
+            <NewStack stack="CAMS" dims={["100%", null]} />
             <div className={`flex-gs d-flex flex-column align-items-center gap-3`} style={{ margin: "1rem calc(1rem + 0.5 * var(--bw)) 1rem 1rem" }}>
                 <div className='w-100'>
                     <PeopleComp cat="runners" />

@@ -117,7 +117,8 @@ export function CategoryComp({ cat, hideSocials }: { cat: Category, hideSocials?
     // Periodically move to next social index for person
     // Move to next person if out of socials
     useEffect(() => {
-        var time = person && person.socials && person.socials.length >= 3 ? 10000 / person.socials.length : 5000;
+        // var time = person && person.socials && person.socials.length >= 3 ? 10000 / person.socials.length : 5000;
+        var time = 5000;
         // const time = 3000;
         const timeout = setInterval(() => {
             if (!person) return;

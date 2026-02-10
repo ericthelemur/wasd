@@ -54,7 +54,7 @@ function OBSSettings() {
 			</InputGroup.Text>
 			<InputGroup.Text>
 				{status && <Form.Check type="switch" className="d-inline-block ms-3" checked={status.controlRecording}
-					label="Record" onChange={() => setStatus({ ...status, controlRecording: !status.controlRecording })} />}
+					label="Automatic Record" onChange={() => setStatus({ ...status, controlRecording: !status.controlRecording })} />}
 			</InputGroup.Text>
 		</InputGroup>
 		<InputGroup className="mt-2">

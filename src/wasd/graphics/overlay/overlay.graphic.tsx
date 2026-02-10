@@ -8,7 +8,7 @@ import { RunData } from 'speedcontrol-util/types/speedcontrol';
 import { SceneData, SceneInfo } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
-import { Camera, SceneInfoContext } from './components/cam';
+import { Camera, NewCamera, SceneInfoContext } from './components/cam';
 import { Game, TimerComp } from './components/game';
 import { Sidebar } from './components/sidebar';
 
@@ -51,7 +51,7 @@ function Overlay({ aspect }: { aspect: [number, number] }) {
     return <div className="fill d-flex outer" style={{ fontFamily: "Montserrat", fontWeight: "600" }}>
         <Sidebar className="flex-gs" vertical={infoInSidebar} style={{ marginRight: "var(--bw)" }} />
         <div className="d-flex flex-column">
-            <Camera camName={sceneInfo.name === "RUN-1" ? "GAME-1" : "GAME-2"} aspectRatio={`${aspect[0]} / ${aspect[1]}`} dims={infoInSidebar ? [null, 1010] : [1520, null]} style={{ borderRight: "none" }} />
+            <NewCamera cam={sceneInfo.cams && sceneInfo.cams["GAME"]} aspectRatio={`${aspect[0]} / ${aspect[1]}`} dims={infoInSidebar ? [null, 1010] : [1520, null]} style={{ borderRight: "none" }} />
             {!infoInSidebar && <div className="d-flex vcentre flex-gs px-4 py-2 gap-3" style={{ borderLeft: "var(--bw) white solid" }}>
                 <Game />
                 <VR />

@@ -15,7 +15,7 @@ function checkRun(run: RunData, assigned: SceneData) {
 function updateSceneRuns() {
     if (!sceneData.value) return;
     const sc = getSpeedControlUtil();
-    const assigned: SceneData = Object.fromEntries(Object.keys(sceneData.value).map(k => [k, { name: k, run: null }]));
+    const assigned: SceneData = Object.fromEntries(Object.entries(sceneData.value).map(([k, v]) => [k, { ...v, run: null }]));
     const currRun = sc.getCurrentRun();
     if (currRun) checkRun(currRun, assigned);
 
