@@ -19,6 +19,9 @@
                 },
                 "aspectRatio": {
                     "type": "string"
+                },
+                "label": {
+                    "type": "string"
                 }
             },
             "required": [
@@ -29,6 +32,9 @@
     "properties": {
         "name": {
             "type": "string"
+        },
+        "hideTimer": {
+            "type": "boolean"
         },
         "run": {
             "oneOf": [

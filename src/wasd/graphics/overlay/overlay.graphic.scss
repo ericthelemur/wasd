@@ -46,3 +46,20 @@ body {
     position: absolute;
     inset: 0;
 }
+
+.images {
+    container-type: size;
+    container-name: images;
+}
+
+@container images (height < 300px) {
+    .wasd {
+        display: none;
+    }
+}
+
+@container images (height < 100px) {
+    .se {
+        display: none;
+    }
+}

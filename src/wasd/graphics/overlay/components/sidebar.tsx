@@ -22,15 +22,18 @@ export function Sidebar(props: SidebarArgs) {
         <div style={{ maxWidth: 400, margin: "auto", display: "flex", flexDirection: "column", height: "100%" }}>
             {/* <NewCamera cam={sceneInfo.cams && sceneInfo.cams["CAM"]} dims={["100%", null]} /> */}
             <NewStack stack="CAMS" dims={["100%", null]} />
-            <div className={`flex-gs d-flex flex-column align-items-center gap-3`} style={{ margin: "1rem calc(1rem + 0.5 * var(--bw)) 1rem 1rem" }}>
+            <div className={`flex-gs d-flex flex-column align-items-center gap-3`} style={{ margin: "1rem calc(1rem + 0.5 * var(--bw)) 1rem 1rem", flexShrink: 1 }}>
                 <div className='w-100'>
                     <PeopleComp cat="runners" />
                     <PeopleComp cat="commentators" />
                     {/* <People cat="tech" /> */}
                 </div>
-                <img src={WASDKeys} className="mt-3" style={{ width: "70%" }} />
-                <img src={SpecialEffect} style={{ width: "90%" }} />
-                {vertical && <><Game vertical={vertical} /><TimerComp /></>}
+                <div className="images flex-gs w-100 d-flex flex-column align-items-center justify-content-around">
+                    <img src={WASDKeys} className="wasd" style={{ width: "70%" }} />
+                    <img src={SpecialEffect} className="se" style={{ width: "90%" }} />
+                </div>
+                {vertical && <Game vertical={vertical} />}
+                {vertical && !sceneInfo.hideTimer && <TimerComp />}
             </div>
         </div>
     </div>
