@@ -10,6 +10,7 @@ export interface SceneData {
 }
 export interface SceneInfo {
 	name: string;
+	hideTimer?: boolean;
 	run: RunData | null;
 	camStack?: {
 		[k: string]: {
@@ -67,5 +68,6 @@ export interface Cam {
 	sourceName: string;
 	crop?: 'start' | 'center' | 'end' | 'custom';
 	aspectRatio?: string;
+	label?: string;
 	[k: string]: unknown;
 }
