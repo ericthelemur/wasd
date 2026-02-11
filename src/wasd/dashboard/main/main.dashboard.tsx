@@ -6,7 +6,7 @@ import { FormEvent, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { useReplicant } from 'use-nodecg';
 
-import { ArrowCounterclockwise, BrushFill, Controller, PlayFill, RecordFill, Wifi } from 'react-bootstrap-icons';
+import { ArrowCounterclockwise, BrushFill, Controller, FastForwardFill, PauseFill, PlayFill, RecordFill, Wifi } from 'react-bootstrap-icons';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
@@ -15,16 +15,17 @@ import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 
 import { RunData, RunDataActiveRun, RunDataArray } from 'speedcontrol-util/types/speedcontrol';
-import { RunDataActiveRunSurrounding } from 'speedcontrol-util/types/speedcontrol/schemas';
+import { RunDataActiveRunSurrounding, TwitchCommercialTimer } from 'speedcontrol-util/types/speedcontrol/schemas';
 import { Timer } from 'speedcontrol-util/types/speedcontrol/schemas/timer';
 
 import { CommPointStatus } from 'common/commpoint/login';
 import { msToTimeString } from 'countdown/utils';
 import { ConnStatus, Countdown, StreamState } from 'types/schemas';
 import { Status as OBSStatus, PreviewScene, ProgramScene } from 'types/schemas/obs';
-import { Status as MixerStatus } from 'types/schemas/mixer';
+import { MusicData, Status as MusicStatus } from 'types/schemas/music';
 import { sendTo as sendToCountdown } from '../../../countdown/messages';
 import { sendTo as sendToOBS } from '../../../obs/messages';
+import { sendToF as sendToFMusic } from '../../../music/messages';
 
 declare const nodecg: NodeCG.ServerAPI;
 
@@ -229,13 +230,48 @@ function CountdownRow() {
     </InputGroup>
 }
 
+
+function TwitchAdButton(props: { variant: string, duration: number, durationString: string, noAdsString?: string, grow?: boolean }) {
+    return <Button className={`lh-1 ${props.grow ? "flex-grow-1" : ""}`} variant={props.variant}
+        onClick={() => nodecg.sendMessageToBundle("twitchStartCommercial", "nodecg-speedcontrol", { duration: props.duration })}>
+        Run {props.durationString} ads
+        {props.noAdsString && <br />}
+        {props.noAdsString && <small style={{ fontSize: "0.75em" }}>No preroll ads for {props.noAdsString}</small>}
+    </Button>
+}
+
+function TwitchRow() {
+    const [adTimer,] = useReplicant<TwitchCommercialTimer>("twitchCommercialTimer", { secondsRemaining: 0, originalDuration: 0, timestamp: 0 }, { namespace: "nodecg-speedcontrol" });
+
+    if (adTimer && adTimer.secondsRemaining) {
+        return <Button variant="outline-primary" disabled={true}>{adTimer.secondsRemaining}s ads left</Button>
+    }
+
+    return <InputGroup className="d-flex">
+        <TwitchAdButton variant="primary" duration={180} durationString='3 min' noAdsString='1 hr' grow={true} />
+        <TwitchAdButton variant="outline-primary" duration={90} durationString='1:30' />
+    </InputGroup>
+}
+
+function MusicRow() {
+    const [musicStatus,] = useReplicant<MusicStatus>("status", { connected: "disconnected", playing: false }, { namespace: "music" });
+    const [musicData,] = useReplicant<MusicData>("musicData", {}, { namespace: "music" });
+    if (!musicStatus) return;
+    return <InputGroup style={{ flexWrap: "nowrap" }}>
+        {!musicStatus.playing && <Button className="flex-grow-1" onClick={sendToFMusic("play")}><PlayFill /> Play Music</Button>}
+        {musicStatus.playing && <Button variant="outline-primary" className="line-clamp-1" style={{ flex: "1 1 0" }} disabled={true}>{musicData?.title} - {musicData?.artist}</Button>}
+        {musicStatus.playing && <Button variant="outline-primary" onClick={sendToFMusic("pause")}><PauseFill /></Button>}
+        <Button variant="outline-primary" disabled={!musicStatus.playing} onClick={sendToFMusic("skip")}><FastForwardFill /></Button>
+    </InputGroup>;
+}
+
 function BreakControls({ goToScene, programScene, controlRecording }: ControlPage) {
     const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
-    const [obsStatus,] = useReplicant<OBSStatus>("status", { connected: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false }, { namespace: "obs" });
 
     return <div className="vstack gap-2">
         <CountdownRow />
-        {/* <Button variant="outline-primary" onClick={() => nodecg.sendMessageToBundle("twitchStartCommercial", "nodecg-speedcontrol", { duration: 180 })}>Run 1:30 ads (no prerolls for 1hr)</Button> */}
+        <TwitchRow />
+        <MusicRow />
         <Button variant="outline-primary" onClick={() => goToScene(programScene == "BREAK" ? "COMMS" : "BREAK")}>{programScene == "BREAK" ? "Scene COMMS" : "Back to BREAK"}</Button>
         <Button onClick={() => {
             setState({ ...state, state: "INTRO" });

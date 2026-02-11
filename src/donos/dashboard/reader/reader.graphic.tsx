@@ -64,7 +64,7 @@ export function Reader() {
 	if (sortSettings.mini) {
 		return <div className="m-3" style={{ maxHeight: 500, overflowY: "scroll" }}>
 			<Settings settings={sortSettings} setSettings={setSortSettings} />
-			<CommPointStatus status={status.connected} />{" "}
+			<span className="ms-5">{" "}</span><CommPointStatus status={status.connected} />{" "}
 			<a href="/dashboard/#fullbleed/dono-reader" target="about:blank">Open Full Reader</a>
 			<h1><TotalComp /></h1>
 			<LiveDonations {...args} />

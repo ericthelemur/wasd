@@ -49,12 +49,19 @@ function OBSSettings() {
 		<summary><span className="h6">Settings</span></summary>
 		<InputGroup className="mt-2">
 			<InputGroup.Text>
+				<b>Auto: </b>
+			</InputGroup.Text>
+			<InputGroup.Text>
 				{status && <Form.Check type="switch" className="d-inline-block ms-3" checked={status.moveCams}
 					label="Move Cams" onChange={() => setStatus({ ...status, moveCams: !status.moveCams })} />}
 			</InputGroup.Text>
 			<InputGroup.Text>
 				{status && <Form.Check type="switch" className="d-inline-block ms-3" checked={status.controlRecording}
-					label="Automatic Record" onChange={() => setStatus({ ...status, controlRecording: !status.controlRecording })} />}
+					label="Record" onChange={() => setStatus({ ...status, controlRecording: !status.controlRecording })} />}
+			</InputGroup.Text>
+			<InputGroup.Text>
+				{status && <Form.Check type="switch" className="d-inline-block ms-3" checked={status.controlRecording}
+					label="Twitch Markers" onChange={() => setStatus({ ...status, controlRecording: !status.controlRecording })} />}
 			</InputGroup.Text>
 		</InputGroup>
 		<InputGroup className="mt-2">
