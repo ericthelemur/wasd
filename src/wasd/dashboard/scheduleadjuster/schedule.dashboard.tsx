@@ -13,7 +13,7 @@ function ScheduleAdjuster() {
 	if (!state || !config) return;
 
 	return <div className="m-3">
-		<Editable text={String(Math.abs(state.minsBehind || 0))} setText={(v) => state.minsBehind = Number(v)} prefix={state.minsBehind && state.minsBehind > 0 ? "Behind" : "Ahead"} container={true} /><br />
+		<Editable text={String(state.minsBehind || 0)} preview={String(Math.abs(state.minsBehind || 0))} setText={(v) => state.minsBehind = Number(v)} prefix={state.minsBehind && state.minsBehind > 0 ? "Behind" : "Ahead"} container={true} /><br />
 		<Form.Check type="switch" className="d-inline-block ms-3" checked={config.updateMinsBehind}
 			label="Auto-Update Mins Behind" onChange={() => setConfig({ ...config, updateMinsBehind: !config.updateMinsBehind })} />
 	</div>

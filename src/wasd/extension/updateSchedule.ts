@@ -16,7 +16,7 @@ function upcoming() {
         const actualCurrRunStart = now - timer;
         const expectedCurrRunStart = currRun.scheduledS * 1000;
 
-        const behind = expectedCurrRunStart - actualCurrRunStart;
+        const behind = actualCurrRunStart - expectedCurrRunStart;
 
         // nodecg.log.info(now, timer, currRun?.scheduledS, actualCurrRunStart, expectedCurrRunStart, behind);
 

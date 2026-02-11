@@ -72,7 +72,7 @@ listenTo("updateEvents", async () => {
             const runStatus = eventStatuses[run.id];
             const players = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
             // Calculate adjusted time TODO: read off rundata - if active, make
-            let baseTime = 1000 * (run.scheduledS || 0) - 1000 * 60 * (streamState.value.minsBehind || 0);
+            let baseTime = 1000 * (run.scheduledS || 0) + 1000 * 60 * (streamState.value.minsBehind || 0);
             discord.log.info("Adjusted start time is", new Date(baseTime));
 
             const currentRun = sc.getCurrentRun();
