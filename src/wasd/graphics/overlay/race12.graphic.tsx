@@ -9,7 +9,7 @@ import { RunData } from 'speedcontrol-util/types/speedcontrol';
 import { SceneData, SceneInfo } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
 
-import { Camera, SceneInfoContext } from './components/cam';
+import { Camera, NewCamera, SceneInfoContext } from './components/cam';
 import { Game, TimerComp } from './components/game';
 import { Sidebar } from './components/sidebar';
 import SpecialEffect from '../assets/specialeffect-white.png';
@@ -47,20 +47,20 @@ function Overlay({ aspect }: { aspect: [number, number] }) {
     const infoInSidebar = 9 * aspect[0] < 16 * aspect[1];
     console.log(aspect, infoInSidebar);
 
-    return <div className="fill d-flex outer flex-column h-100 justify-content-between" style={{ fontFamily: "Montserrat", fontWeight: "600", marginRight: "calc(2 * var(--bw)", marginBottom: "calc(2 * var(--bw)" }}>
+    return <div className="fill d-flex outer flex-column justify-content-between" style={{ height: 1010, width: 1920, overflow: "hidden", fontFamily: "Montserrat", fontWeight: "600", paddingRight: "calc(2 * var(--bw))", paddingBottom: "calc(2 * var(--bw))" }}>
         {/* <Sidebar className="flex-gs" vertical={infoInSidebar} /> */}
-        <div className="d-flex">
+        < div className="d-flex" >
             <div style={{ flexGrow: 1, marginRight: "calc(1 * var(--bw))" }}>
-                <Camera camName="GAME-1" aspectRatio={`${aspect[0]} / ${aspect[1]}`} />
+                <NewCamera cam={sceneInfo.cams && sceneInfo.cams["GAME-1"]} aspectRatio={`${aspect[0]} / ${aspect[1]}`} />
             </div>
             <div style={{ flexGrow: 1 }}>
-                <Camera camName="GAME-2" aspectRatio={`${aspect[0]} / ${aspect[1]}`} />
+                <NewCamera cam={sceneInfo.cams && sceneInfo.cams["GAME-2"]} aspectRatio={`${aspect[0]} / ${aspect[1]}`} />
             </div>
-        </div>
+        </div >
         {/* <div style={{ position: "absolute", bottom: 0, height: "calc(287px + var(--bw))", left: 0, right: 0 }} className="d-flex flex-row"> */}
-        <div className="d-flex flex-row flex-grow-1 flex-shrink-1" style={{ height: 300, marginTop: "calc(-1 * var(--bw))", maxHeight: 400 }}>
-            <div style={{ aspectRatio: "4 / 3", height: "100%" }}>
-                <Camera camName="CAM-1" aspectRatio="4 / 3" style={{ borderColor: "#eb3434" }} />
+        < div className="d-flex flex-row flex-grow-1 flex-shrink-1 position-relative" style={{ height: 300, marginTop: "calc(-1 * var(--bw))", maxHeight: 400 }}>
+            <div style={{ height: "100%" }}>
+                <NewCamera cam={sceneInfo.cams && sceneInfo.cams["CAM-1"]} dims={[null, "100%"]} />
             </div>
             <div className="d-flex vcentre mx-3 my-3 gap-3 position-relative" style={{ flex: "1 1 0", paddingTop: "var(--bw)" }}>
                 <div className="h-100 m-3 position-relative d-flex" style={{ width: "50%", fontSize: "0.7em" }}>
@@ -75,11 +75,11 @@ function Overlay({ aspect }: { aspect: [number, number] }) {
                     </div>
                 </div>
             </div>
-            <div style={{ aspectRatio: "4 / 3", height: "100%" }}>
-                <Camera camName="CAM-2" aspectRatio="4 / 3" style={{ borderColor: "#34abeb" }} />
+            <div style={{ height: "100%" }} >
+                <NewCamera cam={sceneInfo.cams && sceneInfo.cams["CAM-2"]} dims={[null, "100%"]} />
             </div>
         </div>
-    </div>
+    </div >
 }
 
 function OverlayWrapper() {
