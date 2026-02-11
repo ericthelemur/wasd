@@ -6,7 +6,7 @@ import { config, sceneData } from './replicants';
 import { getNodeCG, getSpeedControlUtil } from '../../common/utils';
 import { listenTo } from '../messages';
 import { TwitchAPIData } from 'speedcontrol-util/types/speedcontrol/schemas';
-import { obs } from 'obs/extension/index.extension';
+import { obs } from '../../obs/extension/index.extension';
 
 function checkRun(run: RunData, assigned: SceneData) {
     const runSceneName = run.customData["scene"];

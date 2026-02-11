@@ -19,15 +19,22 @@
         "title": "Break Countdown",
         "width": 2,
         "file": "countdown/dashboard/countdown/countdown.dashboard.html",
-        "workspace": "Connection Settings",
         "headerColor": "#525F78"
       },
       {
         "name": "discord",
         "title": "Discord Control",
         "width": 3,
-        "file": "discord/dashboard/discord.dashboard.html",
+        "file": "discord/dashboard/discord/discord.dashboard.html",
         "headerColor": "#525F78"
+      },
+      {
+        "name": "discord-connection",
+        "title": "Discord Connection",
+        "width": 3,
+        "file": "discord/dashboard/connection/connection.dashboard.html",
+        "headerColor": "#525F78",
+        "workspace": "Connection Settings"
       },
       {
         "name": "dono-reader",
@@ -85,7 +92,6 @@
         "title": "People",
         "width": 3,
         "file": "people/dashboard/people-control/people.dashboard.html",
-        "workspace": "Connection Settings",
         "headerColor": "#525F78"
       },
       {

@@ -28,9 +28,9 @@ export function CommPointStatus({ status, bundle }: { status?: ConnStatus, bundl
 }
 
 function CommPointStatusFromBundle({ bundle }: { bundle: string }) {
-    const [status,] = useReplicant<{ connection?: ConnStatus }>("status", { "connection": "disconnected" }, { namespace: bundle });
+    const [status,] = useReplicant<{ connected?: ConnStatus }>("status", { "connected": "disconnected" }, { namespace: bundle });
 
-    return <CommPointStatus status={status?.connection} />
+    return <CommPointStatus status={status?.connected} />
 }
 
 export function CreateCommPointConnect<

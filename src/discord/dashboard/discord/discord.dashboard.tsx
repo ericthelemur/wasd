@@ -1,10 +1,10 @@
 import { createRoot } from 'react-dom/client';
-import '../../common/uwcs-bootstrap.css';
+import '../../../common/uwcs-bootstrap.css';
 
 import Form from "react-bootstrap/Form";
-import { CreateCommPointConnect } from '../../common/commpoint/login';
-import type { Replicants } from "../extension/discord";
-import listeners, { ListenerTypes, listenTo, sendTo, sendToF, unlistenTo } from '../messages';
+import { CommPointStatus, CreateCommPointConnect } from '../../../common/commpoint/login';
+import type { Replicants } from "../../extension/discord";
+import listeners, { ListenerTypes, listenTo, sendTo, sendToF, unlistenTo } from '../../messages';
 import { useReplicant } from 'use-nodecg';
 import { Status } from 'types/schemas/discord';
 import { SetStateAction, useEffect, useRef, useState } from 'react';
@@ -74,13 +74,8 @@ function DiscordControl() {
 	</Form>
 }
 
-const ControlForm = CreateCommPointConnect<ListenerTypes, Replicants>("discord", listeners, {
-	appID: "Discord App ID",
-	token: "Discord Bot Token",
-	server: "Discord Server",
-	scheduleChannel: "Schedule Channel",
-	donationChannel: "Donations Channel",
-} as const, { appID: "", token: "", server: "" }, { connected: "disconnected" }, DiscordControl);
-
 const root = createRoot(document.getElementById('root')!);
-root.render(<ControlForm />);
+root.render(<div className="m-3">
+	Status: <CommPointStatus bundle="discord" />
+	<DiscordControl />
+</div>);

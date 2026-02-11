@@ -4,7 +4,7 @@ import OBSWebSocket, { OBSRequestTypes } from "obs-websocket-js";
 import path from "path";
 import { Login, ObsScene, ObsSource, PreviewScene, ProgramScene, SceneList, Status } from "types/schemas/obs";
 import { CommPoint } from "../../common/commpoint/commpoint";
-import { BundleReplicant, getSpeedControlUtil, sendError, sendSuccess } from "../../common/utils";
+import { BundleReplicant, getNodeCG, getSpeedControlUtil, sendError, sendSuccess } from "../../common/utils";
 import listeners, { ListenerTypes, listenTo, sendTo } from "../messages";
 
 export type Replicants = {
@@ -391,7 +391,7 @@ export class OBSCommPoint extends CommPoint<ListenerTypes, Replicants> {
             runners,
             time ? " in " : "",
             time?.time,
-            " (WASD 2025)"
+            ` (WASD ${getNodeCG().bundleConfig.year})`
         ].filter(x => x).join("");
     }
 

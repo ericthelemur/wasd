@@ -5,6 +5,10 @@
         "barURL": {
             "type": "string",
             "default": "/bundles/wasd/graphics/bar/bar.graphic.html"
+        },
+        "year": {
+            "type": "string",
+            "default": "2026"
         }
     }
 }

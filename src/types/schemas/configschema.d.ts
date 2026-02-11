@@ -7,5 +7,6 @@
 
 export interface Configschema {
 	barURL?: string;
+	year?: string;
 	[k: string]: unknown;
 }
