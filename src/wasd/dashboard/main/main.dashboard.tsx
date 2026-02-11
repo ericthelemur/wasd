@@ -57,9 +57,9 @@ export function Statuses() {
         "Mixer": "mixer",
         "Loupedeck": "loupedeck",
         "Music": "music",
+        "Discord": "discord",
         "Tiltify": "tiltify",
         "Tiltify Webhook": "tiltify-webhook",
-        "Discord": "discord"
     }
 
     return <div className="mt-0">
@@ -106,7 +106,7 @@ function findRunType(programScene: ProgramScene | undefined, runDataArray: RunDa
 
 function MainControls() {
     const [lastScene, setLastScene] = useState("");
-    const [showReassignment, setReassignment] = useState(false);
+    const [showReassignment, setReassignment] = useState<"current" | "next" | null>(null);
     const [programScene,] = useReplicant<ProgramScene>("programScene", null, { namespace: "obs" });
     const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
     const [obsStatus,] = useReplicant<OBSStatus>("status", { connected: "disconnected", "recording": false, "streaming": false, transitioning: false, studioMode: true, moveCams: true, controlRecording: false }, { namespace: "obs" });
@@ -125,15 +125,27 @@ function MainControls() {
         }
     }
 
-    function setRunType(runType: string | null, run: RunData | undefined) {
-        if (!run) return;
-        if (run.customData.scene && !confirm(`Set run type to ${runType}`)) return;
-        setReassignment(false);
+    function setRunType(runType: string | null) {
+        if (!showReassignment || !runDataArray) return;
+        let editRun: RunData | undefined;
+        if (showReassignment == "current") editRun = run;
+        if (showReassignment == "next") {
+            const nextID = runDataActiveRunSurrounding?.next;
+            editRun = runDataArray.find(r => r.id === nextID);
+        }
+        if (!editRun) return;
+        const newRunType = runType ? "RUN-" + runType : null;
+        if (editRun.customData.scene && editRun.customData.scene != newRunType) {
+            const prompt = confirm(`Change run type for ${editRun.game} from ${editRun.customData.scene} to ${newRunType}`);
+            if (!prompt) return;
+        }
+        setReassignment(null);
 
-        let newData = clone(run);
-        newData.customData.scene = runType ? `RUN-${runType}` : "";
+        let newData = clone(editRun);
+        newData.customData.scene = newRunType || "";
         nodecg.sendMessageToBundle("modifyRun", "nodecg-speedcontrol", { runData: newData, updateTwitch: false })
     }
+
 
     const args = {
         lastScene, goToScene, programScene: programScene?.name || "", controlRecording: obsStatus.controlRecording,
@@ -144,8 +156,8 @@ function MainControls() {
     return <>
         <Stack direction="horizontal" gap={1}>
             <b>RUN:</b>
-            <Badge bg={args.currentType ? "success" : "danger"} onClick={() => setReassignment(!showReassignment)} style={{ cursor: "pointer" }}><Controller /> RUN-{args.currentType || "UNKNOWN"}</Badge>
-            <Badge bg="info">Next: {args.nextType || "UNKNOWN"}</Badge>
+            <Badge bg={args.currentType ? "success" : "danger"} onClick={() => setReassignment("current")} style={{ cursor: "pointer" }}><Controller /> RUN-{args.currentType || "UNKNOWN"}</Badge>
+            <Badge bg={args.nextType ? "info" : "danger"} onClick={() => setReassignment("next")} style={{ cursor: "pointer" }}>Next: RUN-{args.nextType || "UNKNOWN"}</Badge>
         </Stack>
 
         {args.currentType || state.state == "BREAK" ?
@@ -157,12 +169,12 @@ function MainControls() {
             </Tabs>
             : <UnknownControls {...args} />}
 
-        {(showReassignment || !args.currentType) && <InputGroup className="d-flex">
-            <InputGroup.Text>Set:</InputGroup.Text>
-            <Button className="flex-grow-1" variant="outline-primary" onClick={() => setRunType("1", run)}>RUN-1</Button>
-            <Button className="flex-grow-1" variant="outline-primary" onClick={() => setRunType("2", run)}>RUN-2</Button>
-            <Button className="flex-grow-1" variant="outline-primary" onClick={() => setRunType("RACE", run)}>RACE</Button>
-            <Button className="flex-grow-1" variant="outline-primary" onClick={() => setRunType(null, run)}>Unset</Button>
+        {(showReassignment && (showReassignment == "current" || runDataActiveRunSurrounding?.next)) && <InputGroup className="d-flex">
+            <InputGroup.Text>Set{showReassignment == "next" ? " next" : ""}:</InputGroup.Text>
+            <Button className="flex-grow-1" variant="outline-primary" onClick={() => setRunType("1")}>RUN-1</Button>
+            <Button className="flex-grow-1" variant="outline-primary" onClick={() => setRunType("2")}>RUN-2</Button>
+            <Button className="flex-grow-1" variant="outline-primary" onClick={() => setRunType("RACE")}>RACE</Button>
+            <Button className="flex-grow-1" variant="outline-primary" onClick={() => setRunType(null)}>Unset</Button>
         </InputGroup>}
 
     </>
@@ -295,6 +307,7 @@ function IntroControls({ lastScene, goToScene, programScene, controlRecording, c
     </div>
 }
 
+
 function OutroControls(args: ControlPage) {
     const { lastScene, goToScene, programScene, controlRecording, currentType: t } = args;
     const [state, setState] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
@@ -315,14 +328,19 @@ function TimerButton() {
     if (!run) return <Button disabled={true} />
     if (run.teams.length == 0) return <Button disabled={true}>No Teams</Button>;
     if (run.teams.length > 1) return <Button disabled={true}>Use Timer Control</Button>;
-    return <Button onClick={() => {
+
+    function startStopTimer() {
         if (timer?.state != "running") {
             nodecg.sendMessageToBundle("timerStart", "nodecg-speedcontrol");
         } else {
-            nodecg.sendMessageToBundle("timerStop", "nodecg-speedcontrol", { id: run.teams[0].id });
+            nodecg.sendMessageToBundle("timerStop", "nodecg-speedcontrol", { id: run?.teams[0].id });
         }
-    }}>
-        {timer?.state != "running" ? "Start" : "Stop"} Run Timer</Button>
+    }
+
+    return <InputGroup>
+        <Button className="flex-grow-1" onClick={startStopTimer}>{timer?.state != "running" ? "Start" : "Stop"} Run Timer</Button>
+        {timer?.state == "running" && <Button variant="outline-primary" onClick={() => nodecg.sendMessageToBundle("timerPause", "nodecg-speedcontrol")}><PauseFill /></Button>}
+    </InputGroup>
 }
 
 function RunControls({ lastScene, goToScene, programScene, currentType: t }: ControlPage) {

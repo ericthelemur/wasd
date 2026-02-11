@@ -12,6 +12,10 @@ import Cookies from "js-cookie";
 
 import { sendTo, sendToF } from '../../messages';
 import { CommPointStatus } from '../../../common/commpoint/login';
+import { RunDataActiveRun, RunDataTeam, Timer } from 'speedcontrol-util/types/speedcontrol';
+import { getNodeCG } from 'common/utils';
+import { InputGroup } from 'react-bootstrap';
+import { PauseFill } from 'react-bootstrap-icons';
 
 function fetchFromParams() {
 	const url = new URL(window.location.href);
@@ -56,6 +60,42 @@ function MicChoice({ setMic }: { setMic: (m: string) => void }) {
 			return <Button key={m} variant="outline-primary" onClick={() => setMic(m)}>{m}</Button>
 		})}
 	</div>
+}
+
+function TimerButtons(props: { mic: string }) {
+	const [run,] = useReplicant<RunDataActiveRun>("runDataActiveRun", { id: "", teams: [], customData: {} }, { namespace: "nodecg-speedcontrol" });
+	const [timer,] = useReplicant<Timer>("timer", { time: "", state: "finished", milliseconds: 0, timestamp: 0, teamFinishTimes: {} }, { namespace: "nodecg-speedcontrol" });
+
+	if (!run || !timer) return;
+	if (!run.teams || run.teams.length == 0 || run.teams.length > 2) return;
+
+	let team: RunDataTeam | undefined;
+	if (run.customData.scene == "RUN-1" && props.mic == "RUN-1") team = run.teams[0];
+	else if (run.customData.scene == "RUN-2" && props.mic == "RUN-2") team = run.teams[0];
+	else if (run.customData.scene == "RUN-RACE") team = run.teams[props.mic == "RUN-1" ? 0 : 1];
+
+	if (!team) return;
+	const name = team.players.map(p => p.name).join(" & ");
+	const finishTime = team.id in timer.teamFinishTimes ? timer.teamFinishTimes[team.id].time : "";
+	const time = timer.timestamp == 0 ? "" : (finishTime || timer.time);
+	const running = timer?.state == "running" && !(team.id in timer.teamFinishTimes);
+
+	function startStopTimer() {
+		if (!running) {
+			getNodeCG().sendMessageToBundle("timerStart", "nodecg-speedcontrol");
+		} else {
+			getNodeCG().sendMessageToBundle("timerStop", "nodecg-speedcontrol", { id: team!.id });
+		}
+	}
+
+	return <>{run.customData.scene == "RUN-RACE" && `Controlling timer for ${name}`}
+		<InputGroup style={{ marginBottom: "2em" }}>
+			<Button variant={!running ? "primary" : "danger"} disabled={Boolean(finishTime)} style={{ flex: "1 1 0", textWrap: "nowrap", padding: "2rem" }} onClick={startStopTimer}>
+				{!running ? "Start" : "Finish"} Run{time && ` (${time})`}
+			</Button>
+			{running && !finishTime && <Button variant="outline-primary" className="p-5" onClick={() => getNodeCG().sendMessageToBundle("timerPause", "nodecg-speedcontrol")}><PauseFill /></Button>}
+		</InputGroup>
+	</>
 }
 
 function MuteIndicator({ micMuted, talkback }: { micMuted: boolean | undefined, talkback: boolean | undefined }) {
@@ -154,7 +194,8 @@ function MutePanel() {
 	if (mic) {
 		return <>
 			{" "} Controlling {mic} <Button variant="link p-0 m-0" style={{ verticalAlign: "unset" }}
-				onClick={(e) => { setMic(null); e.stopPropagation() }}>← Back to Selection</Button>
+				onClick={(e) => { setMic(null); e.stopPropagation() }}>← Back to Selection</Button><br />
+			{(mic == "RUN-1" || mic == "RUN-2") && <TimerButtons mic={mic} />}
 			<MuteControl mic={mic} />
 			{mic === "TECH" && <TechMute />}
 		</>
