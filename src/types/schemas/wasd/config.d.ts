@@ -9,5 +9,6 @@ export interface Config {
 	oengusShortcode: string;
 	oengusScheduleSlug: string;
 	updateMinsBehind?: boolean;
+	placeTwitchMarkers?: boolean;
 	[k: string]: unknown;
 }

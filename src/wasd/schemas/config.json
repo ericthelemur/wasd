@@ -10,6 +10,9 @@
         },
         "updateMinsBehind": {
             "type": "boolean"
+        },
+        "placeTwitchMarkers": {
+            "type": "boolean"
         }
     },
     "required": [

@@ -2,8 +2,11 @@ import clone from 'clone';
 import { RunData } from 'speedcontrol-util/types/speedcontrol';
 import { SceneData } from 'types/schemas';
 
-import { sceneData } from './replicants';
-import { getSpeedControlUtil } from '../../common/utils';
+import { config, sceneData } from './replicants';
+import { getNodeCG, getSpeedControlUtil } from '../../common/utils';
+import { listenTo } from '../messages';
+import { TwitchAPIData } from 'speedcontrol-util/types/speedcontrol/schemas';
+import { obs } from 'obs/extension/index.extension';
 
 function checkRun(run: RunData, assigned: SceneData) {
     const runSceneName = run.customData["scene"];
@@ -34,3 +37,26 @@ function updateSceneRuns() {
 const sc = getSpeedControlUtil();
 sc.runDataActiveRun.on("change", updateSceneRuns);
 sc.runDataArray.on("change", updateSceneRuns);
+
+
+
+listenTo("addMarkerTwitch", async ({ name }) => {
+    if (!config.value.placeTwitchMarkers) return;
+    const nodecg = getNodeCG();
+    const twitchData = nodecg.Replicant<TwitchAPIData>("twitchAPIData", "nodecg-speedcontrol");
+    if (!twitchData || !twitchData.value || !twitchData.value.channelID) return;
+    if (obs.replicants.status.value.connected != "connected" || !obs.replicants.status.value.streaming) return;
+
+    try {
+        nodecg.sendMessageToBundle("twitchAPIRequest", "nodecg-speedcontrol", {
+            "method": "post",
+            "endpoint": "/streams/markers",
+            "data": {
+                "user_id": twitchData.value.channelID,
+                "description": name
+            }
+        });
+    } catch (e) {
+        nodecg.log.error("Error creating marker", e);
+    }
+})
