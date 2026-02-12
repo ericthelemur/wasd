@@ -1,5 +1,3 @@
-// import 'nodecg-dono-control/src/dashboard/reader/reader.graphic.css';
-import { msToApproxTimeString } from '../../../../countdown/utils';
 import './slides.scss';
 
 import Markdown from 'markdown-to-jsx';
@@ -8,12 +6,12 @@ import { findMilestones, MilestoneCard, PollCard, RewardCard, TargetCard } from 
 import { sortMapSingle } from 'donos/dashboard/reader/utils';
 import { Milestones, Polls, Rewards, Targets, Total } from 'types/schemas/tiltify';
 import React, { useEffect, useState } from 'react';
-import Card from 'react-bootstrap/Card';
 import { Textfit } from 'react-textfit';
-import { RunData, RunDataActiveRun, RunDataArray } from 'speedcontrol-util/types/speedcontrol';
+import { RunData, RunDataArray } from 'speedcontrol-util/types/speedcontrol';
 import { RunDataActiveRunSurrounding } from 'speedcontrol-util/types/speedcontrol/schemas';
 import { CustomBreakText, StreamState } from 'types/schemas';
 import { RunCard } from './runcard';
+import ReactCSSTransitionReplace from 'react-css-transition-replace';
 
 interface PageArgs {
     total?: Total;
@@ -135,10 +133,6 @@ interface PageCandidate {
 }
 
 const pages: PageCandidate[] = [{
-    page: RunsComp,
-    condition: (args) => !args.custom?.disabled?.runs && Boolean(args.runDataActiveRunSurrounding?.next),
-    duration: 20
-}, {
     page: CharityComp,
     condition: (args) => !args.custom?.disabled?.charity && Boolean(args.custom?.charity)
 }, {
@@ -159,6 +153,10 @@ const pages: PageCandidate[] = [{
 }, {
     page: TargetsComp,
     condition: (args) => !args.custom?.disabled?.targets && args.targets != undefined && args.targets?.length > 0
+}, {
+    page: RunsComp,
+    condition: (args) => !args.custom?.disabled?.runs && Boolean(args.runDataActiveRunSurrounding?.next),
+    duration: 15
 }
 ]
 
@@ -190,7 +188,7 @@ export function UpNext({ className }: { className?: string }) {
 
 export function Slides({ side }: { side?: boolean }) {
     const [index, setIndex] = useState(0);
-    const [Func, setFunc] = useState<PageComp>(() => AboutComp);
+    const [Func, setFunc] = useState<PageComp>(() => RunsComp);
 
     const [total,] = useReplicant<Total>("total", { "currency": "GBP", "value": 0 });
     const [milestones,] = useReplicant<Milestones>("milestones", [], { namespace: "tiltify" });
@@ -234,8 +232,10 @@ export function Slides({ side }: { side?: boolean }) {
         </div>
             <HR />
         </>}
-        <div className={"vstack fb " + (side ? "ps-5" : "p-5 pt-4")} style={{ fontSize: "0.9em" }}>
-            {page}
-        </div>
+        <ReactCSSTransitionReplace transitionName="fade-wait" transitionEnterTimeout={1000} transitionLeaveTimeout={1000} className="w-100 flex-grow-1 flex-shrink-1">
+            <div key={index} className={"d-flex flex-column h-100 " + (side ? "ps-5" : "p-5 pt-4")} style={{ fontSize: "0.9em" }}>
+                {page}
+            </div>
+        </ReactCSSTransitionReplace>
     </div >
 }
