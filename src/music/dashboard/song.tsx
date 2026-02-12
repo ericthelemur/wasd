@@ -11,7 +11,7 @@ export function CurrentSong({ height, maxFontSize }: { height?: number, maxFontS
     const [track,] = useReplicant<MusicData>("musicData", null, { namespace: "music" });
     const [status,] = useReplicant<Status>("status", { connected: "disconnected", playing: false }, { namespace: "music" });
 
-    if (!status || status.connected != "connected" || !status.playing || !track) return <div></div>;
+    if (!status || status.connected != "connected" || !status.playing || !track) return null;
 
     return <div className="song-outer card" style={{ "--art-height": `${height || 150}px` } as CSSProperties}>
         <ReactCSSTransitionReplace transitionName="fade-wait" transitionEnterTimeout={1000} transitionLeaveTimeout={1000} className="w-100">

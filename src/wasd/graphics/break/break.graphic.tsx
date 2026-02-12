@@ -23,10 +23,8 @@ export function Break() {
 
     return <div className='break h-100 d-flex h1'>
         <div className="sidebar p-5">
-            <div className="vstack gap-3 align-items-center">
-                <img src={WASDKeys} style={{ width: "75%" }} />
-                <img src={SpecialEffect} style={{ width: "80%" }} />
-            </div>
+            <img src={WASDKeys} style={{ width: "75%" }} />
+            <img src={SpecialEffect} style={{ width: "80%" }} />
             <CountdownComp />
             {!(custom?.disabled?.song) && <CurrentSong />}
         </div>
