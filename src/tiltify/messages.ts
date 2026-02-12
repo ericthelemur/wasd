@@ -13,6 +13,7 @@ export type ListenerTypes = {
 
     "clear-donations": undefined,
     "approve-all-donations": ModStatus,
+    "read-all-approved": undefined,
     "set-donation-read": [Donation | { id: string }, boolean],
     "set-donation-shown": [Donation | { id: string }, boolean],
     "set-donation-modstatus": [Donation | { id: string }, ModStatus],

@@ -72,9 +72,9 @@ function upcoming() {
     }
 }
 
-nodecg.listenFor("show-dono", (dono: Donation) => {
+nodecg.listenFor("show-dono", "tiltify", (dono: Donation) => {
     let msg = `Thanks ${dono.donor_name} for donating ${formatAmount(dono.amount)}!`;
-    if (dono.donor_comment) msg += " They say: " + dono.donor_comment;
+    if (dono.donor_comment) msg += " saying: " + dono.donor_comment;
     sendTo("addMessage", { pid: "queue", before: queue.value.msgs[0] ?? null, text: msg });
 })
 

@@ -50,6 +50,8 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
         super("tiltify", replicantNamesOnly, listeners);
 
         this.client = new TiltifyClient(undefined, undefined, (...args) => this.log.info(...args), (...args) => { this.log.error(...args); this.reconnect() });
+
+        this.createActionListeners();
     }
 
     async _connect() {
@@ -124,7 +126,6 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
     }
 
     async _setupListeners() {
-        this.createActionListeners();
 
         const Campaigns = this.client?.Campaigns;
 
@@ -188,10 +189,12 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
 
     }
 
-    setAll<K extends keyof Donation>(prop: K, value: Donation[K], ack: NodeCG.Acknowledgement | undefined) {
+    setAll<K extends keyof Donation>(prop: K, value: Donation[K], ack: NodeCG.Acknowledgement | undefined, condition?: (d: Donation) => boolean) {
         const donos = this.replicants.donations.value;
         for (let i = 0; i < donos.length; i++) {
-            donos[i][prop] = value;
+            if (!condition || condition(donos[i])) {    // Check condition if exists
+                donos[i][prop] = value;
+            }
         }
 
         sendSuccess(ack, value);
@@ -219,12 +222,16 @@ export class Tiltify extends CommPoint<ListenerTypes, Replicants> {
         const listenTo = this.listeners.listenTo;
         listenTo("clear-donations", (_, ack) => this.setAll("read", true, ack));
         listenTo("approve-all-donations", (value, ack) => this.setAll("modStatus", value, ack));
+        listenTo("read-all-approved", (_, ack) => this.setAll("read", true, ack, d => d.modStatus == APPROVED));
 
 
         listenTo("set-donation-shown", ([dono, shownVal], ack) => this.searchAndSet(dono.id, "shown", shownVal, ack));
         listenTo("set-donation-read", ([dono, readVal], ack) => {
             const d = this.searchAndSet(dono.id, "read", readVal, ack);
-            if (d && readVal && d.modStatus === UNDECIDED) d.modStatus = APPROVED;
+            if (d && readVal && d.modStatus === UNDECIDED) {
+                d.modStatus = APPROVED;
+                this.listeners.sendTo("show-dono", dono);
+            }
         });
 
         listenTo("set-donation-modstatus", ([dono, statusVal], ack) => {

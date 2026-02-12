@@ -10,12 +10,15 @@ import { AllDonations, DonorsComp, LiveDonations } from './components/donolists'
 import * as icons from './components/icons';
 import { Incentives } from './components/incentives';
 import { Settings, SettingsBasics, SortSettings, TabSetting } from './components/settings';
-import { Search } from 'react-bootstrap-icons';
+import { ExclamationTriangleFill, Search } from 'react-bootstrap-icons';
 import { useReplicant } from 'use-nodecg';
 import { Status, Total } from 'types/schemas/tiltify';
 import { formatAmount } from './utils';
 import { getNodeCG } from 'common/utils';
 import { CommPointStatus } from 'common/commpoint/login';
+import { Button } from 'react-bootstrap';
+import { sendTo, sendToF } from "../../../tiltify/messages";
+import { APPROVED } from 'tiltify/extension/utils/mod';
 
 export const defaultSettings: SortSettings = { list: "live", sort: "time", dir: "dsc", show: ["unread", "approved", "undecided"], term: "" };
 
@@ -51,6 +54,7 @@ function TotalComp() {
 export function Reader() {
 	const [status,] = useReplicant<Status>("status", { "connected": "disconnected" }, { namespace: "tiltify" });
 	const [sortSettings, setSortSettings] = useState(fetchFromParams());
+	const [showDanger, setShowDanger] = useState(false);
 	useEffect(() => {
 		copyToParams(sortSettings);
 	}, [sortSettings]);
@@ -87,6 +91,12 @@ export function Reader() {
 					<FormControl type="text" placeholder='Search Term' style={{ width: "unset", display: "inline" }}
 						onChange={(v) => setSortSettings({ ...sortSettings, term: v.target.value })} />
 				</div>
+				<Button variant="danger" onClick={() => setShowDanger(!showDanger)}><ExclamationTriangleFill /></Button>
+				{showDanger && <>
+					<Button variant="outline-danger" onClick={() => confirm("Read all donations?") && sendTo("clear-donations")}>Read All</Button>
+					<Button variant="outline-danger" onClick={() => confirm("Approve All donations?") && sendTo("approve-all-donations", APPROVED)}>Approve All</Button>
+					<Button variant="outline-danger" onClick={() => confirm("Mark all approved messages as read?") && sendTo("read-all-approved")}>Read All Approved</Button>
+				</>}
 			</div>
 			<TabSetting name="list" labels={true} current={sortSettings.list}
 				options={[icons.live, icons.donors, icons.incentives, icons.all]}

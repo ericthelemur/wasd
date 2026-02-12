@@ -1,14 +1,14 @@
 import '../../../common/uwcs-bootstrap.css';
 
 import { klona } from 'klona';
-import { createRef, ReactElement, ReactNode, useEffect, useState } from 'react';
+import { createRef, useEffect, useState } from 'react';
 import { DragDropContext, DraggableLocation, DragStart, DropResult } from 'react-beautiful-dnd';
 import { ArrowCounterclockwise, Pause, Play, PlusLg, Trash } from 'react-bootstrap-icons';
 import Accordion from 'react-bootstrap/Accordion';
 import Button from 'react-bootstrap/Button';
-import InputGroup from 'react-bootstrap/InputGroup';
 import { createRoot } from 'react-dom/client';
-import { Bank, Configschema, Current, Message, MsgRef, Pool, Pools, Queue } from 'types/schemas';
+import { Configschema } from "types/schemas";
+import { Bank, Current, MsgRef, Pools, Queue } from 'types/schemas/ticker';
 import { useReplicant } from 'use-nodecg';
 
 import NodeCG from '@nodecg/types';
@@ -83,7 +83,7 @@ function CurrentMsg({ current }: { current: Current }) {
 	</>
 }
 
-function Pools({ pools, order, bank, showBin }: { pools: Pools, order: string[], bank: Bank, showBin: boolean }) {
+function PoolsComp({ pools, order, bank, showBin }: { pools: Pools, order: string[], bank: Bank, showBin: boolean }) {
 	return <div className="vstack w-50">
 		<h2>Messages Pools</h2>
 		<Button className="d-inline mb-2" onClick={sendToF("addPool", {})}><PlusLg /> Add Pool</Button>
@@ -192,7 +192,7 @@ export function MsgControlPanel() {
 								<PoolComp id="queue" pool={queue} contents={queueContents} preludeInfo={prelude} prelude={queuePreludeMsgs} />
 							</div>)}
 						</div>
-						<Pools pools={pools} order={poolsOrder} bank={bank!} showBin={hv.showBin} />
+						<PoolsComp pools={pools} order={poolsOrder} bank={bank!} showBin={hv.showBin} />
 					</div>
 				</DragDropContext >
 			</div>
