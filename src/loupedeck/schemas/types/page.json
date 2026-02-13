@@ -39,14 +39,7 @@
                     "minItems": 2,
                     "maxItems": 2,
                     "items": {
-                        "oneOf": [
-                            {
-                                "type": "null"
-                            },
-                            {
-                                "$ref": "interactions/interaction.json"
-                            }
-                        ]
+                        "$ref": "interactions/interaction.json"
                     },
                     "default": [
                         null,

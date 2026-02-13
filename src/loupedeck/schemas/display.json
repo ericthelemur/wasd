@@ -46,14 +46,16 @@
                     null,
                     null
                 ],
-                "interactions": {
-                    "knobs": {
-                        "channels": [
-                            "RUN-1",
-                            "RUN-2"
-                        ],
-                        "rotateScale": 0.01
-                    }
+                "knobs": {
+                    "channels": [
+                        "RUN-1",
+                        "RUN-2"
+                    ],
+                    "rotateScale": 0.01,
+                    "buttons": [
+                        null,
+                        null
+                    ]
                 }
             }
         }
