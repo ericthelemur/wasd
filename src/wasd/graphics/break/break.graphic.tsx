@@ -1,4 +1,5 @@
 import '../../../common/uwcs-bootstrap.css';
+import "../assets/graphic.scss";
 import './break.scss';
 import '../overlay/overlay.graphic.scss';
 import '../../../common/custom.d';
@@ -11,11 +12,11 @@ import { CurrentSong } from '../../../music/dashboard/song';
 import { CustomBreakText } from '../../../types/schemas';
 import { useReplicant } from 'use-nodecg';
 
-import SpecialEffect from '../assets/specialeffect-white.png';
+import SpecialEffect from '../assets/specialeffect-dark.png';
 import WASDKeys from '../assets/wasd-keys.svg';
 
 function VR() {
-    return <div style={{ height: "100%", width: "var(--bw)", backgroundColor: "white" }} />
+    return <div style={{ height: "100%", width: "var(--bw)", backgroundColor: "var(--bs-heading-color)" }} />
 }
 
 export function Break() {

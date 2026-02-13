@@ -1,4 +1,5 @@
 import '../../../common/uwcs-bootstrap.css';
+import "../assets/graphic.scss";
 import './bar.scss';
 import '../../../common/custom.d';
 

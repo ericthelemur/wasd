@@ -4,7 +4,7 @@ import { Camera, NewCamera, NewStack, SceneInfoContext } from './cam';
 import { Game, TimerComp } from './game';
 import { PeopleComp } from './people';
 
-import SpecialEffect from '../../assets/specialeffect-white.png';
+import SpecialEffect from '../../assets/specialeffect-dark.png';
 import WASDKeys from '../../assets/wasd-keys.svg';
 
 interface SidebarArgs extends React.HTMLAttributes<HTMLDivElement> {

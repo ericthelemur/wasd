@@ -1,4 +1,5 @@
 import '../../../common/uwcs-bootstrap.css';
+import "../assets/graphic.scss";
 import './overlay.graphic.scss';
 import './components/people.scss';
 
@@ -12,7 +13,7 @@ import { useReplicant } from 'use-nodecg';
 import { Camera, NewCamera, SceneInfoContext } from './components/cam';
 import { Game, TimerComp } from './components/game';
 import { Sidebar } from './components/sidebar';
-import SpecialEffect from '../assets/specialeffect-white.png';
+import SpecialEffect from '../assets/specialeffect-dark.png';
 
 declare const defaultScene: string | undefined;
 

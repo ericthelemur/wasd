@@ -34,7 +34,7 @@ function calculateTransform(ot: ObsTransform, t: { x: number, y: number, w: numb
     if (cropY < 1) cropY = 0;
     return {
         positionX: t.x, positionY: t.y, scaleX: scale, scaleY: scale,
-        cropLeft: lerp(0, cropX, slide), cropRight: lerp(cropX, 0, slide), cropTop: lerp(0, cropY, slide), cropBottom: lerp(cropY, 9, slide)
+        cropLeft: lerp(0, cropX, slide), cropRight: lerp(cropX, 0, slide), cropTop: lerp(0, cropY, slide), cropBottom: lerp(cropY, 0, slide)
     }
 }
 

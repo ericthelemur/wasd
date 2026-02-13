@@ -22,10 +22,9 @@
 
     // background-color: #351344;
     font-size: 32px;
-    color: white;
+    color: var(--bs-heading-color);
     font-family: 'Montserrat', sans-serif;
 
-    --bs-border-color: var(--bs-emphasis-color);
     border-top: var(--bw) solid;
 
     &>* {
@@ -41,7 +40,6 @@
 
     & span {
         font-weight: bold;
-        color: var(--bs-emphasis-color);
         margin-bottom: unset;
         line-height: 1;
     }

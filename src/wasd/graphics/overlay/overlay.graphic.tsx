@@ -1,4 +1,5 @@
 import '../../../common/uwcs-bootstrap.css';
+import "../assets/graphic.scss";
 import './overlay.graphic.scss';
 
 import clone from 'clone';
@@ -39,7 +40,7 @@ function fetchFromParams(): URLParams {
 }
 
 function VR() {
-    return <div style={{ height: "100%", width: "var(--bw)", backgroundColor: "white" }} className="mv-5" />
+    return <div style={{ height: "100%", width: "var(--bw)", backgroundColor: "var(--bs-heading-color)" }} className="mv-5" />
 }
 
 function Overlay({ aspect }: { aspect: [number, number] }) {
@@ -48,11 +49,11 @@ function Overlay({ aspect }: { aspect: [number, number] }) {
     const infoInSidebar = 9 * aspect[0] < 16 * aspect[1];
     console.log(aspect, infoInSidebar);
 
-    return <div className="fill d-flex outer" style={{ fontFamily: "Montserrat", fontWeight: "600", width: 1920, height: 1010, overflow: "hidden", paddingRight: "calc(2 * var(--bw))", paddingBottom: "calc(2 * var(--bw))" }}>
+    return <div className="fill d-flex outer" style={{ fontFamily: "Montserrat", fontWeight: "600", width: 1920, height: 1010, overflow: "hidden" }}>
         <Sidebar className="flex-gs" vertical={infoInSidebar} style={{ marginRight: "var(--bw)" }} />
         <div className="d-flex flex-column">
             <NewCamera cam={sceneInfo.cams && sceneInfo.cams["GAME"]} aspectRatio={`${aspect[0]} / ${aspect[1]}`} dims={infoInSidebar ? [null, 1010] : [1520, null]} />
-            {!infoInSidebar && <div className="d-flex vcentre flex-gs px-4 py-2 gap-3" style={{ borderLeft: "var(--bw) white solid" }}>
+            {!infoInSidebar && <div className="d-flex vcentre flex-gs px-4 py-2 gap-3" style={{ borderLeft: "var(--bw) var(--bs-border-color) solid" }}>
                 <Game />
                 {!sceneInfo.hideTimer && <VR />}
                 {!sceneInfo.hideTimer && <TimerComp />}

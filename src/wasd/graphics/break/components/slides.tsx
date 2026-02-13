@@ -170,7 +170,7 @@ function shufflePages() {
 }
 
 function HR() {
-    return <div style={{ width: "100%", height: "var(--bw)", backgroundColor: "white" }} />
+    return <div style={{ width: "100%", height: "var(--bw)", backgroundColor: "var(--bs-heading-color)" }} />
 }
 
 export function UpNext({ className }: { className?: string }) {
