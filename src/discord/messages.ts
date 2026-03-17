@@ -1,6 +1,7 @@
-import { Login } from 'types/schemas/discord';
-import { createMessageListenersBundle, createUnlistener } from '../common/messages';
 import { MessageCreateOptions, MessagePayload } from 'discord.js';
+import { Login } from 'types/schemas/discord';
+
+import { createMessageListenersBundle, createUnlistener } from '../common/messages';
 
 export type ListenerTypes = {
     connect: Partial<Login>,
@@ -9,7 +10,8 @@ export type ListenerTypes = {
 
     updateEvents: undefined,
     previewMessage: { runID: string, runName: string, channelID: string, channelName?: string, content: string },
-    postMessage: { channelID: string, content: string | MessagePayload | MessageCreateOptions, runID?: string }
+    postMessage: { channelID: string, content: string | MessagePayload | MessageCreateOptions, runID?: string },
+    deleteOrphanEvents: undefined,
 }
 
 export const listeners = createMessageListenersBundle<ListenerTypes>("discord");

@@ -1,6 +1,9 @@
-import { REST, Routes, Client, Events, GatewayIntentBits, TextChannel, GuildScheduledEventManager, GuildScheduledEventCreateOptions, GuildScheduledEventStatus, MessagePayload, MessageCreateOptions } from 'discord.js';
+import {
+    Client, Events, GatewayIntentBits, GuildScheduledEventCreateOptions, GuildScheduledEventManager,
+    GuildScheduledEventStatus, MessageCreateOptions, MessagePayload, REST, Routes, TextChannel
+} from 'discord.js';
+import { Events as EventsRep, Login, Status } from 'types/schemas/discord';
 
-import { Login, EventStatuses, Status } from 'types/schemas/discord';
 import { CommPoint } from '../../common/commpoint/commpoint';
 import { AllUndef, NoUndef } from '../../common/utils';
 import listeners, { ListenerTypes, listenTo } from '../messages';
@@ -9,7 +12,7 @@ const replicants = {
     status: undefined as undefined | Status,
     login: undefined as undefined | Login,
 
-    eventStatuses: undefined as undefined | EventStatuses,
+    events: undefined as undefined | EventsRep,
 }
 
 export type Replicants = NoUndef<typeof replicants>;

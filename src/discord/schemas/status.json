@@ -26,6 +26,9 @@
         },
         "startAndEndEvents": {
             "type": "boolean"
+        },
+        "syncingEvents": {
+            "type": "boolean"
         }
     },
     "required": [

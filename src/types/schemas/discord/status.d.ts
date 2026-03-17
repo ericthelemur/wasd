@@ -12,5 +12,6 @@ export interface Status {
 	postSchedule?: boolean;
 	postDonations?: boolean;
 	startAndEndEvents?: boolean;
+	syncingEvents?: boolean;
 	[k: string]: unknown;
 }

@@ -120,9 +120,6 @@ export interface Knobs {
 	 * @minItems 2
 	 * @maxItems 2
 	 */
-	buttons: [
-		null | (null | (NodecgMsg | NodecgReplicant) | TapOrToggle),
-		null | (null | (NodecgMsg | NodecgReplicant) | TapOrToggle)
-	];
+	buttons: [null | (NodecgMsg | NodecgReplicant) | TapOrToggle, null | (NodecgMsg | NodecgReplicant) | TapOrToggle];
 	[k: string]: unknown;
 }

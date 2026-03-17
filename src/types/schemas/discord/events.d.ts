@@ -5,7 +5,7 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface EventStatuses {
+export interface Events {
 	[k: string]: {
 		name: string;
 		eventID?: string;

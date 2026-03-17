@@ -1,8 +1,14 @@
-import { listenTo, sendTo } from "../messages";
-import { getNodeCG, getSpeedControlUtil, Replicant, sendError, sendSuccess } from "../../common/utils";
-import { discord } from "./index.extension";
-import { GuildScheduledEventCreateOptions, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, GuildScheduledEventStatus, TextChannel } from "discord.js";
-import { Config, StreamState } from "types/schemas/wasd";
+import {
+    GuildScheduledEventCreateOptions, GuildScheduledEventEntityType,
+    GuildScheduledEventPrivacyLevel, GuildScheduledEventStatus, TextChannel
+} from 'discord.js';
+import { Config, StreamState } from 'types/schemas/wasd';
+
+import {
+    getNodeCG, getSpeedControlUtil, Replicant, sendError, sendSuccess
+} from '../../common/utils';
+import { listenTo, sendTo } from '../messages';
+import { discord } from './index.extension';
 
 const nodecg = getNodeCG();
 const sc = getSpeedControlUtil();
@@ -22,9 +28,9 @@ sc.runDataActiveRun.on("change", async (newVal) => {
     const status = discord.replicants.status.value;
     if (!login.scheduleChannel || !status.postSchedule || !(await discord.isConnected())) return;
 
-    const eventStatuses = discord.replicants.eventStatuses.value;
-    if (!eventStatuses[newVal.id]) eventStatuses[newVal.id] = { name: newVal.game || "" };
-    let runStatus = eventStatuses[newVal.id];
+    const events = discord.replicants.events.value;
+    if (!events[newVal.id]) events[newVal.id] = { name: newVal.game || "" };
+    let runStatus = events[newVal.id];
 
     if (!runStatus.messageID) {     // If no message yet sent, send message with random format
         discord.log.info("Posting run message for", newVal);
@@ -48,8 +54,8 @@ sc.runDataActiveRun.on("change", async (newVal) => {
 listenTo("postMessage", async (data, ack) => {
     const msg = await discord.sendMessage(data.content, data.channelID);
     if (msg && data.runID) {
-        const eventStatuses = discord.replicants.eventStatuses.value;
-        let runStatus = eventStatuses[data.runID];
+        const events = discord.replicants.events.value;
+        let runStatus = events[data.runID];
         if (runStatus) runStatus.messageID = msg.id;
     }
 
@@ -59,17 +65,19 @@ listenTo("postMessage", async (data, ack) => {
 
 // Full resync of discord events
 export const streamState = Replicant<StreamState>("streamState", "wasd");
-listenTo("updateEvents", async () => {
+listenTo("updateEvents", async (_, ack) => {
     if (!(await discord.isConnected())) return;
     const status = discord.replicants.status.value;
+    if (status.syncingEvents) return sendError(ack, "Event sync is already in progress");
+    status.syncingEvents = true;
 
-    const eventStatuses = discord.replicants.eventStatuses.value;
+    const events = discord.replicants.events.value;
 
     for (let run of sc.getRunDataArray()/*.slice(0, 3)*/) {
         discord.log.info("Trying to update", run);
         if (!run.category || run.category == "Setup") continue;
         try {
-            const runStatus = eventStatuses[run.id];
+            const runStatus = events[run.id];
             const players = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
             // Calculate adjusted time TODO: read off rundata - if active, make
             let baseTime = 1000 * (run.scheduledS || 0) + 1000 * 60 * (streamState.value.minsBehind || 0);
@@ -100,8 +108,8 @@ listenTo("updateEvents", async () => {
             else {
                 const result = await discord.createEvent(args);
                 if (result) {
-                    if (runStatus) eventStatuses[run.id].eventID = result.id;
-                    else eventStatuses[run.id] = { name: run.game || "", eventID: result.id };
+                    if (runStatus) events[run.id].eventID = result.id;
+                    else events[run.id] = { name: run.game || "", eventID: result.id };
 
                     // Start event if created when run is in progress
                     if (isActiveRun && status.startAndEndEvents) {
@@ -113,7 +121,43 @@ listenTo("updateEvents", async () => {
             discord.log.error(`Error updating event for ${run.game}`, e);
         }
     }
+    status.syncingEvents = false;
 });
+
+// Delete events created by the bot that aren't synched any more
+listenTo("deleteOrphanEvents", async (_, ack) => {
+    if (!(await discord.isConnected())) return;
+    const status = discord.replicants.status.value;
+    if (status.syncingEvents) return sendError(ack, "Event sync is in progress");
+    status.syncingEvents = true;
+
+    // Get list of synchronized events
+    const events = discord.replicants.events.value;
+    const assignedEventIDs = new Set(Object.values(events).map(v => v.eventID));
+    discord.log.info("Synched events", assignedEventIDs);
+
+    // Get list of Discord events
+    const guild = await discord.getGuild();
+    if (!guild) return;
+    const eventManager = guild.scheduledEvents;
+    const existing = await eventManager.fetch();
+    discord.log.info("Discord events", existing);
+
+    // Delete any events created by this bot and no longer in synchronized list
+    for (let [k, dcEvent] of existing) {
+        discord.log.info("Checking event", dcEvent.name);
+        if (dcEvent.creatorId != discord.client?.user?.id) {
+            discord.log.info("Not created by bot");
+        } else if (assignedEventIDs.has(dcEvent.id)) {
+            discord.log.info("Event is synched");
+        } else {
+            discord.log.warn("Deleting event", k);
+            await dcEvent.delete();
+        }
+    }
+
+    status.syncingEvents = false;
+})
 
 
 // Start new event on change of run
@@ -122,8 +166,8 @@ sc.runDataActiveRun.on("change", async (newVal) => {
     if (!newVal || !newVal.category || newVal.category == "Setup") return;
     if (!(await discord.isConnected())) return;
 
-    const eventStatuses = discord.replicants.eventStatuses.value;
-    let runStatus = eventStatuses[newVal.id] || {};
+    const events = discord.replicants.events.value;
+    let runStatus = events[newVal.id] || {};
 
     if (runStatus.eventID) {     // If discord event recorded, start it
         discord.log.info("Starting event for", newVal.game, runStatus.eventID);

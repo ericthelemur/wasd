@@ -1,6 +1,6 @@
 /* eslint-disable */
 // @ts-ignore
-export * from './eventStatuses';
+export * from './events';
 // @ts-ignore
 export * from './login';
 // @ts-ignore
