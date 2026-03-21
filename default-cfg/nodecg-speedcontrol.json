@@ -1,0 +1,37 @@
+{
+  "language": "en",
+  "twitch": {
+    "enabled": true,
+    "clientID": "<TWITCH CLIENT ID>",
+    "clientSecret": "<TWITCH CLIENT SECRET>",
+    "redirectURI": "http://localhost:9090/nodecg-speedcontrol/twitchauth",
+    "streamTitle": "⭐ WASD 2026 - {{game}} - {{category}} - {{players}} - Supporting SpecialEffect",
+    "tagPlayersInStreamTitle": false,
+    "streamDefaultGame": "Games + Demos",
+    "ffzIntegration": false
+  },
+  "horaro": {
+    "defaultURL": "https://horaro.org/event/schedule",
+    "disableSpeedrunComLookup": false
+  },
+  "oengus": {
+    "defaultMarathon": "WASD2026",
+    "defaultSchedule": "wasd2026",
+    "useJapanese": false,
+    "disableSpeedrunComLookup": false
+  },
+  "customData": {
+    "run": [
+      {
+        "name": "Game Aspect Ratio (e.g. 16-9 or 4-3)",
+        "key": "layout",
+        "ignoreMarkdown": true
+      },
+      {
+        "name": "Scene (e.g. RUN-1 or RUN-RACE)",
+        "key": "scene",
+        "ignoreMarkdown": true
+      }
+    ]
+  }
+}
