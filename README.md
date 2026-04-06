@@ -1,6 +1,6 @@
-# WASD 2025 Livestream Graphics
+# WASD 2026 Livestream Graphics
 
-The main repository for the graphics for WASD 2024. This has been completely rewritten to use Typescript, React and NodeCG 2.
+The main repository for the graphics for WASD 2024-26. This has been completely rewritten to use Typescript, React and NodeCG 2.
 
 ## Installation
 
