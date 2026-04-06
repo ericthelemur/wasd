@@ -1,6 +1,7 @@
 import '../../../common/uwcs-bootstrap.css';
 import './obscontrol.scss';
 
+import { CreateCommPointConnect } from 'common/commpoint/login';
 import { RecordFill, Wifi } from 'react-bootstrap-icons';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
@@ -10,10 +11,9 @@ import Stack from 'react-bootstrap/Stack';
 import { createRoot } from 'react-dom/client';
 import { PreviewScene, ProgramScene, SceneList, Status } from 'types/schemas/obs';
 import { useReplicant } from 'use-nodecg';
-import listeners, { ListenerTypes, sendTo, sendToF } from '../../messages';
-import { Replicants } from "../../extension/obs";
-import { CreateCommPointConnect } from 'common/commpoint/login';
 
+import { Replicants } from '../../extension/obs';
+import listeners, { ListenerTypes, sendTo, sendToF } from '../../messages';
 
 export function OBSStatuses({ status }: { status: Status }) {
 	const [previewScene,] = useReplicant<PreviewScene>("previewScene", null, { namespace: "obs" });
@@ -91,7 +91,7 @@ function ScenesForm() {
 
 
 const ControlForm = CreateCommPointConnect<ListenerTypes, Replicants>("obs", listeners, {
-	ip: "OBS Websocket IP",
+	ip: "OBS Websocket URL",
 	password: "OBS Websocket Password",
 } as const, { ip: "127.0.0.1", password: "" }, defaultStatus, OBSStatuses);
 

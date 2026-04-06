@@ -217,7 +217,7 @@
     "types": "node scripts/types.mjs",
     "nodemon": "nodemon --config scripts/nodemon.json",
     "dev": "concurrently --kill-others \"npm run watch -- --types\" \"npm run watch -- --browser\" \"npm run nodemon\"",
-    "mixer-mock": ".\\src\\mixer\\osc-sim\\.venv\\Scripts\\python .\\src\\mixer\\osc-sim\\server.py"
+    "mixer-mock": "python .\\src\\mixer\\osc-sim\\server.py"
   },
   "dependencies": {
     "@codemirror/lang-json": "^6.0.2",
