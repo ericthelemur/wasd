@@ -61,6 +61,8 @@ Those marked with * are necessary for full use, those marked with ** are essenti
 
 
 # Mixer (XR18)*
+For testing, setup the mock as described below, this just fakes the interaction with NodeCG/X-Air, not any actual audio. Therefore the USB Driver is unnecessary.
+
 **Setup**
 1. Download **X-AIR EDIT PC** and **X18 USB Audio Driver** from https://www.behringer.com/downloads.html
     - Check you download one with Model=XR18 (yes the driver name is X18, but make sure you get the XR18 model)
@@ -86,10 +88,10 @@ Those marked with * are necessary for full use, those marked with ** are essenti
 
 
 # OBS*
-** Setup**
+**Setup**
 1. If you have a particularly old OBS version, you will need to install the OBS Websocket plugin manually - but you really should update your OBS itself
 2. In OBS, open **Tools > WebSocket Server Settings**, ensure **Enable Websocket server** is ticked and the password & port is configured. Click OK/Apply
-3. Load the OBS preset and configure video sources
+3. Load the OBS preset and configure video sources (in this repo called WASD OBS Demo.json)
 4. NodeCG browser overlay sources need the `key=.....` parameter updated to authenticate in your NodeCG, if you have authentication enabled.
     - Or by copying the full URLs for the relevant page in the **Graphics** tab
     - Do this by copying the key parameter from an open graphic to each in OBS
