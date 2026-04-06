@@ -59,9 +59,101 @@ Each integration will be split into:
 
 Those marked with * are necessary for full use, those marked with ** are essential to basic use (e.g. dev)
 
-## Discord for Login
-**Initial & Config**
-1. See https://www.nodecg.dev/docs/security#discord-auth
+
+# Mixer (XR18)*
+**Setup**
+1. Download **X-AIR EDIT PC** and **X18 USB Audio Driver** from https://www.behringer.com/downloads.html
+    - Check you download one with Model=XR18 (yes the driver name is X18, but make sure you get the XR18 model)
+    - You can search for the name, or select Product=XR18
+    - As of 2026, the direct links are: [X Air EDIT PC v1.8.1](https://cdn.mediavalet.com/aunsw/musictribe/XJFMsT8f5kSI5mNP3NQUzQ/nJHScxZuhUeJ1gRV081Z0w/Original/X-AIR-Edit_PC_1.8.1.zip) and [X18 USB Audio Driver v5.72.0](https://cdn.mediavalet.com/aunsw/musictribe/sPDVpULa20Wn3mcJ9REDYw/vjXY1j0ERkaPz8ML2pMmTQ/Original/BEHRINGER_X18_v5.72.0_setup.zip)
+2. Unzip X Air Edit to somewhere accesssible (Desktop perhaps), it isn't an installer
+3. Unzip and run the driver setup. You may need to restart the PC to get this to work. You can verify this by checking if you have four stereo inputs and four stereo outputs labelled Behringer IN/OUT #-#.
+4. Connect the mixer by ethernet to the PC - this may be through a network switch or direct
+    - Or run mixer mock (see below) for development/testing (not perfect, but works)
+    - If this connection is not working, check the physical switch on the mixer for connection type
+    - If still not working, switch to Wifi and connect to that. Also X-Air should be able to scan for the mixer
+
+**Setup Mock**
+1. Install Python >=3.10 - note, will break under 3.10 as the library functions differently
+2. Install [python-osc](https://pypi.org/project/python-osc/) - `pip install python-osc`
+    - This may be in a virtual environment or globally
+3. Run `npm run mixer-mock` which will run `src\mixer\osc-sim\server.py`, mocking up a basic interface for the mixer
+    - You can change the IP & port it is hosted on with `--ip` and `--port` args (port should always be 10024)
+4. You are able to connect X-Air to this mock too, but some of the more advanced functions won't work (like loading the scene)
+
+**Use**
+1. In **Connection Settings > Mixer Control** Configure the **Mixer IP** (often `192.168.1.99`) & **Mixer Port** (always 10024)
+
+
+# OBS*
+** Setup**
+1. If you have a particularly old OBS version, you will need to install the OBS Websocket plugin manually - but you really should update your OBS itself
+2. In OBS, open **Tools > WebSocket Server Settings**, ensure **Enable Websocket server** is ticked and the password & port is configured. Click OK/Apply
+3. Load the OBS preset and configure video sources
+4. NodeCG browser overlay sources need the `key=.....` parameter updated to authenticate in your NodeCG, if you have authentication enabled.
+    - Or by copying the full URLs for the relevant page in the **Graphics** tab
+    - Do this by copying the key parameter from an open graphic to each in OBS
+5. **Make sure that any video sources added are muted in OBS**
+6. In OBS **Settings > Audio**, set **Mic/Auxilliary Audio** to **Berhinger OUT 1-2**, which is mapped to the Main LR out of of the mixer
+
+**Use**
+1. From **Tools > WebSocket Server Settings**, copy the password into **OBS Control > OBS Websocket Password**
+2. Fill in **OBS Websocket URL**, this is likely to just be `localhost`/`127.0.0.1`, as NodeCG is normally running on the same PC as OBS
+    - This can be a full URL, if you need a secure websocket (`wss://`) or a different port (`:1234`)
+
+
+# Oengus*
+You may use the last marathon for testing, though for Discord events to work, the Schedule Adjuster needs to be set to some suitably large number of minutes (auto-update should do this)
+
+**Setup**
+1. Create the Oengus marathon
+2. Go through the usual process, publish a schedule
+3. For each run, in schedule management, add custom data `{ "scene": "RUN-1", "layout": "16-9" }`
+    - Where `scene` is the scene - `RUN-1`, `RUN-2` or `RUN-RACE` - alternate `RUN-1` and `RUN-2` in general
+    - Where `layout` is the aspect ratio of the game, dynamically changes the overlay e.g. `16-9` or `4-3`
+
+**Config**
+1. Set `defaultMarathon` and `defaultSchedule` in `cfg/nodecg-speedcontrol.json`
+
+**Use**
+1. In tab `Run Modifications`, dashboard `Oengus Schedule Import`, change the marathon and schedule, if not the defaults
+2. Click **Import Schedule Data** and wait for it to import all runs & runners
+3. This will separately trigger the people manager to refetch socials for all runners from Oengus (speedcontrol only pulls Twitch & YT)
+
+
+# Tiltify*
+For testing, use another active campaign that is receiving donations during your testing. This information in public (besides the webhook)
+
+**Setup**
+1. Create your Tiltify campaign, adding milestones, rewards, incentives, etc.
+2. On Tiltify, on any account, go to https://app.tiltify.com/developers
+3. Click **Create application**, fill in fields -- redirect URI is unecessary, put https://warwickspeed.run or something, we aren't using it
+4. In **Overview > Application keys**, copy the **Client ID** and **Client Secret**
+
+**Use**
+1. In tab **Connection Settings**, dashboard **Tiltify Control**, copy Client ID & Client Secret for the Tiltify application
+    - Note: for testing, this may be any campaign, not necessarily a WASD one. It may be beneficial to find one that is active right now
+2. Open the campaign in the Tiltify manager, and go to **Setup** > **Information** and copy the campaign ID from there
+    - Alternatively, just take it from the URL of the campaign's webpage (should be a UUID)
+3. Put this into **Campaign ID** and click **Connect**
+4. Check the campaign name is correct, if not, you have the wrong Campaign ID
+
+
+# Tiltify Webhook
+- Bit of a pain for only a slight gain in donation response times - not really worth it
+- Also tunnel is kinda jank (but useful for external)
+
+**Setup**
+1. Expose NodeCG with a tunnel - note: this must be HTTPS and make sure NodeCG has decent security enabled as this will expose the whole thing
+2. Within Tiltify's developer settings for the application, go to the **Webhooks** tab
+3. Click **Add webhook**, setting the **Endpoint URL** to `https://<tunnel url>/tiltify/webhook`
+
+**Use**
+1. In tab **Connection Settings**, dashboard **Tiltify Control**, enable **Use Webhook**
+2. Copy the **Webhook Signing ID** from the webhook's settings page
+3. Copy the **Webhook ID** from the webhook's settings page's URL (idk if there is a better place for this)
+4. If you want to try automatically tunneling with `localtunnel` set a **Requested Subdomain** - ensure you have NodeCG security configured
+
 
 ## Twitch
 **Setup**
@@ -83,51 +175,6 @@ Create application (used for login OAuth)
 - This will allow NodeCG to automatically update the stream title & game
 - It will also allow NodeCG to trigger ad breaks (if affilate account, which warwickspeedrun is). A 3 min ad break disables pre-roll ads for 1 hr (1:30 for 30 mins)
 
-# Oengus*
-**Setup**
-1. Create the Oengus marathon
-2. Go through the usual process, publish a schedule
-3. For each run, in schedule management, add custom data `{ "scene": "RUN-1", "layout": "16-9" }`
-    - Where `scene` is the scene - `RUN-1`, `RUN-2` or `RUN-RACE` - alternate `RUN-1` and `RUN-2` in general
-    - Where `layout` is the aspect ratio of the game, dynamically changes the overlay e.g. `16-9` or `4-3`
-
-**Config**
-1. Set `defaultMarathon` and `defaultSchedule` in `cfg/nodecg-speedcontrol.json`
-
-**Use**
-1. In tab `Run Modifications`, dashboard `Oengus Schedule Import`, change the marathon and schedule, if not the defaults
-2. Click **Import Schedule Data** and wait for it to import all runs & runners
-3. This will separately trigger the people manager to refetch socials for all runners from Oengus (speedcontrol only pulls Twitch & YT)
-
-# Tiltify*
-**Setup**
-1. Create your Tiltify campaign, adding milestones, rewards, incentives, etc.
-2. On Tiltify, on any account, go to https://app.tiltify.com/developers
-3. Click **Create application**, fill in fields -- redirect URI is unecessary, put https://warwickspeed.run or something, we aren't using it
-4. In **Overview > Application keys**, copy the **Client ID** and **Client Secret**
-
-**Use**
-1. In tab **Connection Settings**, dashboard **Tiltify Control**, copy Client ID & Client Secret for the Tiltify application
-    - Note: for testing, this may be any campaign, not necessarily a WASD one. It may be beneficial to find one that is active right now
-2. Open the campaign in the Tiltify manager, and go to **Setup** > **Information** and copy the campaign ID from there
-    - Alternatively, just take it from the URL of the campaign's webpage (should be a UUID)
-3. Put this into **Campaign ID** and click **Connect**
-4. Check the campaign name is correct, if not, you have the wrong Campaign ID
-
-# Tiltify Webhook
-- Bit of a pain for only a slight gain in donation response times - not really worth it
-- Also tunnel is kinda jank (but useful for external)
-
-**Setup**
-1. Expose NodeCG with a tunnel - note: this must be HTTPS and make sure NodeCG has decent security enabled as this will expose the whole thing
-2. Within Tiltify's developer settings for the application, go to the **Webhooks** tab
-3. Click **Add webhook**, setting the **Endpoint URL** to `https://<tunnel url>/tiltify/webhook`
-
-**Use**
-1. In tab **Connection Settings**, dashboard **Tiltify Control**, enable **Use Webhook**
-2. Copy the **Webhook Signing ID** from the webhook's settings page
-3. Copy the **Webhook ID** from the webhook's settings page's URL (idk if there is a better place for this)
-4. If you want to try automatically tunneling with `localtunnel` set a **Requested Subdomain** - ensure you have NodeCG security configured
 
 # Discord
 **Setup**
@@ -163,6 +210,7 @@ You can follow **Step 1** from [Discord docs](https://docs.discord.com/developer
 5. Click **Update Discord Events** to create events, further clicks will update the existing events if e.g. times change
     - If you need to re-create a single event, go to **ZZZ - DEV** andn
 
+
 # Discord for Login
 This requires the setup from above (adding bot to server), but does not require using Discord in the other way
 **Setup**
@@ -179,6 +227,7 @@ This requires the setup from above (adding bot to server), but does not require 
 
 **Use**  
 None
+
 
 # Foobar (music)
 Bit of a weird music player, but based on UKSG's use of it
@@ -204,44 +253,3 @@ Bit of a weird music player, but based on UKSG's use of it
 
 **Use**
 1. From **Tools > Beefweb Remote Control** copy **User** and **Password**, into **Connection Settings > Music Control** **Foobar Username** and **Foobar Password**
-
-# Mixer (XR18)
-**Setup**
-1. Download **X-AIR EDIT PC** and **X18 USB Audio Driver** from https://www.behringer.com/downloads.html
-    - Check you download one with Model=XR18 (yes the driver name is X18, but make sure you get the XR18 model)
-    - You can search for the name, or select Product=XR18
-    - As of 2026, the direct links are: [X Air EDIT PC v1.8.1](https://cdn.mediavalet.com/aunsw/musictribe/XJFMsT8f5kSI5mNP3NQUzQ/nJHScxZuhUeJ1gRV081Z0w/Original/X-AIR-Edit_PC_1.8.1.zip) and [X18 USB Audio Driver v5.72.0](https://cdn.mediavalet.com/aunsw/musictribe/sPDVpULa20Wn3mcJ9REDYw/vjXY1j0ERkaPz8ML2pMmTQ/Original/BEHRINGER_X18_v5.72.0_setup.zip)
-2. Unzip X Air Edit to somewhere accesssible (Desktop perhaps), it isn't an installer
-3. Unzip and run the driver setup. You may need to restart the PC to get this to work. You can verify this by checking if you have four stereo inputs and four stereo outputs labelled Behringer IN/OUT #-#.
-4. Connect the mixer by ethernet to the PC - this may be through a network switch or direct
-    - Or run mixer mock (see below) for development/testing (not perfect, but works)
-    - If this connection is not working, check the physical switch on the mixer for connection type
-    - If still not working, switch to Wifi and connect to that. Also X-Air should be able to scan for the mixer
-
-**Setup Mock**
-1. Install Python >=3.10 - note, will break under 3.10 as the library functions differently
-2. Install [python-osc](https://pypi.org/project/python-osc/) - `pip install python-osc`
-    - This may be in a virtual environment or globally
-3. Run `npm run mixer-mock` which will run `src\mixer\osc-sim\server.py`, mocking up a basic interface for the mixer
-    - You can change the IP & port it is hosted on with `--ip` and `--port` args (port should always be 10024)
-4. You are able to connect X-Air to this mock too, but some of the more advanced functions won't work (like loading the scene)
-
-**Use**
-1. In **Connection Settings > Mixer Control** Configure the **Mixer IP** (often `192.168.1.99`) & **Mixer Port** (always 10024)
-    - If 
-
-# OBS
-** Setup**
-1. If you have a particularly old OBS version, you will need to install the OBS Websocket plugin manually - but you really should update your OBS itself
-2. In OBS, open **Tools > WebSocket Server Settings**, ensure **Enable Websocket server** is ticked and the password & port is configured. Click OK/Apply
-3. Load the OBS preset and configure video sources
-4. NodeCG browser overlay sources need the `key=.....` parameter updated to authenticate in your NodeCG, if you have authentication enabled.
-    - Or by copying the full URLs for the relevant page in the **Graphics** tab
-    - Do this by copying the key parameter from an open graphic to each in OBS
-5. **Make sure that any video sources added are muted in OBS**
-6. In OBS **Settings > Audio**, set **Mic/Auxilliary Audio** to **Berhinger OUT 1-2**, which is mapped to the Main LR out of of the mixer
-
-**Use**
-1. From **Tools > WebSocket Server Settings**, copy the password into **OBS Control > OBS Websocket Password**
-2. Fill in **OBS Websocket URL**, this is likely to just be `localhost`/`127.0.0.1`, as NodeCG is normally running on the same PC as OBS
-    - This can be a full URL, if you need a secure websocket (`wss://`) or a different port (`:1234`)
