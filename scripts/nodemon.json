@@ -4,7 +4,7 @@
         "src/index.extension.ts",
         "src/types/*"
     ],
-    "exec": "node ./scripts/build.mjs -- --extension && npx nodecg start",
+    "exec": "node ./scripts/build.mjs --extension && npx nodecg start",
     "ext": "js,ts,json,yaml",
     "delay": 500,
     "ignoreRoot": [
