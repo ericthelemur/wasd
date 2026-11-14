@@ -1,54 +1,11 @@
-import cookie from 'cookie';
-import http from 'http';
-import HTTPProxy from 'http-proxy';
 import { Server } from 'socket.io';
 import { io } from 'socket.io-client';
 
 import { ClientToServerEvents, ServerToClientEvents } from '@nodecg/types/types/socket-protocol';
 
-import { allowed, checkAuth } from './auth';
+import { externalServer } from './htmlproxy';
 
-const proxy = HTTPProxy.createProxyServer({
-  target: 'http://localhost:9090',
-  ws: false
-});
-
-const proxyServer = http.createServer(async (req, res) => {
-    if (req.url && allowed.some(a => a.test(req.url!))) {
-        const { key, url, source } = await checkAuth(req);
-        
-        if (key) {
-            console.log("Proxied", req.url);
-
-            // Save to cookie
-            if (source == "url") {
-                res.appendHeader("Set-Cookie", cookie.serialize("socketToken", key));
-            }
-
-            // Move mic to cookiez
-            const mic = url.get("mic");
-            if (mic) {
-                res.appendHeader("Set-Cookie", cookie.serialize("mic", mic));
-            }
-
-            proxy.web(req, res);
-            return;
-        }
-    }
-    res.writeHead(403, { 'Content-Type': 'text/plain' });
-    res.end('Forbidden: This proxy path is restricted.');
-});
-
-
-
-proxyServer.listen(8080, () => {
-    console.log('External proxy running on port 8080');
-});
-
-
-// Websocket
-
-const ioServer = new Server(proxyServer);
+const ioServer = new Server(externalServer);
 
 
 // Create new socket to actual server, keep one spare for speed of connection

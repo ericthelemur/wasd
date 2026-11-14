@@ -144,7 +144,7 @@ if (build.shared) {
         default: {
           ...commonBrowserTargetProps,
           distDir: './shared',
-          publicUrl: `/external`,
+          publicUrl: `/`,
         },
       },
       defaultConfig: '@parcel/config-default',

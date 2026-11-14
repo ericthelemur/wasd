@@ -3,15 +3,6 @@ import http from 'http';
 
 import { databaseAdapter } from '@nodecg/database-adapter-sqlite-legacy';
 
-export const allowed = [
-    /^\/external*/,
-    /^\/socket.io\/*/,
-    /^\/socket.js$/,
-    /^\/api.js$/,
-    /^\/favicon.ico$/
-]
-
-
 export async function checkAuth(req: http.IncomingMessage) {
     const url = new URLSearchParams(req.url?.replace(/.*\?/, ""));
     let key = url.get("key");
@@ -22,11 +13,16 @@ export async function checkAuth(req: http.IncomingMessage) {
 
     const foundKey = key && await databaseAdapter.findApiKey(key);
     if (foundKey) {
-        console.log(foundKey.secret_key, foundKey.user.name);
-        return { "key": foundKey.secret_key, "url": url, "source": url.get("key") ? "url" : "cookie" };
+        const user = await databaseAdapter.findUser(foundKey.user.id);
+        if (!user) return { "error": "Unknown user" };
+        console.log(foundKey.secret_key, user.name, user.roles.map((role) => role.name));
+        if (user.roles.find((role) => role.name === "external")) {
+            console.log("Successful");
+            return { "key": foundKey.secret_key, "url": url, "source": url.get("key") ? "url" : "cookie" };
+        }
+        return { "error": "Not authorized for external access" };
     }
-    console.log("No Matching Key");
-    return {};
+    return { "error": "Key not recognized" };
 }
 
 
