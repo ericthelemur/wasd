@@ -22,7 +22,6 @@ getNodeCG().on("extensionsLoaded", async () => {
     const superuser = await databaseAdapter.getSuperUserRole();
     const user = await databaseAdapter.upsertUser({ "name": "proxy", "provider_type": "local", "provider_hash": "proxy", roles: [superuser]});
     proxyAPIKey = user.apiKeys.at(0)?.secret_key;
-    console.log("Proxy:", proxyAPIKey);
 });
 
 // Create external user and return key

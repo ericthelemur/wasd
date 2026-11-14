@@ -4,7 +4,7 @@ bower_components
 .parcel-cache
 /dashboard
 /graphics
-/shared
+/external
 /extension
 *.log
 .venv

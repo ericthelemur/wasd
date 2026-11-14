@@ -14,6 +14,7 @@ import { getNodeCG } from '../../common/utils';
 import { checkAuth } from './auth';
 
 const nodecg = getNodeCG();
+const log = new nodecg.Logger("external");
 
 // const proxy = HTTPProxy.createProxyServer({
 //   target: 'http://localhost:9090',
@@ -23,20 +24,20 @@ const nodecg = getNodeCG();
 export const pathsFromNodeCG = [
     /^\/socket.io\/*/,
     /^\/socket.js$/,
-    /^\/api.js$/,
-    /^\/favicon.ico$/
+    /^\/api.js$/
 ]
 
+// Check auth, if successful, assign token cookie
 async function handleAuthCookies(req: http.IncomingMessage, res: http.ServerResponse<http.IncomingMessage>) {
     if (req.url) {
         const { key, url, source, error } = await checkAuth(req);
-        console.error(error);
+        if (error) log.error(error);
         
         if (key) {
-            console.log("Proxied", req.url);
-
             // Save to cookie if from url
-            if (source == "url") res.appendHeader("Set-Cookie", cookie.serialize("socketToken", key));
+            if (source == "url") {
+                res.appendHeader("Set-Cookie", cookie.serialize("socketToken", key));
+            }
 
             // Move mic to cookie
             const mic = url.get("mic");
@@ -45,10 +46,9 @@ async function handleAuthCookies(req: http.IncomingMessage, res: http.ServerResp
             // proxy.web(req, res);
             return true;
         }
+        res.writeHead(403);
+        res.end(`Auth Error: ${error || "unknown"}`);
     }
-    // error(res);
-    res.writeHead(403);
-    res.end("Auth Error");
 }
 
 function error(res: http.ServerResponse<http.IncomingMessage>) {
@@ -57,74 +57,74 @@ function error(res: http.ServerResponse<http.IncomingMessage>) {
 }
 
 
+// Basic HTTP processing, calls processRequest and catches all errors 
 export const externalServer = http.createServer(async (req, res) => {
     await processRequest(req, res).catch(e => {
-        console.error(e);
+        log.error("Proxy error", e);
         try {
             error(res);
         } catch (e) {
-            console.error("Failed sending error", e);
+            log.error("Failed responding with error", e);
         }
     });
 })
 
 async function processRequest(req: http.IncomingMessage, res: http.ServerResponse<http.IncomingMessage>) {
-    console.log("URL", req.url);
     if (!req.url) {
         res.writeHead(404);
         return res.end("No URL");
     }
+    // Bypass auth if error page
     const isError = /error(\.html)?/.test(req.url);
-    const isNodecg = pathsFromNodeCG.some(r => r.test(req.url!));
-    let isAuthed = false;
-    if (!isError && !isNodecg) {
-        isAuthed = Boolean(await handleAuthCookies(req, res));
-    }
-    if (isError || isNodecg || isAuthed) {
+    if (isError || await handleAuthCookies(req, res)) {
         try {
-            const url = new URL("http://localhost" + req.url);
-            const root = isNodecg ? 
-                path.join(rootPaths.nodecgInstalledPath, "dist/client") :
-                path.join(rootPaths.runtimeRootPath, "shared");
-            let filePath = path.join(root, url.pathname);
-            console.log(filePath);
-            
+            const isNodecg = pathsFromNodeCG.some(r => r.test(req.url!));
 
-            if (!path.extname(filePath)) {
-                filePath += ".html";
-            }
+            const url = new URL("http://localhost" + req.url);
+            const root = isNodecg ?     // Serve from nodecg internal client files or shared directory
+                path.join(rootPaths.nodecgInstalledPath, "dist/client") :
+                path.join(rootPaths.runtimeRootPath, "external");
+            let filePath = path.join(root, url.pathname);
             
-            console.log(req.url, filePath);
-            if (!filePath.startsWith(root)) {
+            if (!filePath.startsWith(root)) {   // If playing path tricks, forbid
                 res.writeHead(403);
                 return res.end("Forbidden");
             }
             
-            let stat = await fs.stat(filePath);
-
-            if (stat.isDirectory()) {
+            let stat = await fs.stat(filePath).catch((e: {code: string}) => e);
+            if ("code" in stat && !path.extname(filePath)) {    // If error and no extension, try adding .html
+                filePath += ".html";
+                stat = await fs.stat(filePath);
+            } else if ("isDirectory" in stat && stat.isDirectory()) {   // If directory, look at index.html
                 filePath = path.join(filePath, 'index.html');
                 stat = await fs.stat(filePath);
+            } else if ("code" in stat) {    // If error, rethrow error
+                log.debug("File not found", filePath);
+                throw stat;
             }
-            
-            console.log("final", filePath);
+            log.debug("Serving", filePath);
 
+
+            // Read relevant file and send to requester
             let data = await fs.readFile(filePath, { encoding: "utf8"});
             res.writeHead(200, { 'Content-Type': mime.lookup(filePath, "application/octet-stream") });
-
+            
             if (path.extname(filePath) == ".html") data = insertScripts(data);
             res.end(data);
         } catch (err: { code: string } | any) {
-            console.error("Error", err);
-            res.writeHead(err?.code === 'ENOENT' ? 404 : 500);
-            res.end(err.code === 'ENOENT' ? 'Not Found' : 'Internal Server Error');
+            // Produce basic error page
+            const isNotFound = err?.code === 'ENOENT';
+            if (!isNotFound) log.error(err);
+            res.writeHead(isNotFound ? 404 : 500);
+            res.end(isNotFound ? 'Not Found' : 'Internal Server Error');
         }
     }
 }
 
 function insertScripts(content: string) {
-    // Insert NodeCG scripts at end of <head> (copy of actual process)
-    console.log("Inserting scripts");
+    // Insert NodeCG scripts at end of <head>
+    // Required to emulate NodeCG dashboard
+
     const scripts = [];
     if (nodecg.config.sentry.enabled) { // Include sentry
         scripts.unshift(
@@ -150,5 +150,5 @@ function insertScripts(content: string) {
 
 
 externalServer.listen(8080, () => {
-    console.log('External proxy running on port 8080');
+    log.info('External server running on port 8080');
 });

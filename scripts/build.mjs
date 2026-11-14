@@ -21,7 +21,7 @@ import types from "./typesLib.mjs";
 
 // Parse cmd line flags
 function argParse(def) {
-  const allowedArgs = ["--all", "--default", "--clean-only", "--browser", "--extension", "--dashboard", "--graphics", "--shared", "--schemas", "--types", "--node-modules", "--production", "--watch", "--clean"];
+  const allowedArgs = ["--all", "--default", "--clean-only", "--browser", "--extension", "--dashboard", "--graphics", "--external", "--schemas", "--types", "--node-modules", "--production", "--watch", "--clean"];
   const unknownArgs = argv.slice(2).filter(a => !allowedArgs.includes(a));
   if (unknownArgs.length > 0) {
     console.error("Unknown arguments included:", unknownArgs.join(" "));
@@ -35,7 +35,7 @@ function argParse(def) {
     extension: argv.includes('--extension') || buildAll || buildDefault,
     dashboard: argv.includes('--dashboard') || buildAll || buildDefault || buildBrowser,
     graphics: argv.includes('--graphics') || buildAll || buildDefault || buildBrowser,
-    shared: argv.includes('--shared') || buildAll || buildDefault, // || buildBrowser,
+    external: argv.includes('--external') || buildAll || buildDefault, // || buildBrowser,
     schemas: argv.includes('--schemas') || argv.includes('--types') || buildAll,
     nodeModules: argv.includes('--node-modules'),
     production: argv.includes('--production'),
@@ -67,7 +67,7 @@ if (build.cleanOnly || build.clean) {
   if (build.schemas) deleteDir("src/types/schemas");
   if (build.extension) deleteDir("extension");
   if (build.dashboard) deleteDir("dashboard");
-  if (build.shared) deleteDir("shared");
+  if (build.external) deleteDir("external");
   if (build.graphics) deleteDir("graphics");
   if (build.all || build.nodeModules) deleteDir(".parcel-cache");
   if (build.nodeModules) deleteDir("node_modules");
@@ -136,14 +136,16 @@ if (build.graphics) {
   );
 }
 
-if (build.shared) {
+if (build.external) {
+  console.log(glob.sync('src/external/external/*.html'));
   bundlers.add(
     new Parcel({
-      entries: glob.sync('src/*/shared/**/*.html'),
+      logLevel: "verbose",
+      entries: glob.sync('src/external/external/*.html'),
       targets: {
         default: {
           ...commonBrowserTargetProps,
-          distDir: './shared',
+          distDir: './external',
           publicUrl: `/`,
         },
       },
