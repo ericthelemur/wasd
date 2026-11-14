@@ -31,15 +31,20 @@ ioServer.on("connection", (cs) => {
     // Only forward specific events TODO move to replicant
     const allowed = {
         "replicants": {
-            "^tiltify:.*$": "R",
-            "^donos:donoSettings:.*$": "RW",
             "^.*:login$": "B",
-            "tiltify*:webhookLogin$": "B"
+            "^tiltify:.*$": "R",
+            "tiltify*:webhookLogin$": "B",
+            "^donos:donoSettings:.*$": "RW",
+            "^mixer:.*": "R",
+            "^nodecg-speedcontrol:(runDataActiveRun|timer)": "R"
         },
         "messages": {
             "^tiltify:.*$": "RW",
-            "^(dis)?connect$": "B"
+            "^.*:(dis)?connect$": "B",
             // /^connected$/        // connected is blocked from being called by external, but will still receive
+            "^mixer:message$": "R",
+            "^mixer:(setMute|setTalkback|setTechMuted)$": "RW",
+            "^nodecg-speedcontrol:timer(Start|Stop|Pause)": "W"
         }
     }
 

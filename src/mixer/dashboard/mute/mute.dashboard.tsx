@@ -1,21 +1,21 @@
 import '../../../common/uwcs-bootstrap.css';
 import '../../dashboard/mixer-control/mixer.scss';
 
+import { getNodeCG } from 'common/utils';
+import Cookies from 'js-cookie';
 import { useEffect, useState } from 'react';
+import { InputGroup } from 'react-bootstrap';
+import { PauseFill } from 'react-bootstrap-icons';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { createRoot } from 'react-dom/client';
-import { Channels, Muted, TechMuted, Status } from 'types/schemas/mixer';
-import { useReplicant } from 'use-nodecg';
-import Cookies from "js-cookie";
-
-import { sendTo, sendToF } from '../../messages';
-import { CommPointStatus } from '../../../common/commpoint/login';
 import { RunDataActiveRun, RunDataTeam, Timer } from 'speedcontrol-util/types/speedcontrol';
-import { getNodeCG } from 'common/utils';
-import { InputGroup } from 'react-bootstrap';
-import { PauseFill } from 'react-bootstrap-icons';
+import { Channels, Muted, Status, TechMuted } from 'types/schemas/mixer';
+import { useReplicant } from 'use-nodecg';
+
+import { CommPointStatus } from '../../../common/commpoint/login';
+import { sendTo, sendToF } from '../../messages';
 
 function fetchFromParams() {
 	const url = new URL(window.location.href);
@@ -108,44 +108,45 @@ function MuteIndicator({ micMuted, talkback }: { micMuted: boolean | undefined, 
 
 function MuteControl({ mic }: { mic: string }) {
 	const [muted,] = useReplicant<Muted>("muted", {}, { namespace: "mixer" });
-	const [temp, setTemp] = useState(false);
+	const [held, setHeld] = useState(false);
 	const [wasMuted, setWasMuted] = useState<boolean | undefined>(undefined);
 	const [debounce, setDebounce] = useState<NodeJS.Timeout | undefined>(undefined);
 
-	const micMuted = (muted ? muted[mic]?.muted : undefined);
-	const longMuted = micMuted !== temp;
+	const micMuted = (muted ? muted[mic]?.muted : false);
 	const micTalkback = (muted ? muted[mic]?.soloed : undefined);
 
 	function holdDown() {
-		sendTo("setMute", { mic: mic, muted: !longMuted })
-		setTemp(true);
+		sendTo("setMute", { mic: mic, muted: !micMuted });
+		setWasMuted(micMuted);
+		setHeld(true);
 	}
 	function holdUp() {
 		clearTimeout(debounce);
 		setDebounce(setTimeout(() => {
-			if (temp) {
-				sendTo("setMute", { mic: mic, muted: longMuted })
-				setTemp(false);
+			if (held) {
+				sendTo("setMute", { mic: mic, muted: Boolean(wasMuted) });
+				setWasMuted(undefined);
+				setHeld(false);
 			}
 		}, 100));
 	}
-	function muteToggle() {
+	function talkToggle() {
 		if (!micTalkback) {  // Enable
 			setWasMuted(micMuted);
 			sendTo("setTalkback", { mic: mic, talkback: !micTalkback });
 		} else { 	// Disable
 			sendTo("setTalkback", { mic: mic, talkback: !micTalkback, muted: wasMuted });
+			setWasMuted(undefined);
 		}
 	}
 
 	return <div className="fs-1">
 		<MuteIndicator micMuted={micMuted} talkback={micTalkback} />
 		<div className="mute-buttons gap-2 mb-2 d-flex flex-wrap mt-2">
-			<Button variant="primary" onClick={sendToF("setMute", { mic: mic, muted: !longMuted })}>Mute Toggle</Button>
-			<Button variant="outline-primary" onMouseDown={holdDown} onMouseUp={holdUp} onTouchStart={holdDown} onTouchEnd={holdUp}>Push to {longMuted ? "Talk" : "Mute"}</Button>
-			{mic != "TECH" &&
-				<Button variant="outline-primary" onClick={muteToggle}>Talkback Toggle</Button>
-			}
+			<Button variant="primary" onClick={sendToF("setMute", { mic: mic, muted: !micMuted })}>Mute Toggle</Button>
+			<Button variant="outline-primary" onMouseDown={holdDown} onMouseUp={holdUp} onTouchStart={holdDown} onTouchEnd={holdUp}>
+				Push to {(wasMuted ?? micMuted) ? "Talk" : "Mute"}</Button>
+			{mic != "TECH" && <Button variant="outline-primary" onClick={talkToggle}>Talkback Toggle</Button>}
 		</div>
 	</div>
 }
