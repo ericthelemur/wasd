@@ -51,6 +51,13 @@
         "headerColor": "#525F78"
       },
       {
+        "name": "livesplit-control",
+        "title": "Splits Control",
+        "width": 3,
+        "file": "livesplit/dashboard/splits.dashboard.html",
+        "headerColor": "#525F78"
+      },
+      {
         "name": "loupedeck-control",
         "title": "Loupedeck Control",
         "width": 3,

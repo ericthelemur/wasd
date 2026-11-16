@@ -7,6 +7,8 @@ export * from './donos';
 // @ts-ignore
 export * from './external';
 // @ts-ignore
+export * from './livesplit';
+// @ts-ignore
 export * from './loupedeck';
 // @ts-ignore
 export * from './mixer';

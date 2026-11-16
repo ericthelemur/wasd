@@ -1,0 +1,50 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "definitions": {
+        "time": {
+            "type": "string",
+            "pattern": "\\d\\d:\\d\\d:\\d\\d(\\.\\d+)?"
+        }
+    },
+    "oneOf": [
+        {
+            "type": "null"
+        },
+        {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "end": {
+                    "$ref": "#/definitions/time"
+                },
+                "splits": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "time": {
+                                "$ref": "#/definitions/time"
+                            },
+                            "progress": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "time",
+                            "progress"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "end", 
+                "splits"
+            ]
+        }
+    ]
+}

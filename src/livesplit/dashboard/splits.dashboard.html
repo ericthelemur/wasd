@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<script>
+    function dark() {
+        var isDark = localStorage.getItem("dark_mode");
+        if (isDark === undefined) isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        else isDark = isDark === "dark";
+        document.documentElement.setAttribute('data-bs-theme', isDark ? "dark" : "light");
+    }
+    dark();
+</script>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Livesplit Split Loader</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <div id="root"></div>
+    <script type="module" src="./splits.dashboard.tsx"></script>
+</body>
+
+</html>
