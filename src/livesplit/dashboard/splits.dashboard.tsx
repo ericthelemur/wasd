@@ -61,7 +61,13 @@ function SplitsUpload({setSplits}: {setSplits: (s: Splits) => any}) {
             const endDurationMS = moment.duration(endTime).asMilliseconds();
             const withProgress = filtered.map(s => {
                 const time = moment.duration(s.time).asMilliseconds();
-                return { name: s.name, time: moment.utc(time).format('HH:mm:ss'), progress: time / endDurationMS };
+                return { 
+                    name: s.name, 
+                    time: moment.utc(time).format('HH:mm:ss'), 
+                    milliseconds: time,
+                    progress: time / endDurationMS,
+                    times: {}
+                };
             });
 
             setSplits({ end: endTime, splits: withProgress });
@@ -84,7 +90,15 @@ function SplitsView({splits, setSplits}: {splits: Splits, setSplits: (s: Splits)
         <Button variant="danger float-end" onClick={() => confirm("Clear Splits?") && setSplits(null)}><TrashFill /></Button>
         <h2>Splits for {run.game}</h2>
         <ol>{splits.splits.map(s => 
-            <li><span style={{font: "mono"}}>{s.time}</span> {s.name} <i>({Math.round(s.progress * 100)}%)</i></li>
+            <li>
+                <span style={{font: "mono"}}>{s.time}</span> {s.name} <i>({Math.round(s.progress * 100)}%)</i>
+                {Object.keys(s.times).length == 0 && <ul>
+                    {Object.entries(s.times).filter(([teamId, time]) => time.state == "completed")
+                        .map(([teamId, time]) => <li>{
+                            run.teams.find((team) => team.id == teamId)?.name || "Unknown Team"}: {time.time}
+                        </li>)}
+                </ul>}
+            </li>
         )}</ol>
     </>
 }

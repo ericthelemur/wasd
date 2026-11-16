@@ -19,6 +19,7 @@ module.exports = function (nodecg: NodeCG.ServerAPI) {
     require("./ticker/extension/index.extension");
     require("./wasd/extension/index.extension");
     require("./external/extension/index.extension");
+    require("./livesplit/extension/index.extension");
 };
 
 // process.on("beforeExit", () => {

@@ -4,6 +4,33 @@
         "time": {
             "type": "string",
             "pattern": "\\d\\d:\\d\\d:\\d\\d(\\.\\d+)?"
+        },
+        "times": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "state": {
+                        "type": "string",
+                        "enum": [
+                            "completed",
+                            "forfeit"
+                        ]
+                    },
+                    "time": {
+                        "$ref": "#/definitions/time"
+                    },
+                    "milliseconds": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "state",
+                    "time",
+                    "milliseconds"
+                ]
+            }
         }
     },
     "oneOf": [
@@ -29,14 +56,22 @@
                             "time": {
                                 "$ref": "#/definitions/time"
                             },
+                            "milliseconds": {
+                                "type": "number"
+                            },
                             "progress": {
                                 "type": "number"
+                            },
+                            "times": {
+                                "$ref": "#/definitions/times"
                             }
                         },
                         "required": [
                             "name",
                             "time",
-                            "progress"
+                            "progress",
+                            "milliseconds",
+                            "times"
                         ]
                     }
                 }
