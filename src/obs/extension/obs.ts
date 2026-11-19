@@ -1,11 +1,18 @@
-import NodeCG from "@nodecg/types";
-import fsPromises from "fs/promises";
-import OBSWebSocket, { OBSRequestTypes } from "obs-websocket-js";
-import path from "path";
-import { Login, ObsScene, ObsSource, PreviewScene, ProgramScene, SceneList, Status } from "types/schemas/obs";
-import { CommPoint } from "../../common/commpoint/commpoint";
-import { BundleReplicant, getNodeCG, getSpeedControlUtil, sendError, sendSuccess } from "../../common/utils";
-import listeners, { ListenerTypes, listenTo, sendTo } from "../messages";
+import fsPromises from 'fs/promises';
+import OBSWebSocket, { OBSRequestTypes } from 'obs-websocket-js';
+import path from 'path';
+import {
+    Login, ObsScene, ObsSource, PreviewScene, ProgramScene, SceneList, Status
+} from 'types/schemas/obs';
+
+import NodeCG from '@nodecg/types';
+
+import { CommPoint } from '../../common/commpoint/commpoint';
+import {
+    BundleReplicant, getNodeCG, getSpeedControlUtil, sendError, sendSuccess
+} from '../../common/utils';
+import { formatRunPlayers } from '../../common/utils/formats';
+import listeners, { ListenerTypes, listenTo, sendTo } from '../messages';
 
 export type Replicants = {
     status: Status,
@@ -378,7 +385,7 @@ export class OBSCommPoint extends CommPoint<ListenerTypes, Replicants> {
         const sc = getSpeedControlUtil();
         const run = sc.runDataActiveRun.value;
         if (!run) return null;
-        const runners = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
+        const runners = formatRunPlayers(run);
 
         const times = sc.runFinishTimes.value;
         const time = times ? times[run?.id] : undefined;

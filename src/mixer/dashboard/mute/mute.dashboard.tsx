@@ -15,6 +15,7 @@ import { Channels, Muted, Status, TechMuted } from 'types/schemas/mixer';
 import { useReplicant } from 'use-nodecg';
 
 import { CommPointStatus } from '../../../common/commpoint/login';
+import { formatTeamName } from '../../../common/utils/formats';
 import { sendTo, sendToF } from '../../messages';
 
 function fetchFromParams() {
@@ -75,7 +76,7 @@ function TimerButtons(props: { mic: string }) {
 	else if (run.customData.scene == "RUN-RACE") team = run.teams[props.mic == "RUN-1" ? 0 : 1];
 
 	if (!team) return;
-	const name = team.players.map(p => p.name).join(" & ");
+	const name = formatTeamName(team);
 	const finishTime = team.id in timer.teamFinishTimes ? timer.teamFinishTimes[team.id].time : "";
 	const time = timer.timestamp == 0 ? "" : (finishTime || timer.time);
 	const running = timer?.state == "running" && !(team.id in timer.teamFinishTimes);

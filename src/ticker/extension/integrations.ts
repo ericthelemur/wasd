@@ -3,7 +3,7 @@ import { RunData } from 'speedcontrol-util/types/speedcontrol';
 import { Donation, Message, MsgRef, Pool, Queue } from 'types/schemas';
 
 import { getNodeCG, getSpeedControlUtil } from '../../common/utils';
-import { formatAmount, formatTime } from '../../common/utils/formats';
+import { formatAmount, formatRunPlayers, formatTime } from '../../common/utils/formats';
 import { streamState } from '../../wasd/extension/replicants';
 import { sendTo } from '../messages';
 import { addToPool, deleteMessage, findMsgIDIndex } from './listeners';
@@ -56,7 +56,7 @@ function upcoming() {
 
         runs.forEach((run, i) => {
             let dateStr = formatTime(new Date(run.scheduled!));
-            const runners = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
+            const runners = formatRunPlayers(run);
             const term = ["next", "2nd", "3rd"][i];
 
             if (!run.category) delay = false;

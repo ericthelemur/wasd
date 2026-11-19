@@ -7,16 +7,20 @@
 
 export type Splits = null | {
 	end: Time;
-	splits: {
-		name: string;
-		time: Time;
-		milliseconds: number;
-		progress: number;
-		times: Times;
-	}[];
+	splits: Split[];
+	current: {
+		[k: string]: number;
+	};
 };
 export type Time = string;
 
+export interface Split {
+	name: string;
+	time: Time;
+	milliseconds: number;
+	progress: number;
+	times: Times;
+}
 export interface Times {
 	[k: string]: {
 		state: 'completed' | 'forfeit';

@@ -4,11 +4,10 @@ import { Login } from '../types/schemas/loupedeck';
 export type ListenerTypes = {
     "split": {
         teamId: string,
-        splitIndex: number
+        forfeit: boolean
     },
     "undo": {
-        teamId: string,
-        splitIndex: number
+        teamId: string
     }
 }
 

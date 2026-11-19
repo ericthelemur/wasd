@@ -1,5 +1,3 @@
-// import 'nodecg-dono-control/src/dashboard/reader/reader.graphic.css';
-import { msToApproxTimeString } from '../../../../countdown/utils';
 import './slides.scss';
 
 import Card from 'react-bootstrap/Card';
@@ -7,8 +5,10 @@ import { Textfit } from 'react-textfit';
 import { RunData } from 'speedcontrol-util/types/speedcontrol';
 import { StreamState } from 'types/schemas';
 import { useReplicant } from 'use-nodecg';
-import { formatTime } from '../../../../common/utils/formats';
 
+import { formatRunPlayers, formatTime } from '../../../../common/utils/formats';
+// import 'nodecg-dono-control/src/dashboard/reader/reader.graphic.css';
+import { msToApproxTimeString } from '../../../../countdown/utils';
 
 export function RunTime({ run, minsBehind, delay }: { run: RunData, minsBehind?: number, delay?: boolean }) {
     const date = new Date(run.scheduledS! * 1000);
@@ -26,7 +26,7 @@ export function RunCard({ run, delay, isNext }: { run: RunData, delay?: boolean,
     const [state,] = useReplicant<StreamState>("streamState", { "state": "BREAK" });
     if (!run || !state) return null;
 
-    const runners = run.teams.map(t => t.players.map(p => p.name).join(" & ")).join(" vs. ");
+    const runners = formatRunPlayers(run);
     const info = [runners, msToApproxTimeString((run.estimateS || 0) * 1000), run.category, run.system, run.release].filter(v => v);
 
     return <Card key={run.id}>

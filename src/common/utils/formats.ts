@@ -1,5 +1,6 @@
 
 
+import { RunData, RunDataTeam } from 'speedcontrol-util/types/speedcontrol';
 import { Amount, Donation } from 'types/schemas/tiltify';
 
 export function baseCurrFormat(curr: string) {
@@ -28,4 +29,17 @@ export function formatAmounts(base: Amount | undefined, display: Amount | undefi
         else return `${formatAmount(base)} (${formatAmount(display)})`;
 
     }
+}
+
+
+// Get name of team - either the given team name or combination of players
+export function formatTeamName(team: RunDataTeam) {
+    if (team.name) return team.name;
+    return team.players.map(p => p.name).join(" & ");
+}
+
+// Get string of players - each team vs each other
+export function formatRunPlayers(run: RunData) {
+        return run.teams.map(formatTeamName).join(" vs. ");
+
 }
